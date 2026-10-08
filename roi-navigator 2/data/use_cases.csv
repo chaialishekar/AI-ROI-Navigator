@@ -1,0 +1,13 @@
+use_case,industry,description,financial_impact,strategic_fit,scale,data_readiness,ease_of_build,low_risk,speed_to_value
+Predictive maintenance,Manufacturing,Predict machine failures from sensor data so repairs happen before breakdowns,5,5,4,4,3,4,4
+Visual quality inspection,Manufacturing,Computer vision flags defects on the production line,4,5,4,4,3,4,4
+Demand forecasting,Manufacturing,Forecast demand per product to cut overstock and stockouts,5,4,5,3,3,5,3
+Energy optimization,Manufacturing,Tune equipment schedules to lower plant energy costs,3,4,3,4,4,5,4
+Product recommendations,Retail,Personalized product suggestions online and in-app,4,3,5,5,4,4,5
+Customer service agent,Retail,GenAI agent answers order and return questions and hands off to humans,4,4,5,4,4,3,5
+Inventory optimization,Retail,Set reorder points per store and product,4,4,4,3,3,4,3
+Dynamic pricing,Retail,Adjust prices to demand and competitor moves,4,3,4,3,2,2,3
+Clinical note summarization,Healthcare,GenAI drafts visit summaries for clinicians to review,4,4,4,4,4,2,3
+Appointment scheduling agent,Healthcare,AI agent books and reschedules patient appointments,3,3,4,5,4,4,5
+Medical imaging triage,Healthcare,Flags urgent scans for faster radiologist review,5,4,3,2,2,1,2
+Claims and prior-auth processing,Healthcare,Extracts and checks claim documents to speed approvals,4,4,4,3,3,2,3
