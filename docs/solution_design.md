@@ -97,6 +97,8 @@ Lenovo publicly describes Hybrid AI Advantage as covering the full AI lifecycle:
 | US-2.4 | As an ops director, I want results in plain language, so that I don't need ML knowledge. | e.g. "Catches 8 of 10 failures. About 1 in 3 alerts is a false alarm." |
 | US-2.5 | As an AI BA, I want the model tested on unseen data, so that the numbers are trustworthy. | Train/test split; all reported metrics come from the test set. |
 | US-2.6 | As an ops director, I want to compare a custom build with a ready-made solution, so that I see how deployment time changes first-year value. | Input months to deploy; first-year value = annual savings × (12 − months) ÷ 12. |
+| US-2.7 | As a CFO, I want a range instead of a single number, so that I know how much the savings could vary. | Savings, payback, ROI, caught, missed and false alarms each show a 90% range from a bootstrap of the test set; the range always contains the point estimate. |
+| US-2.8 | As an ops director, I want low / base / high cases and to see which cost assumption matters most, so that we firm up the right numbers before committing. | Editable low and high value for every cost input; table of low / base / high annual savings, 3-year value, ROI and payback; tornado chart sorted by impact; warning if the low case never pays back within 3 years. |
 
 #### Epic 3 · Readiness (UC-3)
 | ID | User story | Acceptance criteria |
@@ -157,7 +159,7 @@ Hosted on Streamlit Community Cloud (public link)
 | Use-case catalog | 12 use cases with 7 scores each | `data/use_cases.csv` |
 | Scoring engine | Weighted value and feasibility scores, quadrant, next step | `src/scoring.py` |
 | Model training | Train and test a failure-prediction model on AI4I 2020 | `src/model.py` |
-| Cost engine | Converts caught / missed / false alarms into dollars, ROI and payback | `src/value.py` |
+| Cost engine | Converts caught / missed / false alarms into dollars, ROI and payback; bootstrap ranges and sensitivity cases | `src/value.py` |
 | Readiness engine | Scores dimensions and applies verdict rules | `src/readiness.py` |
 | User interface | Tabs, inputs, charts, summary | `app.py` |
 
@@ -195,6 +197,8 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Dollar-optimal threshold differs from accuracy-optimal | US-2.3 | Compare both on the test set (default costs) | ✅ Passed: 0.05 vs 0.90; dollar-optimal saves $29k/year more |
 | Verdict rules give the expected result for 3 sample checklists | US-3.2 | Unit tests (`tests/test_core.py`) | ✅ Passed |
 | Dollar math matches hand calculation | US-2.2 | Unit test on a 4-record example | ✅ Passed |
+| Uncertainty range contains the point estimate | US-2.7 | Unit test (`tests/test_core.py`) | ✅ Passed: default case $660k, range $611k–$704k |
+| Scenarios are ordered low ≤ base ≤ high; tornado sorted by impact | US-2.8 | Unit test (`tests/test_core.py`) | ✅ Passed: low case $164k/year, 20.5-month payback |
 
 ---
 

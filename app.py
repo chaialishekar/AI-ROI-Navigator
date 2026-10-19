@@ -25,7 +25,17 @@ from src.scoring import (
 )
 from src.model import train_and_score
 from src.readiness import ACTIONS, DIMENSIONS, verdict
-from src.value import Costs, evaluate, plain_language, sweep
+from src.value import (
+    ASSUMPTIONS,
+    Costs,
+    bootstrap,
+    default_ranges,
+    evaluate,
+    plain_language,
+    scenarios,
+    sensitivity,
+    sweep,
+)
 
 st.set_page_config(page_title="AI Use-Case ROI Navigator", layout="wide")
 
@@ -60,12 +70,22 @@ def get_model_results():
 def money(x: float) -> str:
     sign = "-" if x < 0 else ""
     x = abs(x)
-    return f"{sign}${x/1e6:.2f}M" if x >= 1e6 else f"{sign}${x/1e3:,.0f}k"
+    if x >= 1e6:
+        return f"{sign}${x/1e6:.2f}M"
+    return f"{sign}${x/1e3:,.0f}k" if x >= 1e3 else f"{sign}${x:,.0f}"
 
 
 def md(text: str) -> str:
     """Escape $ so Streamlit markdown doesn't render dollar amounts as math."""
     return text.replace("$", "\\$")
+
+
+def months(x: float) -> str:
+    return f"{x:.1f} months" if np.isfinite(x) else "Never"
+
+
+def money_range(lo_hi: tuple) -> str:
+    return f"{money(lo_hi[0])} – {money(lo_hi[1])}"
 
 
 # ---------------------------------------------------------------- Tab 1
@@ -195,19 +215,33 @@ with tab2:
         help="Lower = more sensitive: catches more failures but raises more false alarms.",
     )
     r = evaluate(y_test, proba, threshold, costs)
+    band = bootstrap(y_test, proba, threshold, costs)
+    band_help = ("90% range: where the result would likely land if the model were tested on a "
+                 "different sample of machines (bootstrap of the test set). Your cost inputs are held fixed.")
 
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Annual net savings", money(r["annual_net"]))
-    m2.metric("Payback", f"{r['payback_months']:.1f} months" if np.isfinite(r["payback_months"]) else "Never")
-    m3.metric("3-year ROI", f"{r['roi_3y']*100:,.0f}%")
+    m1.metric("Annual net savings", money(r["annual_net"]), help=band_help)
+    m1.caption(md(f"90% range: {money_range(band['annual_net'])}"))
+    m2.metric("Payback", months(r["payback_months"]), help=band_help)
+    m2.caption(f"90% range: {months(band['payback_months'][0])} – {months(band['payback_months'][1])}")
+    m3.metric("3-year ROI", f"{r['roi_3y']*100:,.0f}%", help=band_help)
+    m3.caption(f"90% range: {band['roi_3y'][0]*100:,.0f}% – {band['roi_3y'][1]*100:,.0f}%")
     m4.metric("First-year value", money(r["first_year"]), help="Savings while live in year one, minus deployment cost")
     st.info(f"**In plain language:** {plain_language(r)}")
 
     k1, k2, k3, k4 = st.columns(4)
     k1.metric("Failures caught / year", f"{r['caught']:.0f}")
+    k1.caption(f"90% range: {band['caught'][0]:.0f} – {band['caught'][1]:.0f}")
     k2.metric("Failures missed / year", f"{r['missed']:.0f}")
+    k2.caption(f"90% range: {band['missed'][0]:.0f} – {band['missed'][1]:.0f}")
     k3.metric("False alarms / year", f"{r['false_alarms']:.0f}")
+    k3.caption(f"90% range: {band['false_alarms'][0]:.0f} – {band['false_alarms'][1]:.0f}")
     k4.metric("Accuracy", f"{r['accuracy']*100:.1f}%", help="Share of all test readings classified correctly")
+    st.caption(
+        f"Ranges reflect **model uncertainty**: the test set has only {int(y_test.sum())} real failures, "
+        "so catch and false-alarm rates are estimates. For uncertainty in your cost inputs, see "
+        "*How sure are we?* below."
+    )
 
     gap = best_money["annual_net"] - best_acc["annual_net"]
     if gap > 1:
@@ -259,12 +293,100 @@ with tab2:
         st.plotly_chart(figc, width="stretch")
         st.caption(md(f"Going live {custom_m - ready_m} months sooner is worth {money(fy(ready_m) - fy(custom_m))} in year one."))
 
+    # ---------------------------------------------------------------- Sensitivity
+    st.markdown("#### How sure are we? Low / base / high cases")
+    st.write(
+        "Your cost inputs are estimates. Set a realistic low and high value for each one "
+        "to see the range of outcomes and which assumption matters most."
+    )
+
+    def fmt_input(key: str, v: float) -> str:
+        return money(v) if ASSUMPTIONS[key].endswith("($)") else f"{v:,.0f}"
+
+    base_vals = {k: float(getattr(costs, k)) for k in ASSUMPTIONS}
+    defaults = default_ranges(costs)
+    range_df = pd.DataFrame(
+        {"Low": [defaults[k][0] for k in ASSUMPTIONS], "Base": list(base_vals.values()),
+         "High": [defaults[k][1] for k in ASSUMPTIONS]},
+        index=list(ASSUMPTIONS.values()),
+    )
+    with st.expander("Edit low and high values", expanded=False):
+        edited_ranges = st.data_editor(
+            range_df,
+            width="stretch",
+            disabled=["Base"],
+            # Reset to fresh defaults whenever the base inputs above change
+            key=f"sens_{hash(tuple(base_vals.values()))}",
+            column_config={c: st.column_config.NumberColumn(c, min_value=0, format="%.0f") for c in range_df.columns},
+        )
+        st.caption("Defaults: ±25–50% around each base value, with a wider upside on deployment cost, "
+                   "running cost and timeline, which are usually underestimated.")
+    ranges = {k: (float(edited_ranges.loc[lbl, "Low"]), float(edited_ranges.loc[lbl, "High"]))
+              for k, lbl in ASSUMPTIONS.items()}
+
+    cases = scenarios(y_test, proba, threshold, costs, ranges)
+    tornado = sensitivity(y_test, proba, threshold, costs, ranges)
+    top = tornado.iloc[0]
+
+    case_table = pd.DataFrame({
+        name: {
+            "Annual net savings": money(c["annual_net"]),
+            "3-year net value": money(c["three_year"]),
+            "3-year ROI": f"{c['roi_3y']*100:,.0f}%",
+            "Payback": months(c["payback_months"]),
+            "First-year value": money(c["first_year"]),
+        }
+        for name, c in cases.items()
+    })
+    st.dataframe(case_table, width="stretch")
+    st.caption("Low case = every assumption at the end of its range that hurts value; "
+               "high case = every assumption at the end that helps. Alert threshold held at your setting.")
+
+    low = cases["Low"]
+    if low["annual_net"] > 0 and low["payback_months"] <= 36:
+        st.success(md(
+            f"**Robust:** even in the low case the project saves {money(low['annual_net'])} a year "
+            f"and pays back in {months(low['payback_months'])}."
+        ))
+    else:
+        st.warning(md(
+            f"**At risk:** in the low case the project {'loses' if low['annual_net'] <= 0 else 'saves only'} "
+            f"{money(abs(low['annual_net']))} a year and "
+            f"{'never pays back' if not np.isfinite(low['payback_months']) else 'takes ' + months(low['payback_months']) + ' to pay back'}. "
+            "Firm up the top assumptions below before committing."
+        ))
+
+    labels = [f"{a.replace(' ($)', '')}  ({fmt_input(k, lo)} → {fmt_input(k, hi)})"
+              for a, k, lo, hi in zip(tornado["assumption"], tornado["key"], tornado["low_input"], tornado["high_input"])]
+    figt = go.Figure()
+    for side, name, color in [("low", "Input at low value", "#b4322c"), ("high", "Input at high value", "#0f6d74")]:
+        figt.add_trace(go.Bar(
+            y=labels, x=tornado[f"at_{side}"] - tornado["base"], base=tornado["base"],
+            orientation="h", name=name, marker_color=color,
+            customdata=tornado[f"at_{side}"],
+            hovertemplate="%{y}<br>3-year net value: %{customdata:$,.0f}<extra>" + name + "</extra>",
+        ))
+    figt.add_vline(x=top["base"], line_color="#15222a", line_width=1,
+                   annotation_text=f"base {money(top['base'])}", annotation_position="top")
+    figt.update_layout(
+        barmode="overlay", height=60 + 45 * len(tornado), margin=dict(l=10, r=10, t=30, b=10),
+        xaxis=dict(title="3-year net value ($)", tickformat="$,.0f"),
+        yaxis=dict(autorange="reversed", title=""), legend=dict(orientation="h", y=-0.25),
+    )
+    st.plotly_chart(figt, width="stretch")
+    st.caption(md(
+        f"Each bar moves one assumption at a time; longest bar = biggest risk. "
+        f"**{top['assumption'].replace(' ($)', '')}** matters most: it moves 3-year value by "
+        f"{money(top['swing'])}. Agree this number with finance first."
+    ))
+
     st.caption(
         f"Model trained on {res['n_train']:,} records and tested on {res['n_test']:,} records it never saw "
         f"({int(y_test.sum())} real failures). Data: AI4I 2020 Predictive Maintenance Dataset (UCI, CC BY 4.0). "
         "Dollar results scale the test-set rates to your plant's failures per year."
     )
-    st.session_state["value"] = {**r, "model": model_name}
+    st.session_state["value"] = {**r, "model": model_name, "band": band, "cases": cases,
+                                 "top_driver": top["assumption"].replace(" ($)", ""), "top_swing": top["swing"]}
 
 # ---------------------------------------------------------------- Tab 3
 with tab3:
@@ -318,13 +440,20 @@ with tab4:
 **Use case:** Predictive maintenance (manufacturing). Top-ranked use case in the Prioritize tab: {st.session_state.get('top_use_case', 'n/a')} ({st.session_state.get('top_quadrant', 'n/a')}).
 
 ## Value
-- Annual net savings: {money(val['annual_net'])}
-- Payback: {val['payback_months']:.1f} months
+- Annual net savings: {money(val['annual_net'])} (90% range from model uncertainty: {money_range(val['band']['annual_net'])})
+- Payback: {months(val['payback_months'])}
 - 3-year ROI: {val['roi_3y']*100:,.0f}%
 - First-year value (after deployment cost): {money(val['first_year'])}
 - Model: {val['model']}, alert threshold {val['threshold']:.2f}
 - {plain_language(val)}
 - Per year: ~{val['caught']:.0f} failures caught, ~{val['missed']:.0f} missed, ~{val['false_alarms']:.0f} false alarms
+
+## Range of outcomes (cost assumptions)
+| Case | Annual net savings | 3-year net value | Payback |
+|---|---|---|---|
+""" + "".join(f"| {name} | {money(c['annual_net'])} | {money(c['three_year'])} | {months(c['payback_months'])} |\n"
+              for name, c in val["cases"].items()) + f"""
+- Biggest driver: {val['top_driver']} (moves 3-year value by {money(val['top_swing'])}). Agree this number with finance first.
 
 ## Readiness
 - Verdict: {rd.get('verdict', 'n/a')} (average {rd.get('avg', 0):.1f} / 5)
