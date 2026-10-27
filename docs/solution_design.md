@@ -69,7 +69,7 @@ Operations leaders at mid-size manufacturers face three gaps when adopting AI:
 - **Postcondition:** a recommended threshold and a dollar business case are ready for UC-3 and UC-4.
 
 ### 3.2a Mapping to the AI lifecycle
-Lenovo publicly describes Hybrid AI Advantage as covering the full AI lifecycle: **advisory → implementation → adoption → managed services**, with the goal of moving customers **from pilot to production**. The epics below follow those stages, and every story is tagged with the lifecycle stage and a MoSCoW priority (Must / Should / Could / Won't for v1).
+Enterprise AI services are commonly organised around four lifecycle stages: **advisory → implementation → adoption → managed services**, with the goal of moving customers **from pilot to production**. The epics below follow those stages, and every story is tagged with the lifecycle stage and a MoSCoW priority (Must / Should / Could / Won't for v1).
 
 | Lifecycle stage | Customer question | Epics | Built in v1 |
 |---|---|---|---|
@@ -281,4 +281,3 @@ The Navigator turns a list of AI ideas into a funded, production-ready business 
 
 ## Appendix B: Resources
 - AI4I 2020 Predictive Maintenance Dataset, UCI Machine Learning Repository
-- Lenovo Validated Design guides (public format reference), Lenovo Press
