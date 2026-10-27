@@ -175,3 +175,59 @@ def test_rule_diagnosis_matches_manual_and_pilot_data():
     cases = pd.read_csv("pilot/pilot_cases.csv")
     real = cases[cases["true_mode"] != "NONE"]
     assert all(diagnose(r)[0] == MODES[r["true_mode"]] for _, r in real.iterrows())
+
+
+def test_agent_graders():
+    from src.agents import grade_intake, grade_memo, grade_redteam, numbers_in
+    exp = {"tasks_per_year": 2080, "minutes_saved_per_task": 15, "review_minutes_per_task": None,
+           "hourly_cost": 55, "people": 6}
+    perfect = '{"tasks_per_year": 2080, "minutes_saved_per_task": 15, "review_minutes_per_task": null, "hourly_cost": 55, "people": 6}'
+    assert grade_intake(perfect, exp)["score"] == 1
+    guessed = grade_intake(perfect.replace('"review_minutes_per_task": null', '"review_minutes_per_task": 5'), exp)
+    assert guessed["invented"] == ["review_minutes_per_task"] and guessed["score"] == 0.8
+
+    assert numbers_in("Saves $660k (86%) in 2026, 3 steps, 4.7 months") == [660_000, 86]
+    facts = {"Annual net savings": "$660,392", "Payback": "4.7 months"}
+    assert grade_memo("We save $660k a year.", facts)["faithful"]
+    assert grade_memo("We save $660k a year and $1.2M over three years.", facts)["invented"] == [1_200_000]
+
+    reply = '{"objections": [{"assumption": "share_redeployed", "severity": "high"}, {"assumption": "setup_hours", "severity": "low"}]}'
+    assert grade_redteam(reply, "share_redeployed")["caught_first"]
+    assert grade_redteam(reply, "setup_hours")["caught"] is False          # low severity does not count
+
+
+def test_intake_finalize_converts_units_and_drops_ungrounded_numbers():
+    import json
+    from src.agents import finalize_intake
+    text = "Our 6 planners write 40 work orders a week; AI could save 2 hours per order. Cost is $55/hr."
+    reply = json.dumps({"use_case": "work orders",
+                        "volume": {"value": 40, "per": "week", "quote": "40 work orders a week"},
+                        "minutes_saved": {"value": 2, "unit": "hours", "quote": "save 2 hours per order"},
+                        "review_time": {"value": 5, "unit": "minutes", "quote": "5 minutes checking"},   # not in text
+                        "hourly_cost": {"value": 55, "quote": "$55/hr"},
+                        "people": {"value": 6, "quote": "6 planners"}})
+    out = json.loads(finalize_intake(reply, text))
+    assert out["tasks_per_year"] == 2080 and out["minutes_saved_per_task"] == 120
+    assert out["review_minutes_per_task"] is None                       # quote not found -> left blank
+    assert out["hourly_cost"] == 55 and out["people"] == 6
+
+
+def test_memo_finalize_fills_placeholders_from_facts():
+    from src.agents import finalize_memo
+    facts = {"First-year ROI": "71%"}
+    assert finalize_memo("ROI is {First-year ROI}.", facts) == "ROI is 71%."
+    assert "[unknown: Payback]" in finalize_memo("Payback in {Payback}.", facts)
+
+
+def test_redteam_checklist_and_code_owned_verdict():
+    import json
+    from src.agents import finalize_redteam_v3, plausibility_checks
+    cases = {c["id"]: c for c in json.load(open("agents/eval_cases.json"))["redteam"]}
+    assert plausibility_checks(cases["RT-CLEAN"]) == []                 # no false alarms on a sound case
+    for cid, case in cases.items():
+        if case["planted"]:
+            assert plausibility_checks(case)[0]["assumption"] == case["planted"], cid
+    reply = '{"objections": [{"assumption": "share_redeployed", "why": "w", "test": "t"}, {"assumption": "people", "why": "x", "test": "y"}]}'
+    out = json.loads(finalize_redteam_v3(reply, cases["RT-share_redeployed"]))
+    assert out["verdict"] == "send back" and out["explained"] == 1 and out["dropped"] == 1
+    assert json.loads(finalize_redteam_v3('{"objections": []}', cases["RT-CLEAN"]))["verdict"] == "approve"

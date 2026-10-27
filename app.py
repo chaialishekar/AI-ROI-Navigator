@@ -9,7 +9,11 @@ Tab 3  Readiness    - pilot-to-production readiness check
 Tab 4  Business case - one-page summary to share with finance
 Tab 5  Track value  - after go-live: forecast vs actual savings, adoption and drift
 Tab 6  GenAI pilot  - measured Bedrock pilot of an AI work-order writer, and its ROI across five cost categories
+Tab 7  Analyst agents - intake, memo and red-team agents on Bedrock, graded automatically (v1 vs v2 vs v3)
 """
+
+import json
+import os
 
 import numpy as np
 import pandas as pd
@@ -30,6 +34,9 @@ from src.readiness import ACTIONS, DIMENSIONS, verdict
 from src.genai import COST_LABELS, GenAIInputs
 from src.genai import evaluate as genai_evaluate
 from src.tracking import ADOPTION_FLOOR, COLUMNS, DRIFT_DROP, DRIFT_WINDOW, explain_gap, track, validate
+from src.agents import ASSUMPTIONS as AGENT_ASSUMPTIONS, INTAKE_FIELDS, run_live
+from src.agents import MODEL_ID as AGENT_MODEL_ID
+from agents.grade import scorecard
 from src.workorder import MODEL_ID, MODES, grade, parse, summary as pilot_summary
 from src.value import (
     ASSUMPTIONS,
@@ -65,8 +72,9 @@ st.caption(
     "scores are analyst assumptions you can edit."
 )
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
-    ["1 · Prioritize", "2 · Prove value", "3 · Readiness", "4 · Business case", "5 · Track value", "6 · GenAI pilot"]
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
+    ["1 · Prioritize", "2 · Prove value", "3 · Readiness", "4 · Business case", "5 · Track value", "6 · GenAI pilot",
+     "7 · Analyst agents"]
 )
 
 
@@ -763,3 +771,140 @@ with tab6:
     ))
     st.caption("Black tick = value of time saved. Training: 2 hours for 6 planners. Error rate = wrong-cause rate from "
                "the pilot × share that slips past review.")
+
+
+# ---------------------------------------------------------------- Tab 7
+@st.cache_data
+def load_agents() -> dict:
+    with open("agents/eval_cases.json") as f:
+        cases = json.load(f)
+    with open("agents/results.json") as f:
+        runs = json.load(f)
+    return {"cases": cases, "runs": runs, "scores": {v: scorecard(r, cases) for v, r in runs.items()}}
+
+
+def aws_ready() -> bool:
+    """Live mode only where AWS credentials exist (local use), so visitors cannot spend the owner's credits."""
+    try:
+        import boto3
+        return boto3.Session(profile_name=os.environ.get("AWS_PROFILE")).get_credentials() is not None
+    except Exception:
+        return False
+
+
+def agent_reply(version: str, case_id: str) -> str:
+    row = next(r for r in AGENTS["runs"][version] if r["id"] == case_id)
+    return row.get("final", row["reply"])
+
+
+def show_objections(reply: str):
+    d = parse(reply) or {}
+    esc = lambda t: md(str(t)).replace("*", "\\*")
+    for o in d.get("objections", []):
+        icon = {"high": "🔴", "medium": "🟠", "low": "⚪"}.get(o.get("severity"), "⚪")
+        line = f"{icon} **{esc(o.get('assumption'))}** ({o.get('severity', 'n/a')}): {esc(o.get('issue') or o.get('why') or '')}"
+        if o.get("issue") and o.get("why"):
+            line += f"  \n{esc(o['why'])}"
+        st.markdown(line)
+        if o.get("test"):
+            st.caption("30-day test: " + esc(o["test"]))
+    if not d.get("objections"):
+        st.caption("No objections.")
+    st.markdown(f"Verdict: **{d.get('verdict', 'n/a')}**")
+
+
+with tab7:
+    AGENTS = load_agents()
+    st.subheader("Can AI agents do the analyst's paperwork? Three agents, graded automatically")
+    st.write(
+        "Three small agents on Amazon Bedrock (Amazon Nova Lite) take on the analyst work around a business case: "
+        "**Intake** turns a manager's paragraph into calculator inputs, **Memo** writes the one-page CFO memo, and "
+        "**Red team** plays the skeptical CFO. Each is tested on cases with known answers and graded in code, "
+        "including business cases with a deliberately planted flaw."
+    )
+    sc = AGENTS["scores"]
+    col = lambda v: [
+        f"{sc[v]['intake_field_accuracy']:.0%}", f"{sc[v]['intake_invented_fields']}",
+        f"{sc[v]['memo_faithful']} of 2", f"{sc[v]['redteam_caught']} of {sc[v]['redteam_flaws']}",
+        f"{sc[v]['redteam_caught_first']} of {sc[v]['redteam_flaws']}", f"{sc[v]['redteam_clean_high']}",
+        f"${sc[v]['total_cost']:.4f}"]
+    st.markdown("**Scorecard** (Nova Lite, temperature 0, run in us-east-2)")
+    st.dataframe(pd.DataFrame({
+        "v1: the model does everything": col("v1"),
+        "v2: code converts and fills in numbers": col("v2"),
+        "v3: code checklist judges, model explains": col("v3"),
+    }, index=["Intake: fields right (8 descriptions)", "Intake: numbers invented when not stated",
+              "Memo: memos with no invented numbers", "Red team: planted flaw raised as high/medium",
+              "Red team: planted flaw listed first", "Red team: false 'high' alarms on the sound case",
+              "Cost of the whole eval run"]), width="stretch")
+    st.info(
+        "**What changed.** v1 wrote arithmetic like `300 * 52` inside its JSON, invented a $5,000 figure in a memo, and gave "
+        "nearly the same five objections to every case. **v2:** the model only quotes the numbers it was given and code "
+        "converts weeks to years and checks the quote is really in the text; the memo uses placeholders like "
+        "`{First-year ROI}` that code fills in. Intake and memo became exact. The red team still failed even when handed "
+        "the ratios: it called \"15 of 20 minutes saved\" impossible in every case. **v3:** a code checklist with one "
+        "plausibility rule per assumption decides what is wrong and how serious it is; the model writes the CFO's "
+        "explanation and a 30-day test. Same lesson as the pilot: code does numbers and checks, the model does language."
+    )
+    st.caption(
+        f"Model {AGENT_MODEL_ID}. Honest limits: the two held-out flaws (hourly cost $400, zero training) were caught "
+        f"by v3, but they were known when the checklist was written, so this is not a blind test. In v3 the model "
+        f"explained {sc['v3']['redteam_explained']} of {sc['v3']['redteam_flags']} flags; once it used the wrong "
+        "assumption name, and code showed the flag without an explanation instead of guessing."
+    )
+
+    cases = {k: {c["id"]: c for c in v} for k, v in AGENTS["cases"].items()}
+    with st.expander("Intake agent: paragraph in, calculator inputs out"):
+        pick = st.selectbox("Description", list(cases["intake"]), key="ag_intake",
+                            format_func=lambda c: f"{c}: {cases['intake'][c]['description'][:70]}…")
+        st.markdown(f"> {md(cases['intake'][pick]['description'])}")
+        exp = cases["intake"][pick]["expected"]
+        rows = []
+        for v in ("v1", "v2"):
+            d = parse(agent_reply(v, pick)) or {}
+            rows.append({f: d.get(f) for f in INTAKE_FIELDS})
+        st.dataframe(pd.DataFrame([rows[0], rows[1], {f: exp.get(f) for f in INTAKE_FIELDS}],
+                                  index=["v1", "v2", "Correct answer"]).astype(str).replace("None", "blank"),
+                     width="stretch")
+        st.caption("Blank means not stated; the right behaviour is to leave it blank and ask, not guess.")
+
+    with st.expander("Memo agent: the CFO memo"):
+        pick = st.selectbox("Business case", list(cases["memo"]), key="ag_memo")
+        m1, m2 = st.columns(2)
+        for c, v in ((m1, "v1"), (m2, "v2")):
+            g = next(r for r in sc[v]["rows"]["memo"] if r["id"] == pick)
+            c.markdown(f"**{v}** {'✅ every number traces to a fact' if g['faithful'] else '❌ invented: ' + ', '.join(f'{n:,.0f}' for n in g['invented'])}")
+            c.markdown(md(agent_reply(v, pick)).replace("## ", "#### "))
+
+    with st.expander("Red team agent: objections to a business case with a planted flaw"):
+        pick = st.selectbox("Case", list(cases["redteam"]), key="ag_rt",
+                            format_func=lambda c: "Sound case (nothing planted)" if not cases["redteam"][c]["planted"]
+                            else f"Planted flaw: {AGENT_ASSUMPTIONS[cases['redteam'][c]['planted']]}"
+                            + (" (held out)" if cases["redteam"][c].get("held_out") else ""))
+        r1, r2 = st.columns(2)
+        for c, v in ((r1, "v2"), (r2, "v3")):
+            with c:
+                st.markdown(f"**{v}**")
+                show_objections(agent_reply(v, pick))
+
+    st.divider()
+    st.markdown("**Try the intake agent live**")
+    if aws_ready():
+        text = st.text_area("Describe an AI use case in a few sentences", key="ag_live",
+                            placeholder="Our 5 buyers raise 400 purchase orders a month, 20 minutes each...")
+        if st.button("Extract inputs", key="ag_live_go", disabled=not text.strip()):
+            with st.spinner("Calling Amazon Nova Lite..."):
+                try:
+                    out = run_live("intake", {"description": text}, 3, profile=os.environ.get("AWS_PROFILE"))
+                    d = json.loads(out["final"])
+                    st.dataframe(pd.DataFrame([{f: d.get(f) for f in INTAKE_FIELDS}]).astype(str).replace("None", "blank"),
+                                 width="stretch", hide_index=True)
+                    missing = [f for f in INTAKE_FIELDS if d.get(f) is None]
+                    if missing:
+                        st.caption("Not stated, ask the manager: " + ", ".join(missing))
+                    st.caption(f"{out['input_tokens']} + {out['output_tokens']} tokens, {out['latency_ms']} ms")
+                except Exception as e:
+                    st.error(f"Bedrock call failed: {e}")
+    else:
+        st.caption("Live mode runs only on a machine with AWS credentials (set AWS_PROFILE), so this public demo "
+                   "shows saved results and cannot spend anyone's AWS credits.")

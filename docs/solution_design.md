@@ -136,6 +136,15 @@ Lenovo publicly describes Hybrid AI Advantage as covering the full AI lifecycle:
 | US-7.4 | As a maintenance manager, I want the AI's diagnosis to be reliable, so that technicians don't act on a wrong cause. | Diagnosis moved to a rule check; model only writes the work order; right cause on all real failures in the pilot. | Must ✅ |
 | US-7.5 | As an AI business analyst, I want to know the review time at which the assistant stops paying, so that I know what to measure in production. | Break-even review minutes per draft shown. | Should ✅ |
 
+#### Epic 8 · Analyst agents and evals (Implementation)
+| ID | User story | Acceptance criteria | Priority |
+|---|---|---|---|
+| US-8.1 | As an ops manager, I want to describe a use case in plain English and get calculator inputs, so that I don't need to know the ROI model. | Intake agent extracts tasks/year, minutes saved, review minutes, hourly cost and people; converts units in code; anything not stated stays blank with a question. | Must ✅ |
+| US-8.2 | As a CFO, I want a one-page memo where every number matches the business case, so that I can trust what I sign. | Memo agent writes with `{fact}` placeholders that code fills in; grader finds no number that isn't in the facts. | Must ✅ |
+| US-8.3 | As a CFO, I want a skeptical review that finds the weakest assumption, so that inflated business cases are sent back before approval. | Planted flaw in 6 of 6 cases raised as high/medium and listed first; no high-severity alarm on a sound case; each flag has a 30-day test. | Must ✅ |
+| US-8.4 | As an AI business analyst, I want every agent graded automatically on cases with known answers, so that prompt changes are measured, not judged by eye. | `python -m agents.grade` prints a v1 / v2 / v3 scorecard from saved runs; graders covered by unit tests. | Must ✅ |
+| US-8.5 | As the app owner, I want the public demo to show saved results and run live only where AWS credentials exist, so that visitors can't spend my credits. | Live intake only when an AWS profile is available; otherwise saved results with an explanation. | Should ✅ |
+
 ### 3.3 Non-functional requirements
 | Category | Requirement |
 |---|---|
@@ -172,6 +181,7 @@ Hosted on Streamlit Community Cloud (public link)
 | Readiness engine | Scores dimensions and applies verdict rules | `src/readiness.py` |
 | GenAI cost engine | Time saved minus five cost categories; cash vs capacity; break-even review time | `src/genai.py` |
 | Work-order pilot | Picks 30 alerts, builds prompts, rule-check diagnosis, grades drafts; runs on Amazon Bedrock (Nova Micro, us-east-2) | `src/workorder.py`, `pilot/` |
+| Analyst agents | Intake, memo and red-team prompts (v1-v3), code post-processing, plausibility checklist, graders; Amazon Nova Lite on Bedrock | `src/agents.py`, `agents/` |
 | Value tracking | Forecast vs actual savings, adoption and drift alerts, gap breakdown, simulated sample rollout | `src/tracking.py`, `data/sample_actuals.csv` |
 | User interface | Tabs, inputs, charts, summary | `app.py` |
 
@@ -219,6 +229,11 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Pilot v1 (model diagnoses and writes) | US-7.3 | 30 Bedrock calls, graded against true cause | ❌ 33% right cause (42% on real failures, 0 of 6 false alarms); $0.000038 per draft, 0.9 s |
 | Pilot v2 (rule check diagnoses, model writes) | US-7.4 | Same 30 alerts | ✅ 100% right cause on real failures (83% overall), diagnosis kept in 30/30 drafts; 4 drafts mention PC parts, so review stays |
 | Rule check matches the manual and every real failure in the pilot set | US-7.4 | Unit test | ✅ Passed |
+| Agents v1 (model does everything) | US-8.1–8.3 | 17 Bedrock calls (Nova Lite), graded in code | ❌ Intake 42% fields right (arithmetic inside JSON); 1 of 2 memos invented a number; red team caught 3 of 6 planted flaws |
+| Agents v2 (model quotes, code converts and fills in numbers) | US-8.1, US-8.2 | 19 calls, same graders | ✅ Intake 100%, nothing invented; 2 of 2 memos faithful. ❌ Red team still 2 of 6, even when given the ratios |
+| Agents v3 red team (code checklist judges, model explains) | US-8.3 | 9 calls | ✅ 6 of 6 planted flaws caught and listed first; 0 false alarms on the sound case; model explained 8 of 9 flags. Held-out flaws 2 of 2, but known when the checklist was written, so not a blind test |
+| Unit conversion, quote check, placeholder fill-in, checklist verdict | US-8.1–8.4 | Unit tests | ✅ Passed |
+| Live mode hidden without AWS credentials | US-8.5 | Manual test with credentials removed | ✅ Passed |
 
 ---
 

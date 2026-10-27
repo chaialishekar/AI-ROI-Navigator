@@ -1,0 +1,353 @@
+{
+  "intake": [
+    {
+      "id": "IN-1",
+      "description": "Our 4-person accounts payable team processes about 300 invoices a week. Each takes 10 minutes to key in; we think AI could cut 7 minutes. Clerks cost us $38 an hour loaded.",
+      "expected": {
+        "tasks_per_year": 15600,
+        "minutes_saved_per_task": 7,
+        "review_minutes_per_task": null,
+        "hourly_cost": 38,
+        "people": 4
+      }
+    },
+    {
+      "id": "IN-2",
+      "description": "Support team of 12 answers 1,500 tickets a month. Drafting a reply takes 8 minutes; AI drafts would save about 5 minutes, and agents would spend 1 minute checking each. Loaded cost $45/hour.",
+      "expected": {
+        "tasks_per_year": 18000,
+        "minutes_saved_per_task": 5,
+        "review_minutes_per_task": 1,
+        "hourly_cost": 45,
+        "people": 12
+      }
+    },
+    {
+      "id": "IN-3",
+      "description": "Our 6 maintenance planners write roughly 40 work orders a week, half an hour each, and an AI assistant could save 15 minutes per order. Planner cost is $55/hr.",
+      "expected": {
+        "tasks_per_year": 2080,
+        "minutes_saved_per_task": 15,
+        "review_minutes_per_task": null,
+        "hourly_cost": 55,
+        "people": 6
+      }
+    },
+    {
+      "id": "IN-4",
+      "description": "Sales ops: 3 analysts build 20 proposals a month at about 3 hours each. AI could save 2 hours per proposal but someone would need 30 minutes to review it. Analysts are $70 an hour.",
+      "expected": {
+        "tasks_per_year": 240,
+        "minutes_saved_per_task": 120,
+        "review_minutes_per_task": 30,
+        "hourly_cost": 70,
+        "people": 3
+      }
+    },
+    {
+      "id": "IN-5",
+      "description": "HR screens 5,000 resumes a year with two recruiters. Each takes 6 minutes; AI summaries might save 4 minutes.",
+      "expected": {
+        "tasks_per_year": 5000,
+        "minutes_saved_per_task": 4,
+        "review_minutes_per_task": null,
+        "hourly_cost": null,
+        "people": 2
+      }
+    },
+    {
+      "id": "IN-6",
+      "description": "Legal reviews 600 NDAs a year, 45 minutes each. An AI first pass saves 30 minutes, but attorneys must spend 10 minutes checking it. Blended cost is $120/hour for a team of 5.",
+      "expected": {
+        "tasks_per_year": 600,
+        "minutes_saved_per_task": 30,
+        "review_minutes_per_task": 10,
+        "hourly_cost": 120,
+        "people": 5
+      }
+    },
+    {
+      "id": "IN-7",
+      "description": "We want to use AI for marketing emails. Not sure about volumes yet.",
+      "expected": {
+        "tasks_per_year": null,
+        "minutes_saved_per_task": null,
+        "review_minutes_per_task": null,
+        "hourly_cost": null,
+        "people": null
+      }
+    },
+    {
+      "id": "IN-8",
+      "description": "Field service writes 250 visit reports a day across 50 technicians, 12 minutes each; AI built from voice notes saves 9 minutes per report. Technicians cost $60/hr loaded and work 250 days a year.",
+      "expected": {
+        "tasks_per_year": 62500,
+        "minutes_saved_per_task": 9,
+        "review_minutes_per_task": null,
+        "hourly_cost": 60,
+        "people": 50
+      }
+    }
+  ],
+  "memo": [
+    {
+      "id": "MEMO-PDM",
+      "title": "Predictive maintenance",
+      "context": "Manufacturing plant, model tested on 3,000 unseen records.",
+      "facts": {
+        "Use case": "Predictive maintenance on machining lines",
+        "Unplanned failures per year today": "40",
+        "Share of failures caught": "86%",
+        "Share of alerts that are real failures": "80%",
+        "Annual net savings": "$660,392",
+        "Annual net savings, 90% range": "$611,295 to $704,047",
+        "Annual net savings, low case": "$163,971",
+        "Payback": "4.7 months",
+        "Deployment cost": "$150,000",
+        "Biggest driver": "Cost of an unplanned failure ($25,000)",
+        "Readiness verdict": "Fix first: workflow fit and user trust score below 2.5 of 5"
+      }
+    },
+    {
+      "id": "MEMO-GENAI",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$27,500",
+        "Total first-year cost": "$16,093",
+        "First-year ROI": "71%",
+        "First-year cash ROI": "-15%"
+      }
+    }
+  ],
+  "redteam": [
+    {
+      "id": "RT-CLEAN",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": null,
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$27,500",
+        "Total first-year cost": "$16,093",
+        "First-year ROI": "71%",
+        "First-year cash ROI": "-15%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-review_minutes_per_task",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "review_minutes_per_task",
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "0",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$27,500",
+        "Total first-year cost": "$8,760",
+        "First-year ROI": "214%",
+        "First-year cash ROI": "57%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-share_redeployed",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "share_redeployed",
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "100%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$27,500",
+        "Total first-year cost": "$16,093",
+        "First-year ROI": "71%",
+        "First-year cash ROI": "71%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-minutes_saved_per_task",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "minutes_saved_per_task",
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "45",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$82,500",
+        "Total first-year cost": "$16,093",
+        "First-year ROI": "413%",
+        "First-year cash ROI": "156%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-tasks_per_year",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "tasks_per_year",
+      "facts": {
+        "Work orders per year": "200,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$2,750,000",
+        "Total first-year cost": "$1,247,001",
+        "First-year ROI": "121%",
+        "First-year cash ROI": "10%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-setup_hours",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "setup_hours",
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "0",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$27,500",
+        "Total first-year cost": "$13,093",
+        "First-year ROI": "110%",
+        "First-year cash ROI": "5%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-error_rate",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "error_rate",
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "0.0%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$27,500",
+        "Total first-year cost": "$10,993",
+        "First-year ROI": "150%",
+        "First-year cash ROI": "25%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-hourly_cost",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "hourly_cost",
+      "held_out": true,
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$400",
+        "Setup hours": "40",
+        "Training hours per person": "2",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$200,000",
+        "Total first-year cost": "$66,233",
+        "First-year ROI": "202%",
+        "First-year cash ROI": "51%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    },
+    {
+      "id": "RT-training_hours_per_person",
+      "title": "AI work-order assistant",
+      "context": "6 maintenance planners at one plant each write work orders that take about 20 minutes by hand. A 30-alert pilot found the AI's draft had the wrong cause in 17% of cases and some drafts mentioned computer parts, so every draft is reviewed. The tool must be connected to the plant's maintenance system.",
+      "planted": "training_hours_per_person",
+      "held_out": true,
+      "facts": {
+        "Work orders per year": "2,000",
+        "Planners using the tool": "6",
+        "Minutes saved per work order before review": "15",
+        "Review minutes per draft": "4",
+        "Loaded hourly cost": "$55",
+        "Setup hours": "40",
+        "Training hours per person": "0",
+        "Share of drafts with an error reaching the floor": "1.7%",
+        "Share of saved hours that becomes cash": "50%",
+        "Model cost per draft": "$0.00004",
+        "Value of time saved per year": "$27,500",
+        "Total first-year cost": "$15,433",
+        "First-year ROI": "78%",
+        "First-year cash ROI": "-11%"
+      },
+      "manual_minutes": 20,
+      "pilot_wrong_rate": 0.17
+    }
+  ]
+}

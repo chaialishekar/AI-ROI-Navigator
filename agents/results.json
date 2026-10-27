@@ -1,0 +1,541 @@
+{
+ "v1": [
+  {
+   "agent": "intake",
+   "id": "IN-1",
+   "reply": "```json\n{\n  \"use_case\": \"Accounts payable processing with AI\",\n  \"tasks_per_year\": 300 * 52,\n  \"minutes_saved_per_task\": 7,\n  \"review_minutes_per_task\": null,\n  \"hourly_cost\": 38,\n  \"people\": 4,\n  \"questions\": [\n    \"Are there any review minutes per task that the AI saves?\",\n    \"Is the hourly cost of $38 an hour loaded or un-loaded?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 254,
+   "output_tokens": 120,
+   "latency_ms": 1041
+  },
+  {
+   "agent": "intake",
+   "id": "IN-2",
+   "reply": "```json\n{\n  \"use_case\": \"Support team of 12 answers 1,500 tickets a month. Drafting a reply takes 8 minutes; AI drafts would save about 5 minutes, and agents would spend 1 minute checking each. Loaded cost $45/hour.\",\n  \"tasks_per_year\": 1500 * 12,\n  \"minutes_saved_per_task\": 5,\n  \"review_minutes_per_task\": 1,\n  \"hourly_cost\": 45,\n  \"people\": 12,\n  \"questions\": [\n    \"How many working days are there in a year?\",\n    \"What is the hourly cost for each person?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 260,
+   "output_tokens": 161,
+   "latency_ms": 1360
+  },
+  {
+   "agent": "intake",
+   "id": "IN-3",
+   "reply": "```json\n{\n  \"use_case\": \"Maintenance planners writing work orders with AI assistance\",\n  \"tasks_per_year\": 40 * 52,\n  \"minutes_saved_per_task\": 15,\n  \"review_minutes_per_task\": 30,\n  \"hourly_cost\": 55,\n  \"people\": 6,\n  \"questions\": [\n    \"Is the number of work orders per week consistent throughout the year?\",\n    \"Is the cost per hour for the planners consistent and does it include all associated costs?\",\n    \"Are there any additional costs or benefits not mentioned that should be considered?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 248,
+   "output_tokens": 142,
+   "latency_ms": 1237
+  },
+  {
+   "agent": "intake",
+   "id": "IN-4",
+   "reply": "```json\n{\n  \"use_case\": \"Sales ops\",\n  \"tasks_per_year\": 20 * 12,\n  \"minutes_saved_per_task\": 120,\n  \"review_minutes_per_task\": 30,\n  \"hourly_cost\": 70,\n  \"people\": 3,\n  \"questions\": [\n    \"Is the number of working days per week specified?\",\n    \"Is the hourly cost inclusive of all benefits and overheads?\",\n    \"Are there any additional costs or benefits not mentioned?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 254,
+   "output_tokens": 125,
+   "latency_ms": 868
+  },
+  {
+   "agent": "intake",
+   "id": "IN-5",
+   "reply": "```json\n{\n  \"use_case\": \"HR screens 5,000 resumes a year with two recruiters. Each takes 6 minutes; AI summaries might save 4 minutes.\",\n  \"tasks_per_year\": 5000,\n  \"minutes_saved_per_task\": 4,\n  \"review_minutes_per_task\": 6,\n  \"hourly_cost\": null,\n  \"people\": 2,\n  \"questions\": [\n    \"What is the hourly cost for each recruiter?\",\n    \"Are there any additional costs or benefits not mentioned?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 235,
+   "output_tokens": 129,
+   "latency_ms": 1002
+  },
+  {
+   "agent": "intake",
+   "id": "IN-6",
+   "reply": "```json\n{\n  \"use_case\": \"Legal reviews 600 NDAs a year, 45 minutes each. An AI first pass saves 30 minutes, but attorneys must spend 10 minutes checking it. Blended cost is $120/hour for a team of 5.\",\n  \"tasks_per_year\": 600,\n  \"minutes_saved_per_task\": 30,\n  \"review_minutes_per_task\": 10,\n  \"hourly_cost\": 120,\n  \"people\": 5,\n  \"questions\": [\n    \"Is the blended cost of $120/hour inclusive of all costs (e.g., salary, benefits, overhead)?\",\n    \"Are there any additional costs not included in the blended hourly cost?\",\n    \"Is the team of 5 people fully dedicated to this task, or are they shared with other tasks?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 260,
+   "output_tokens": 202,
+   "latency_ms": 1394
+  },
+  {
+   "agent": "intake",
+   "id": "IN-7",
+   "reply": "```json\n{\n  \"use_case\": \"Marketing emails\",\n  \"tasks_per_year\": null,\n  \"minutes_saved_per_task\": null,\n  \"review_minutes_per_task\": null,\n  \"hourly_cost\": null,\n  \"people\": null,\n  \"questions\": [\n    \"What is the estimated number of marketing emails sent per year?\",\n    \"How many minutes does the AI save per marketing email?\",\n    \"How many minutes does it take to review a marketing email?\",\n    \"What is the hourly cost of the employees involved?\",\n    \"How many people are involved in the marketing email process?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 221,
+   "output_tokens": 139,
+   "latency_ms": 1140
+  },
+  {
+   "agent": "intake",
+   "id": "IN-8",
+   "reply": "```json\n{\n  \"use_case\": \"Field service writes 250 visit reports a day across 50 technicians, 12 minutes each; AI built from voice notes saves 9 minutes per report. Technicians cost $60/hr loaded and work 250 days a year.\",\n  \"tasks_per_year\": 250 * 50 * 52,\n  \"minutes_saved_per_task\": 9,\n  \"review_minutes_per_task\": 12,\n  \"hourly_cost\": 60,\n  \"people\": 50,\n  \"questions\": [\n    \"Are the technicians' working days per year specified?\",\n    \"Is the hourly cost exclusive of benefits and overheads?\",\n    \"Is the number of people constant throughout the year?\"\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 260,
+   "output_tokens": 179,
+   "latency_ms": 1143
+  },
+  {
+   "agent": "memo",
+   "id": "MEMO-PDM",
+   "reply": "## Recommendation\n\nInvest in predictive maintenance for machining lines.\n\n## Value\n\n- Annual net savings: $660,392\n- Payback period: 4.7 months\n- Deployment cost: $150,000\n\n## Risks\n\n- Readiness verdict: Fix first: workflow fit and user trust score below 2.5 of 5\n\n## Next step\n\nAddress workflow fit and user trust issues before deployment.",
+   "stop_reason": "end_turn",
+   "input_tokens": 273,
+   "output_tokens": 92,
+   "latency_ms": 685
+  },
+  {
+   "agent": "memo",
+   "id": "MEMO-GENAI",
+   "reply": "## Recommendation\n\nInvest in the AI work-order assistant.\n\n## Value\n\n- **Time saved**: 15 minutes per work order, totaling 5,000 minutes annually.\n- **Value of time saved**: $27,500 per year.\n- **First-year ROI**: 71%.\n\n## Risks\n\n- **Error rate**: 17% of drafts have the wrong cause.\n- **Review time**: Each draft requires 4 minutes of review.\n- **Cash ROI**: -15% in the first year due to setup and training costs.\n\n## Next step\n\nProceed with the full rollout, considering additional training to reduce error rates and improve efficiency.",
+   "stop_reason": "end_turn",
+   "input_tokens": 334,
+   "output_tokens": 143,
+   "latency_ms": 1296
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-CLEAN",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The business case claims that 15 minutes are saved per work order before review, which seems high considering the AI's error rate of 17%.\",\n      \"test\": \"Conduct a shadow study where the AI drafts are compared to manual drafts for a sample of 50 work orders, measuring the actual time saved.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"The review time of 4 minutes per draft seems optimistic, especially since every draft is reviewed due to the high error rate.\",\n      \"test\": \"Time the review process for a sample of 20 drafts to verify the actual review time.\"\n    },\n    {\n      \"assumption\": \"error_rate\",\n      \"severity\": \"high\",\n      \"issue\": \"The 17% error rate in the 30-alert pilot is significantly higher than the 1.7% error rate reaching the floor. This discrepancy needs to be explained.\",\n      \"test\": \"Analyze the error rate over a longer period and with a larger sample size to confirm the 1.7% figure.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"medium\",\n      \"issue\": \"The assumption that 50% of the saved hours can be redeployed to generate cash is ambitious and may not be realistic.\",\n      \"test\": \"Interview the maintenance planners to understand the feasibility of redeploying their time and measure the actual redeployment rate over a month.\"\n    },\n    {\n      \"assumption\": \"value_of_time_saved_per_year\",\n      \"severity\": \"medium\",\n      \"issue\": \"The value of time saved per year is calculated at $27,500, which seems high considering the error rate and the need for review.\",\n      \"test\": \"Recalculate the value of time saved by considering the error rate and review time, and compare it to the current figure.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 451,
+   "output_tokens": 484,
+   "latency_ms": 3564
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-review_minutes_per_task",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_work_order_before_review\",\n      \"severity\": \"high\",\n      \"issue\": \"The claim that 15 minutes are saved per work order before review seems overly optimistic, especially considering the 17% error rate in the pilot.\",\n      \"test\": \"Conduct a more extensive pilot with a larger sample size to verify the actual time saved per work order before review.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"The business case assumes that there are 0 review minutes per draft, which is unrealistic given the 17% error rate.\",\n      \"test\": \"Monitor the actual review time during the pilot and adjust the business case accordingly.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"medium\",\n      \"issue\": \"The assumption that 50% of saved hours become cash is quite high and may not be realistic.\",\n      \"test\": \"Analyze the potential for redeploying the saved time into other productive tasks and adjust the business case.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"The business case assumes 2,000 work orders per year, which may be an overestimate.\",\n      \"test\": \"Verify the actual number of work orders per year with historical data.\"\n    },\n    {\n      \"assumption\": \"first_year_cash_ROI\",\n      \"severity\": \"low\",\n      \"issue\": \"The first-year cash ROI of 57% seems high and may not be realistic.\",\n      \"test\": \"Recalculate the cash ROI using more conservative assumptions and verify the results.\"\n    }\n  ],\n  \"verdict\": \"approve with conditions\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 451,
+   "output_tokens": 416,
+   "latency_ms": 2686
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-share_redeployed",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The business case assumes that 15 minutes are saved per work order before review, which seems optimistic given the 30-alert pilot found the AI's draft had the wrong cause in 17% of cases. This suggests that the AI may not be as efficient as claimed.\",\n      \"test\": \"Conduct a more extensive pilot with a larger sample size to accurately measure the time saved per work order before review, considering the error rate.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"The business case assumes that 4 minutes are spent reviewing each draft. This may be an underestimate, as the 30-alert pilot found that every draft is reviewed due to errors, which could increase the time spent on review.\",\n      \"test\": \"Monitor the actual time spent on reviewing drafts during the pilot to verify the assumed 4 minutes per draft.\"\n    },\n    {\n      \"assumption\": \"error_rate\",\n      \"severity\": \"medium\",\n      \"issue\": \"The business case assumes a 1.7% share of drafts with an error reaching the floor, which seems low considering the 17% error rate found in the 30-alert pilot. This could lead to an overstatement of the value.\",\n      \"test\": \"Track the error rate over a more extended period to ensure that the 1.7% figure is accurate and representative.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"low\",\n      \"issue\": \"The business case assumes that 100% of the saved hours become cash. This may be an overstatement, as some time may be spent on other tasks or may not directly translate to cash savings.\",\n      \"test\": \"Monitor the actual use of saved time to verify the assumed 100% share of saved hours that becomes cash.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"The business case assumes 2,000 work orders per year. This may be an overstatement if the actual number of work orders varies significantly.\",\n      \"test\": \"Verify the actual number of work orders per year by reviewing historical data.\"\n    }\n  ],\n  \"verdict\": \"approve with conditions\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 452,
+   "output_tokens": 543,
+   "latency_ms": 3042
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-minutes_saved_per_task",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The claim of 45 minutes saved per work order before review seems overstated. Given the 17% error rate in the pilot, it's likely that more time is spent correcting errors than is saved.\",\n      \"test\": \"Conduct a shadow study over 30 days to measure the actual time saved per work order before review, including time spent on corrections.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"The review time of 4 minutes per draft may be underestimated. The 17% error rate in the pilot suggests that the review process could be more time-consuming than assumed.\",\n      \"test\": \"Monitor the review process over 30 days to accurately measure the time spent reviewing each draft, including error correction.\"\n    },\n    {\n      \"assumption\": \"error_rate\",\n      \"severity\": \"medium\",\n      \"issue\": \"The 17% error rate in the pilot may not be representative of the ongoing performance of the AI tool. It's possible that the error rate could increase over time.\",\n      \"test\": \"Track the error rate over a 30-day period to ensure it remains at or below the pilot's 17%.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"low\",\n      \"issue\": \"The assumption that 50% of saved hours become cash may be optimistic. Not all saved time may translate directly into financial savings due to other operational constraints.\",\n      \"test\": \"Analyze the impact of saved time on the overall workflow over 30 days to determine the actual percentage of time that can be redeployed into cash-generating activities.\"\n    },\n    {\n      \"assumption\": \"value_of_time_saved_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"The calculated value of time saved per year ($82,500) may be overstated if the actual time saved is less than assumed or if not all saved time translates into cash.\",\n      \"test\": \"Recalculate the value of time saved based on the findings from the shadow study and the analysis of redeployed time over 30 days.\"\n    }\n  ],\n  \"verdict\": \"approve with conditions\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 453,
+   "output_tokens": 537,
+   "latency_ms": 3728
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-tasks_per_year",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The claimed 15 minutes saved per work order before review seems high, especially considering the 17% error rate in the pilot. This could be an overestimation.\",\n      \"test\": \"Conduct a more extensive pilot with a larger sample size and measure the actual time saved per work order before review.\"\n    },\n    {\n      \"assumption\": \"error_rate\",\n      \"severity\": \"high\",\n      \"issue\": \"The 17% error rate in the pilot is significantly higher than the 1.7% error rate reaching the floor. This discrepancy needs to be explained and justified.\",\n      \"test\": \"Analyze the root causes of the errors in the pilot and implement measures to reduce the error rate before full deployment.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"medium\",\n      \"issue\": \"The assumption that 50% of the saved hours become cash is optimistic. It may be difficult to redeploy all the saved time into billable activities.\",\n      \"test\": \"Track the actual redeployment of saved time over the first few months of deployment and compare it to the assumption.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"The 40 setup hours seem high for integrating the tool with the plant's maintenance system. This could be an overestimation.\",\n      \"test\": \"Consult with IT and the maintenance system vendor to get a more accurate estimate of the setup hours required.\"\n    },\n    {\n      \"assumption\": \"value_of_time_saved_per_year\",\n      \"severity\": \"medium\",\n      \"issue\": \"The calculated value of time saved per year ($2,750,000) seems high, especially considering the error rate and the need for review. This could be an overstatement.\",\n      \"test\": \"Recalculate the value of time saved per year using a more conservative estimate of the time saved and the error rate.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 460,
+   "output_tokens": 483,
+   "latency_ms": 3466
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-setup_hours",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The business case assumes that 15 minutes are saved per work order before review, which seems high considering the 17% error rate in the pilot. This could overstate the value.\",\n      \"test\": \"Conduct a more extensive pilot with a larger sample size to verify the actual time saved per work order before review.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"medium\",\n      \"issue\": \"The business case assumes that 50% of the saved hours can be redeployed into cash-generating activities. This may be optimistic, as some time might be needed for error correction and additional tasks.\",\n      \"test\": \"Track the actual time spent on error correction and other tasks in the first month of implementation to verify the share of redeployed hours.\"\n    },\n    {\n      \"assumption\": \"error_rate\",\n      \"severity\": \"medium\",\n      \"issue\": \"The business case assumes a 17% error rate in the pilot, which is relatively high. This could lead to overestimating the time saved and understating the review time.\",\n      \"test\": \"Monitor the error rate in the first month of implementation to verify the assumption.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"The business case assumes 2,000 work orders per year, which might be an overestimate if the plant's workload fluctuates.\",\n      \"test\": \"Review the historical data on work orders to verify the annual number of tasks.\"\n    },\n    {\n      \"assumption\": \"model_cost_per_task\",\n      \"severity\": \"low\",\n      \"issue\": \"The business case assumes a model cost of $0.00004 per task, which might be an underestimate if the actual cost of running the AI model is higher.\",\n      \"test\": \"Verify the actual cost of running the AI model in the first month of implementation.\"\n    }\n  ],\n  \"verdict\": \"approve with conditions\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 450,
+   "output_tokens": 481,
+   "latency_ms": 3211
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-error_rate",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The assumption that 15 minutes are saved per work order before review seems high, especially considering the 17% error rate in the pilot. This could overstate the value.\",\n      \"test\": \"Conduct a more extensive pilot with a larger sample size to verify the actual time saved per work order before review.\"\n    },\n    {\n      \"assumption\": \"error_rate\",\n      \"severity\": \"medium\",\n      \"issue\": \"The 17% error rate in the pilot is concerning. If this persists, it could negate the time savings and increase costs.\",\n      \"test\": \"Monitor the error rate over a 30-day period with a larger sample size to confirm the error rate and its impact on the process.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"medium\",\n      \"issue\": \"The assumption that 50% of the saved hours become cash is optimistic. It may be difficult to redeploy the saved time into billable activities.\",\n      \"test\": \"Track the redeployment of saved time over a 30-day period to verify the percentage of time that can be converted into cash.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"low\",\n      \"issue\": \"The setup hours of 40 may be an overestimate. It could be more realistic to assume fewer hours are needed for setup.\",\n      \"test\": \"Document the actual setup hours required during the pilot to verify the assumption.\"\n    },\n    {\n      \"assumption\": \"first_year_cash_ROI\",\n      \"severity\": \"low\",\n      \"issue\": \"The first-year cash ROI of 25% seems optimistic given the potential issues with error rates and redeploying saved time.\",\n      \"test\": \"Recalculate the first-year cash ROI using more conservative estimates for error rates and redeployed time.\"\n    }\n  ],\n  \"verdict\": \"approve with conditions\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 452,
+   "output_tokens": 462,
+   "latency_ms": 3440
+  }
+ ],
+ "v2": [
+  {
+   "agent": "intake",
+   "id": "IN-1",
+   "reply": "```json\n{\n  \"use_case\": \"accounts payable\",\n  \"volume\": {\n    \"value\": 300,\n    \"per\": \"week\",\n    \"quote\": \"processes about 300 invoices a week\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 7,\n    \"unit\": \"minutes\",\n    \"quote\": \"we think AI could cut 7 minutes\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": 38,\n    \"quote\": \"Clerks cost us $38 an hour loaded\"\n  },\n  \"people\": {\n    \"value\": 4,\n    \"quote\": \"Our 4-person accounts payable team\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 398,
+   "output_tokens": 209,
+   "latency_ms": 1102,
+   "final": "{\"use_case\": \"accounts payable\", \"tasks_per_year\": 15600, \"minutes_saved_per_task\": 7, \"review_minutes_per_task\": null, \"hourly_cost\": 38, \"people\": 4, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-2",
+   "reply": "```json\n{\n  \"use_case\": \"Support team handling tickets\",\n  \"volume\": {\n    \"value\": 1500,\n    \"per\": \"month\",\n    \"quote\": \"answers 1,500 tickets a month\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 5,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI drafts would save about 5 minutes\"\n  },\n  \"review_time\": {\n    \"value\": 1,\n    \"unit\": \"minutes\",\n    \"quote\": \"agents would spend 1 minute checking each\"\n  },\n  \"hourly_cost\": {\n    \"value\": 45,\n    \"quote\": \"Loaded cost $45/hour\"\n  },\n  \"people\": {\n    \"value\": 12,\n    \"quote\": \"Support team of 12\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 404,
+   "output_tokens": 218,
+   "latency_ms": 1304,
+   "final": "{\"use_case\": \"Support team handling tickets\", \"tasks_per_year\": 18000, \"minutes_saved_per_task\": 5, \"review_minutes_per_task\": 1, \"hourly_cost\": 45, \"people\": 12, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-3",
+   "reply": "```json\n{\n  \"use_case\": \"maintenance planning\",\n  \"volume\": {\n    \"value\": 40,\n    \"per\": \"week\",\n    \"quote\": \"write roughly 40 work orders a week\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 15,\n    \"unit\": \"minutes\",\n    \"quote\": \"an AI assistant could save 15 minutes per order\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": 55,\n    \"quote\": \"Planner cost is $55/hr\"\n  },\n  \"people\": {\n    \"value\": 6,\n    \"quote\": \"Our 6 maintenance planners\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 392,
+   "output_tokens": 206,
+   "latency_ms": 1190,
+   "final": "{\"use_case\": \"maintenance planning\", \"tasks_per_year\": 2080, \"minutes_saved_per_task\": 15, \"review_minutes_per_task\": null, \"hourly_cost\": 55, \"people\": 6, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-4",
+   "reply": "```json\n{\n  \"use_case\": \"Sales ops\",\n  \"volume\": {\n    \"value\": 20,\n    \"per\": \"month\",\n    \"quote\": \"3 analysts build 20 proposals a month\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 120,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI could save 2 hours per proposal\"\n  },\n  \"review_time\": {\n    \"value\": 30,\n    \"unit\": \"minutes\",\n    \"quote\": \"someone would need 30 minutes to review it\"\n  },\n  \"hourly_cost\": {\n    \"value\": 70,\n    \"quote\": \"Analysts are $70 an hour\"\n  },\n  \"people\": {\n    \"value\": 3,\n    \"quote\": \"3 analysts\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 398,
+   "output_tokens": 213,
+   "latency_ms": 1463,
+   "final": "{\"use_case\": \"Sales ops\", \"tasks_per_year\": 240, \"minutes_saved_per_task\": 120, \"review_minutes_per_task\": 30, \"hourly_cost\": 70, \"people\": 3, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-5",
+   "reply": "```json\n{\n  \"use_case\": \"HR screens resumes\",\n  \"volume\": {\n    \"value\": 5000,\n    \"per\": \"year\",\n    \"quote\": \"HR screens 5,000 resumes a year\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 4,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI summaries might save 4 minutes\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"people\": {\n    \"value\": 2,\n    \"quote\": \"with two recruiters\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 379,
+   "output_tokens": 193,
+   "latency_ms": 1269,
+   "final": "{\"use_case\": \"HR screens resumes\", \"tasks_per_year\": 5000, \"minutes_saved_per_task\": 4, \"review_minutes_per_task\": null, \"hourly_cost\": null, \"people\": 2, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-6",
+   "reply": "```json\n{\n  \"use_case\": \"Legal reviews\",\n  \"volume\": {\n    \"value\": 600,\n    \"per\": \"year\",\n    \"quote\": \"Legal reviews 600 NDAs a year\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 30,\n    \"unit\": \"minutes\",\n    \"quote\": \"An AI first pass saves 30 minutes\"\n  },\n  \"review_time\": {\n    \"value\": 10,\n    \"unit\": \"minutes\",\n    \"quote\": \"attorneys must spend 10 minutes checking it\"\n  },\n  \"hourly_cost\": {\n    \"value\": 120,\n    \"quote\": \"Blended cost is $120/hour\"\n  },\n  \"people\": {\n    \"value\": 5,\n    \"quote\": \"for a team of 5\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 404,
+   "output_tokens": 222,
+   "latency_ms": 1022,
+   "final": "{\"use_case\": \"Legal reviews\", \"tasks_per_year\": 600, \"minutes_saved_per_task\": 30, \"review_minutes_per_task\": 10, \"hourly_cost\": 120, \"people\": 5, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-7",
+   "reply": "```json\n{\n  \"use_case\": \"marketing emails\",\n  \"volume\": {\n    \"value\": null,\n    \"per\": null,\n    \"quote\": null\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"people\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"questions\": [\"Not sure about volumes yet.\"]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 365,
+   "output_tokens": 169,
+   "latency_ms": 1085,
+   "final": "{\"use_case\": \"marketing emails\", \"tasks_per_year\": null, \"minutes_saved_per_task\": null, \"review_minutes_per_task\": null, \"hourly_cost\": null, \"people\": null, \"questions\": [\"Not sure about volumes yet.\"]}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-8",
+   "reply": "```json\n{\n  \"use_case\": \"Field service\",\n  \"volume\": {\n    \"value\": 250,\n    \"per\": \"day\",\n    \"quote\": \"250 visit reports a day\"\n  },\n  \"working_days\": {\n    \"value\": 250,\n    \"quote\": \"work 250 days a year\"\n  },\n  \"minutes_saved\": {\n    \"value\": 9,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI built from voice notes saves 9 minutes per report\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": 60,\n    \"quote\": \"Technicians cost $60/hr loaded\"\n  },\n  \"people\": {\n    \"value\": 50,\n    \"quote\": \"across 50 technicians\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 404,
+   "output_tokens": 217,
+   "latency_ms": 1211,
+   "final": "{\"use_case\": \"Field service\", \"tasks_per_year\": 62500, \"minutes_saved_per_task\": 9, \"review_minutes_per_task\": null, \"hourly_cost\": 60, \"people\": 50, \"questions\": []}"
+  },
+  {
+   "agent": "memo",
+   "id": "MEMO-PDM",
+   "reply": "## Recommendation\n\nInvest in predictive maintenance for machining lines, conditional on achieving a workflow fit and user trust score of at least 2.5 out of 5.\n\n## Value\n\nThe model, tested on 3,000 unseen records, shows a significant reduction in unplanned failures per year from {Unplanned failures per year today} to an estimated {Share of failures caught}. This translates to an annual net savings of ${Annual net savings}, with a 90% confidence range of ${Annual net savings, 90% range}. The deployment cost of ${Deployment cost} is expected to be recovered in {Payback}. The biggest driver of savings is the cost of an unplanned failure, currently at ${Biggest driver}.\n\n## Risks\n\nThe cash ROI is negative if the annual net savings fall below {Annual net savings, low case}. This risk is mitigated by ensuring the model's workflow fit and user trust score meets the readiness verdict.\n\n## Next step\n\nAddress the readiness verdict by improving workflow fit and user trust score. Once achieved, proceed with deployment to realize the projected savings and ROI.",
+   "stop_reason": "end_turn",
+   "input_tokens": 312,
+   "output_tokens": 229,
+   "latency_ms": 1887,
+   "final": "## Recommendation\n\nInvest in predictive maintenance for machining lines, conditional on achieving a workflow fit and user trust score of at least 2.5 out of 5.\n\n## Value\n\nThe model, tested on 3,000 unseen records, shows a significant reduction in unplanned failures per year from 40 to an estimated 86%. This translates to an annual net savings of $$660,392, with a 90% confidence range of $$611,295 to $704,047. The deployment cost of $$150,000 is expected to be recovered in 4.7 months. The biggest driver of savings is the cost of an unplanned failure, currently at $Cost of an unplanned failure ($25,000).\n\n## Risks\n\nThe cash ROI is negative if the annual net savings fall below $163,971. This risk is mitigated by ensuring the model's workflow fit and user trust score meets the readiness verdict.\n\n## Next step\n\nAddress the readiness verdict by improving workflow fit and user trust score. Once achieved, proceed with deployment to realize the projected savings and ROI."
+  },
+  {
+   "agent": "memo",
+   "id": "MEMO-GENAI",
+   "reply": "## Recommendation\n\nInvest in the AI work-order assistant, conditional on addressing the error rate.\n\n## Value\n\nThe AI work-order assistant can save {Value of time saved per year} per year, with each planner saving {Minutes saved per work order before review} minutes per work order before review and spending {Review minutes per draft} minutes reviewing each draft. The total first-year cost is {Total first-year cost}, and the first-year ROI is {First-year ROI}. However, the first-year cash ROI is negative at {First-year cash ROI}.\n\n## Risks\n\nThe AI's draft has the wrong cause in 17% of cases, and 1.7% of drafts with errors reach the floor. This error rate could lead to costly mistakes and negatively impact the plant's operations.\n\n## Next step\n\nTo proceed with the investment, we recommend addressing the error rate through additional training, model refinement, or other measures. Once the error rate is reduced, the investment is likely to yield a positive cash ROI.",
+   "stop_reason": "end_turn",
+   "input_tokens": 373,
+   "output_tokens": 217,
+   "latency_ms": 1910,
+   "final": "## Recommendation\n\nInvest in the AI work-order assistant, conditional on addressing the error rate.\n\n## Value\n\nThe AI work-order assistant can save $27,500 per year, with each planner saving 15 minutes per work order before review and spending 4 minutes reviewing each draft. The total first-year cost is $16,093, and the first-year ROI is 71%. However, the first-year cash ROI is negative at -15%.\n\n## Risks\n\nThe AI's draft has the wrong cause in 17% of cases, and 1.7% of drafts with errors reach the floor. This error rate could lead to costly mistakes and negatively impact the plant's operations.\n\n## Next step\n\nTo proceed with the investment, we recommend addressing the error rate through additional training, model refinement, or other measures. Once the error rate is reduced, the investment is likely to yield a positive cash ROI."
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-CLEAN",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The reported minutes saved per work order before review (15 minutes) is unrealistically high, as it exceeds the manual task time (20 minutes) by 75%.\",\n      \"test\": \"Verify the actual time savings by conducting a controlled experiment with the AI tool over 30 days, comparing the time taken with and without the tool.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"The review time per draft (4 minutes) is 27% of the time saved, which seems low considering the 17% error rate from the pilot.\",\n      \"test\": \"Monitor the review process over 30 days to ensure the review time is accurate and accounts for the complexity of error correction.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"The setup hours (40) for a tool that must be connected to the plant's maintenance system seems high.\",\n      \"test\": \"Review the setup process and confirm the necessity of 40 hours by consulting with IT and the maintenance system provider.\"\n    },\n    {\n      \"assumption\": \"first_year_cash_ROI\",\n      \"severity\": \"high\",\n      \"issue\": \"The first-year cash ROI is -15%, which contradicts the positive first-year ROI of 71%.\",\n      \"test\": \"Recalculate the cash ROI by verifying the share of saved hours that becomes cash (50%) and the value of time saved per year ($27,500).\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"The work orders per planner per working day (1.3) seems low considering the total work orders per year (2,000) and the number of planners (6).\",\n      \"test\": \"Verify the work orders per planner per working day by reviewing the actual workload and distribution of tasks among planners.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 618,
+   "output_tokens": 496,
+   "latency_ms": 3148,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"The reported minutes saved per work order before review (15 minutes) is unrealistically high, as it exceeds the manual task time (20 minutes) by 75%.\", \"test\": \"Verify the actual time savings by conducting a controlled experiment with the AI tool over 30 days, comparing the time taken with and without the tool.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"The review time per draft (4 minutes) is 27% of the time saved, which seems low considering the 17% error rate from the pilot.\", \"test\": \"Monitor the review process over 30 days to ensure the review time is accurate and accounts for the complexity of error correction.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"The setup hours (40) for a tool that must be connected to the plant's maintenance system seems high.\", \"test\": \"Review the setup process and confirm the necessity of 40 hours by consulting with IT and the maintenance system provider.\"}, {\"assumption\": \"tasks_per_year\", \"severity\": \"low\", \"issue\": \"The work orders per planner per working day (1.3) seems low considering the total work orders per year (2,000) and the number of planners (6).\", \"test\": \"Verify the work orders per planner per working day by reviewing the actual workload and distribution of tasks among planners.\"}], \"verdict\": \"send back\", \"dropped\": 1}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-review_minutes_per_task",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The reported minutes saved per work order before review (15 minutes) is unrealistic as it exceeds the manual task time (20 minutes).\",\n      \"test\": \"Verify the actual time saved by the AI tool in a controlled environment over a 30-day period.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"The review minutes per draft is reported as 0, which is implausible given that every draft is reviewed and there is a 17% error rate in the pilot.\",\n      \"test\": \"Monitor the review time for a sample of drafts over a 30-day period to ensure the review time is accurately captured.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"medium\",\n      \"issue\": \"The work orders per planner per working day (1.3) is low, suggesting that the task volume may not be sufficient to justify the investment.\",\n      \"test\": \"Review the actual workload of the planners over a 30-day period to confirm the task volume.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"The setup hours (40) for a tool that must be connected to the maintenance system seems high and may not be realistic.\",\n      \"test\": \"Verify the actual setup time required for the tool over a 30-day period.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"low\",\n      \"issue\": \"The share of saved time counted as cash (50%) may be optimistic, as not all saved time translates directly into cash savings.\",\n      \"test\": \"Analyze the actual redeployment of saved time into other productive activities over a 30-day period.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 617,
+   "output_tokens": 457,
+   "latency_ms": 2495,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"The reported minutes saved per work order before review (15 minutes) is unrealistic as it exceeds the manual task time (20 minutes).\", \"test\": \"Verify the actual time saved by the AI tool in a controlled environment over a 30-day period.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"high\", \"issue\": \"The review minutes per draft is reported as 0, which is implausible given that every draft is reviewed and there is a 17% error rate in the pilot.\", \"test\": \"Monitor the review time for a sample of drafts over a 30-day period to ensure the review time is accurately captured.\"}, {\"assumption\": \"tasks_per_year\", \"severity\": \"medium\", \"issue\": \"The work orders per planner per working day (1.3) is low, suggesting that the task volume may not be sufficient to justify the investment.\", \"test\": \"Review the actual workload of the planners over a 30-day period to confirm the task volume.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"The setup hours (40) for a tool that must be connected to the maintenance system seems high and may not be realistic.\", \"test\": \"Verify the actual setup time required for the tool over a 30-day period.\"}, {\"assumption\": \"share_redeployed\", \"severity\": \"low\", \"issue\": \"The share of saved time counted as cash (50%) may be optimistic, as not all saved time translates directly into cash savings.\", \"test\": \"Analyze the actual redeployment of saved time into other productive activities over a 30-day period.\"}], \"verdict\": \"send back\", \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-share_redeployed",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"Minutes saved per work order before review (15 minutes) is 75% of the manual task time (20 minutes), which seems unrealistically high.\",\n      \"test\": \"Conduct a more detailed analysis of the AI tool's performance in a controlled environment to verify the time savings.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"Review time per draft (4 minutes) is 27% of the time saved (15 minutes), which seems low given the error rate.\",\n      \"test\": \"Monitor the review process for a sample of drafts to ensure the review time is accurate and accounts for potential errors.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"Setup hours (40) for a tool that must be connected to the maintenance system seems high.\",\n      \"test\": \"Verify the setup hours by consulting with IT and the maintenance system provider to ensure the estimate is accurate.\"\n    },\n    {\n      \"assumption\": \"first_year_cash_ROI\",\n      \"severity\": \"medium\",\n      \"issue\": \"First-year cash ROI (71%) seems very high and may not account for all potential costs and risks.\",\n      \"test\": \"Review the ROI calculation to ensure it includes all relevant costs, such as ongoing maintenance and potential downtime.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"Work orders per planner per working day (1.3) seems low considering the total work orders per year (2,000).\",\n      \"test\": \"Verify the number of work orders per planner per working day by reviewing historical data and planner schedules.\"\n    }\n  ],\n  \"verdict\": \"approve with conditions\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 620,
+   "output_tokens": 442,
+   "latency_ms": 2472,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Minutes saved per work order before review (15 minutes) is 75% of the manual task time (20 minutes), which seems unrealistically high.\", \"test\": \"Conduct a more detailed analysis of the AI tool's performance in a controlled environment to verify the time savings.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"Review time per draft (4 minutes) is 27% of the time saved (15 minutes), which seems low given the error rate.\", \"test\": \"Monitor the review process for a sample of drafts to ensure the review time is accurate and accounts for potential errors.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"Setup hours (40) for a tool that must be connected to the maintenance system seems high.\", \"test\": \"Verify the setup hours by consulting with IT and the maintenance system provider to ensure the estimate is accurate.\"}, {\"assumption\": \"tasks_per_year\", \"severity\": \"low\", \"issue\": \"Work orders per planner per working day (1.3) seems low considering the total work orders per year (2,000).\", \"test\": \"Verify the number of work orders per planner per working day by reviewing historical data and planner schedules.\"}], \"verdict\": \"approve with conditions\", \"dropped\": 1}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-minutes_saved_per_task",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"Minutes saved per work order before review is 225% of the manual task time, which is implausible.\",\n      \"test\": \"Verify the actual time saved per task in a controlled environment over the next 30 days.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"Setup hours for a tool that must be connected to the maintenance system is 40, which seems high.\",\n      \"test\": \"Review the setup process and estimate the actual time required over the next 30 days.\"\n    },\n    {\n      \"assumption\": \"errors_reaching_the_floor_vs_wrong_drafts_in_the_pilot\",\n      \"severity\": \"medium\",\n      \"issue\": \"Errors reaching the floor (1.7%) vs wrong drafts in the pilot (17%) is a significant drop, which may not be realistic.\",\n      \"test\": \"Monitor the error rates in the first month of deployment to verify the error rate.\"\n    },\n    {\n      \"assumption\": \"value_of_time_saved_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"The value of time saved per year is $82,500, which seems high given the context.\",\n      \"test\": \"Recalculate the value of time saved using a more conservative hourly cost over the next 30 days.\"\n    },\n    {\n      \"assumption\": \"first_year_cash_ROI\",\n      \"severity\": \"low\",\n      \"issue\": \"First-year cash ROI is 156%, which seems optimistic given the error rate and review time.\",\n      \"test\": \"Reassess the cash ROI by adjusting for the actual error rate and review time over the next 30 days.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 620,
+   "output_tokens": 439,
+   "latency_ms": 1846,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Minutes saved per work order before review is 225% of the manual task time, which is implausible.\", \"test\": \"Verify the actual time saved per task in a controlled environment over the next 30 days.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"Setup hours for a tool that must be connected to the maintenance system is 40, which seems high.\", \"test\": \"Review the setup process and estimate the actual time required over the next 30 days.\"}], \"verdict\": \"send back\", \"dropped\": 3}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-tasks_per_year",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"Minutes saved per work order before review is 75% of the manual task time, which is unrealistically high.\",\n      \"test\": \"Conduct a more detailed analysis of the AI's performance in a controlled environment to verify the time savings.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"Review time as a share of time saved is 27%, which seems low considering the error rate.\",\n      \"test\": \"Monitor the review process for a few weeks to ensure the review time is accurate and consistent.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"Setup hours for a tool that must be connected to the maintenance system is 40, which is high.\",\n      \"test\": \"Verify the necessity of these setup hours by consulting with IT and the maintenance system provider.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"Work orders per planner per working day is 133.3, which is high and may not be sustainable.\",\n      \"test\": \"Review the current workload and capacity of the planners to ensure this number is realistic.\"\n    },\n    {\n      \"assumption\": \"model_cost_per_task\",\n      \"severity\": \"low\",\n      \"issue\": \"Model cost per draft is $0.00004, which seems very low and may not cover the actual costs.\",\n      \"test\": \"Re-evaluate the model cost to ensure it includes all necessary expenses and is realistic.\"\n    }\n  ],\n  \"verdict\": \"approve with conditions\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 629,
+   "output_tokens": 410,
+   "latency_ms": 2446,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Minutes saved per work order before review is 75% of the manual task time, which is unrealistically high.\", \"test\": \"Conduct a more detailed analysis of the AI's performance in a controlled environment to verify the time savings.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"Review time as a share of time saved is 27%, which seems low considering the error rate.\", \"test\": \"Monitor the review process for a few weeks to ensure the review time is accurate and consistent.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"Setup hours for a tool that must be connected to the maintenance system is 40, which is high.\", \"test\": \"Verify the necessity of these setup hours by consulting with IT and the maintenance system provider.\"}, {\"assumption\": \"tasks_per_year\", \"severity\": \"low\", \"issue\": \"Work orders per planner per working day is 133.3, which is high and may not be sustainable.\", \"test\": \"Review the current workload and capacity of the planners to ensure this number is realistic.\"}, {\"assumption\": \"model_cost_per_task\", \"severity\": \"low\", \"issue\": \"Model cost per draft is $0.00004, which seems very low and may not cover the actual costs.\", \"test\": \"Re-evaluate the model cost to ensure it includes all necessary expenses and is realistic.\"}], \"verdict\": \"approve with conditions\", \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-setup_hours",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"Minutes saved per work order before review (15 minutes) is unrealistically high, as it suggests the AI is saving more time than the manual task takes (20 minutes).\",\n      \"test\": \"Conduct a more detailed analysis of the AI's performance in a controlled environment to verify the time savings.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"Review time per draft (4 minutes) is relatively high, considering the manual task takes 20 minutes. This implies a significant review effort.\",\n      \"test\": \"Monitor the review process closely during the pilot phase to ensure the review time is accurate and to identify any potential inefficiencies.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"medium\",\n      \"issue\": \"Work orders per planner per working day (1.3) is low, suggesting each planner writes fewer than two work orders per day, which may not be realistic.\",\n      \"test\": \"Verify the actual workload of the planners by reviewing their schedules and work logs over a month.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"low\",\n      \"issue\": \"Setup hours (0) for a tool that must be connected to the maintenance system seems implausible, as some setup time is usually required.\",\n      \"test\": \"Estimate the actual setup hours needed by consulting with IT and the maintenance system provider.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"low\",\n      \"issue\": \"Share of saved hours that becomes cash (50%) seems low, as typically more time saved could be converted into cash.\",\n      \"test\": \"Re-evaluate the methodology for calculating the share of saved hours that becomes cash to ensure it is realistic.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 616,
+   "output_tokens": 451,
+   "latency_ms": 3278,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Minutes saved per work order before review (15 minutes) is unrealistically high, as it suggests the AI is saving more time than the manual task takes (20 minutes).\", \"test\": \"Conduct a more detailed analysis of the AI's performance in a controlled environment to verify the time savings.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"Review time per draft (4 minutes) is relatively high, considering the manual task takes 20 minutes. This implies a significant review effort.\", \"test\": \"Monitor the review process closely during the pilot phase to ensure the review time is accurate and to identify any potential inefficiencies.\"}, {\"assumption\": \"tasks_per_year\", \"severity\": \"medium\", \"issue\": \"Work orders per planner per working day (1.3) is low, suggesting each planner writes fewer than two work orders per day, which may not be realistic.\", \"test\": \"Verify the actual workload of the planners by reviewing their schedules and work logs over a month.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"low\", \"issue\": \"Setup hours (0) for a tool that must be connected to the maintenance system seems implausible, as some setup time is usually required.\", \"test\": \"Estimate the actual setup hours needed by consulting with IT and the maintenance system provider.\"}, {\"assumption\": \"share_redeployed\", \"severity\": \"low\", \"issue\": \"Share of saved hours that becomes cash (50%) seems low, as typically more time saved could be converted into cash.\", \"test\": \"Re-evaluate the methodology for calculating the share of saved hours that becomes cash to ensure it is realistic.\"}], \"verdict\": \"send back\", \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-error_rate",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"Minutes saved per work order before review (15 minutes) is unrealistically high, as it exceeds the manual task time (20 minutes).\",\n      \"test\": \"Verify the actual time saved by the AI tool in a controlled environment over a 30-day period.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"Review time per draft (4 minutes) is relatively high, especially considering the 17% error rate from the pilot.\",\n      \"test\": \"Monitor the review time for a sample of work orders over a month to ensure the 4-minute estimate is accurate.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"Setup hours (40) seem high for a tool that must be connected to the maintenance system.\",\n      \"test\": \"Assess the actual setup time required during the pilot and compare it to the 40-hour estimate.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"Work orders per planner per working day (1.3) is low, which might not be realistic considering the total work orders per year (2,000).\",\n      \"test\": \"Verify the actual number of work orders each planner completes in a typical working month.\"\n    },\n    {\n      \"assumption\": \"first_year_cash_ROI\",\n      \"severity\": \"low\",\n      \"issue\": \"First-year cash ROI (25%) seems optimistic given the high setup hours and the 50% share of saved time counted as cash.\",\n      \"test\": \"Recalculate the cash ROI using more conservative estimates for setup hours and the share of saved time that becomes cash.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 619,
+   "output_tokens": 449,
+   "latency_ms": 3113,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Minutes saved per work order before review (15 minutes) is unrealistically high, as it exceeds the manual task time (20 minutes).\", \"test\": \"Verify the actual time saved by the AI tool in a controlled environment over a 30-day period.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"Review time per draft (4 minutes) is relatively high, especially considering the 17% error rate from the pilot.\", \"test\": \"Monitor the review time for a sample of work orders over a month to ensure the 4-minute estimate is accurate.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"Setup hours (40) seem high for a tool that must be connected to the maintenance system.\", \"test\": \"Assess the actual setup time required during the pilot and compare it to the 40-hour estimate.\"}, {\"assumption\": \"tasks_per_year\", \"severity\": \"low\", \"issue\": \"Work orders per planner per working day (1.3) is low, which might not be realistic considering the total work orders per year (2,000).\", \"test\": \"Verify the actual number of work orders each planner completes in a typical working month.\"}], \"verdict\": \"send back\", \"dropped\": 1}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-hourly_cost",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"Minutes saved per work order before review (15 minutes) is 75% of the manual task time (20 minutes), which seems unrealistically high.\",\n      \"test\": \"Verify the actual time saved by the AI tool in a controlled environment over a 30-day period.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"Review time (4 minutes) is 27% of the time saved (15 minutes), which is quite high and may not be sustainable.\",\n      \"test\": \"Monitor the review time over a 30-day period to ensure it aligns with the projected 4 minutes per task.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"Setup hours (40) for a tool that must be connected to the maintenance system seems high.\",\n      \"test\": \"Confirm the necessity of 40 setup hours and explore potential reductions in a pilot test over 30 days.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"low\",\n      \"issue\": \"Only 50% of saved time is counted as cash, which might be conservative.\",\n      \"test\": \"Evaluate the potential for higher cash savings by re-evaluating the share of saved time that becomes cash.\"\n    },\n    {\n      \"assumption\": \"error_rate\",\n      \"severity\": \"medium\",\n      \"issue\": \"The error rate of 17% in the pilot is significantly higher than the 1.7% of drafts with errors reaching the floor.\",\n      \"test\": \"Conduct a detailed analysis of error rates in a 30-day pilot to reconcile the discrepancy.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 621,
+   "output_tokens": 439,
+   "latency_ms": 2033,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Minutes saved per work order before review (15 minutes) is 75% of the manual task time (20 minutes), which seems unrealistically high.\", \"test\": \"Verify the actual time saved by the AI tool in a controlled environment over a 30-day period.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"Review time (4 minutes) is 27% of the time saved (15 minutes), which is quite high and may not be sustainable.\", \"test\": \"Monitor the review time over a 30-day period to ensure it aligns with the projected 4 minutes per task.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"Setup hours (40) for a tool that must be connected to the maintenance system seems high.\", \"test\": \"Confirm the necessity of 40 setup hours and explore potential reductions in a pilot test over 30 days.\"}, {\"assumption\": \"share_redeployed\", \"severity\": \"low\", \"issue\": \"Only 50% of saved time is counted as cash, which might be conservative.\", \"test\": \"Evaluate the potential for higher cash savings by re-evaluating the share of saved time that becomes cash.\"}, {\"assumption\": \"error_rate\", \"severity\": \"medium\", \"issue\": \"The error rate of 17% in the pilot is significantly higher than the 1.7% of drafts with errors reaching the floor.\", \"test\": \"Conduct a detailed analysis of error rates in a 30-day pilot to reconcile the discrepancy.\"}], \"verdict\": \"send back\", \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-training_hours_per_person",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"minutes_saved_per_task\",\n      \"severity\": \"high\",\n      \"issue\": \"Minutes saved per work order before review (15 minutes) is unrealistically high, as it exceeds the manual task time (20 minutes).\",\n      \"test\": \"Conduct a more detailed analysis of the AI tool's performance in a controlled environment to verify the time saved per task.\"\n    },\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"severity\": \"medium\",\n      \"issue\": \"Review time per draft (4 minutes) is 27% of the time saved, which seems high considering the error rate.\",\n      \"test\": \"Monitor the review process closely during the pilot phase to ensure the review time is accurate and necessary.\"\n    },\n    {\n      \"assumption\": \"setup_hours\",\n      \"severity\": \"medium\",\n      \"issue\": \"Setup hours (40) for a tool that must be connected to the maintenance system seems high and could impact the ROI negatively.\",\n      \"test\": \"Verify the setup hours by engaging with the vendor and conducting a trial setup to ensure the time required is accurate.\"\n    },\n    {\n      \"assumption\": \"share_redeployed\",\n      \"severity\": \"low\",\n      \"issue\": \"Only 50% of saved time is counted as cash, which might be too conservative given the potential productivity gains.\",\n      \"test\": \"Re-evaluate the share of saved hours that becomes cash by analyzing the impact on overall productivity and efficiency.\"\n    },\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"severity\": \"low\",\n      \"issue\": \"Work orders per planner per working day (1.3) is very low, which might not be realistic considering the workload.\",\n      \"test\": \"Review the actual workload and productivity of the planners to ensure the number of work orders per planner per day is accurate.\"\n    }\n  ],\n  \"verdict\": \"send back\"\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 618,
+   "output_tokens": 441,
+   "latency_ms": 2851,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Minutes saved per work order before review (15 minutes) is unrealistically high, as it exceeds the manual task time (20 minutes).\", \"test\": \"Conduct a more detailed analysis of the AI tool's performance in a controlled environment to verify the time saved per task.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"Review time per draft (4 minutes) is 27% of the time saved, which seems high considering the error rate.\", \"test\": \"Monitor the review process closely during the pilot phase to ensure the review time is accurate and necessary.\"}, {\"assumption\": \"setup_hours\", \"severity\": \"medium\", \"issue\": \"Setup hours (40) for a tool that must be connected to the maintenance system seems high and could impact the ROI negatively.\", \"test\": \"Verify the setup hours by engaging with the vendor and conducting a trial setup to ensure the time required is accurate.\"}, {\"assumption\": \"share_redeployed\", \"severity\": \"low\", \"issue\": \"Only 50% of saved time is counted as cash, which might be too conservative given the potential productivity gains.\", \"test\": \"Re-evaluate the share of saved hours that becomes cash by analyzing the impact on overall productivity and efficiency.\"}, {\"assumption\": \"tasks_per_year\", \"severity\": \"low\", \"issue\": \"Work orders per planner per working day (1.3) is very low, which might not be realistic considering the workload.\", \"test\": \"Review the actual workload and productivity of the planners to ensure the number of work orders per planner per day is accurate.\"}], \"verdict\": \"send back\", \"dropped\": 0}"
+  }
+ ],
+ "v3": [
+  {
+   "agent": "intake",
+   "id": "IN-1",
+   "reply": "```json\n{\n  \"use_case\": \"accounts payable\",\n  \"volume\": {\n    \"value\": 300,\n    \"per\": \"week\",\n    \"quote\": \"processes about 300 invoices a week\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 7,\n    \"unit\": \"minutes\",\n    \"quote\": \"we think AI could cut 7 minutes\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": 38,\n    \"quote\": \"Clerks cost us $38 an hour loaded\"\n  },\n  \"people\": {\n    \"value\": 4,\n    \"quote\": \"Our 4-person accounts payable team\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 398,
+   "output_tokens": 209,
+   "latency_ms": 1102,
+   "final": "{\"use_case\": \"accounts payable\", \"tasks_per_year\": 15600, \"minutes_saved_per_task\": 7, \"review_minutes_per_task\": null, \"hourly_cost\": 38, \"people\": 4, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-2",
+   "reply": "```json\n{\n  \"use_case\": \"Support team handling tickets\",\n  \"volume\": {\n    \"value\": 1500,\n    \"per\": \"month\",\n    \"quote\": \"answers 1,500 tickets a month\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 5,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI drafts would save about 5 minutes\"\n  },\n  \"review_time\": {\n    \"value\": 1,\n    \"unit\": \"minutes\",\n    \"quote\": \"agents would spend 1 minute checking each\"\n  },\n  \"hourly_cost\": {\n    \"value\": 45,\n    \"quote\": \"Loaded cost $45/hour\"\n  },\n  \"people\": {\n    \"value\": 12,\n    \"quote\": \"Support team of 12\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 404,
+   "output_tokens": 218,
+   "latency_ms": 1304,
+   "final": "{\"use_case\": \"Support team handling tickets\", \"tasks_per_year\": 18000, \"minutes_saved_per_task\": 5, \"review_minutes_per_task\": 1, \"hourly_cost\": 45, \"people\": 12, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-3",
+   "reply": "```json\n{\n  \"use_case\": \"maintenance planning\",\n  \"volume\": {\n    \"value\": 40,\n    \"per\": \"week\",\n    \"quote\": \"write roughly 40 work orders a week\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 15,\n    \"unit\": \"minutes\",\n    \"quote\": \"an AI assistant could save 15 minutes per order\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": 55,\n    \"quote\": \"Planner cost is $55/hr\"\n  },\n  \"people\": {\n    \"value\": 6,\n    \"quote\": \"Our 6 maintenance planners\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 392,
+   "output_tokens": 206,
+   "latency_ms": 1190,
+   "final": "{\"use_case\": \"maintenance planning\", \"tasks_per_year\": 2080, \"minutes_saved_per_task\": 15, \"review_minutes_per_task\": null, \"hourly_cost\": 55, \"people\": 6, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-4",
+   "reply": "```json\n{\n  \"use_case\": \"Sales ops\",\n  \"volume\": {\n    \"value\": 20,\n    \"per\": \"month\",\n    \"quote\": \"3 analysts build 20 proposals a month\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 120,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI could save 2 hours per proposal\"\n  },\n  \"review_time\": {\n    \"value\": 30,\n    \"unit\": \"minutes\",\n    \"quote\": \"someone would need 30 minutes to review it\"\n  },\n  \"hourly_cost\": {\n    \"value\": 70,\n    \"quote\": \"Analysts are $70 an hour\"\n  },\n  \"people\": {\n    \"value\": 3,\n    \"quote\": \"3 analysts\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 398,
+   "output_tokens": 213,
+   "latency_ms": 1463,
+   "final": "{\"use_case\": \"Sales ops\", \"tasks_per_year\": 240, \"minutes_saved_per_task\": 120, \"review_minutes_per_task\": 30, \"hourly_cost\": 70, \"people\": 3, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-5",
+   "reply": "```json\n{\n  \"use_case\": \"HR screens resumes\",\n  \"volume\": {\n    \"value\": 5000,\n    \"per\": \"year\",\n    \"quote\": \"HR screens 5,000 resumes a year\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 4,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI summaries might save 4 minutes\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"people\": {\n    \"value\": 2,\n    \"quote\": \"with two recruiters\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 379,
+   "output_tokens": 193,
+   "latency_ms": 1269,
+   "final": "{\"use_case\": \"HR screens resumes\", \"tasks_per_year\": 5000, \"minutes_saved_per_task\": 4, \"review_minutes_per_task\": null, \"hourly_cost\": null, \"people\": 2, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-6",
+   "reply": "```json\n{\n  \"use_case\": \"Legal reviews\",\n  \"volume\": {\n    \"value\": 600,\n    \"per\": \"year\",\n    \"quote\": \"Legal reviews 600 NDAs a year\"\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": 30,\n    \"unit\": \"minutes\",\n    \"quote\": \"An AI first pass saves 30 minutes\"\n  },\n  \"review_time\": {\n    \"value\": 10,\n    \"unit\": \"minutes\",\n    \"quote\": \"attorneys must spend 10 minutes checking it\"\n  },\n  \"hourly_cost\": {\n    \"value\": 120,\n    \"quote\": \"Blended cost is $120/hour\"\n  },\n  \"people\": {\n    \"value\": 5,\n    \"quote\": \"for a team of 5\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 404,
+   "output_tokens": 222,
+   "latency_ms": 1022,
+   "final": "{\"use_case\": \"Legal reviews\", \"tasks_per_year\": 600, \"minutes_saved_per_task\": 30, \"review_minutes_per_task\": 10, \"hourly_cost\": 120, \"people\": 5, \"questions\": []}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-7",
+   "reply": "```json\n{\n  \"use_case\": \"marketing emails\",\n  \"volume\": {\n    \"value\": null,\n    \"per\": null,\n    \"quote\": null\n  },\n  \"working_days\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"minutes_saved\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"people\": {\n    \"value\": null,\n    \"quote\": null\n  },\n  \"questions\": [\"Not sure about volumes yet.\"]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 365,
+   "output_tokens": 169,
+   "latency_ms": 1085,
+   "final": "{\"use_case\": \"marketing emails\", \"tasks_per_year\": null, \"minutes_saved_per_task\": null, \"review_minutes_per_task\": null, \"hourly_cost\": null, \"people\": null, \"questions\": [\"Not sure about volumes yet.\"]}"
+  },
+  {
+   "agent": "intake",
+   "id": "IN-8",
+   "reply": "```json\n{\n  \"use_case\": \"Field service\",\n  \"volume\": {\n    \"value\": 250,\n    \"per\": \"day\",\n    \"quote\": \"250 visit reports a day\"\n  },\n  \"working_days\": {\n    \"value\": 250,\n    \"quote\": \"work 250 days a year\"\n  },\n  \"minutes_saved\": {\n    \"value\": 9,\n    \"unit\": \"minutes\",\n    \"quote\": \"AI built from voice notes saves 9 minutes per report\"\n  },\n  \"review_time\": {\n    \"value\": null,\n    \"unit\": null,\n    \"quote\": null\n  },\n  \"hourly_cost\": {\n    \"value\": 60,\n    \"quote\": \"Technicians cost $60/hr loaded\"\n  },\n  \"people\": {\n    \"value\": 50,\n    \"quote\": \"across 50 technicians\"\n  },\n  \"questions\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 404,
+   "output_tokens": 217,
+   "latency_ms": 1211,
+   "final": "{\"use_case\": \"Field service\", \"tasks_per_year\": 62500, \"minutes_saved_per_task\": 9, \"review_minutes_per_task\": null, \"hourly_cost\": 60, \"people\": 50, \"questions\": []}"
+  },
+  {
+   "agent": "memo",
+   "id": "MEMO-PDM",
+   "reply": "## Recommendation\n\nInvest in predictive maintenance for machining lines, conditional on achieving a workflow fit and user trust score of at least 2.5 out of 5.\n\n## Value\n\nThe model, tested on 3,000 unseen records, shows a significant reduction in unplanned failures per year from {Unplanned failures per year today} to an estimated {Share of failures caught}. This translates to an annual net savings of ${Annual net savings}, with a 90% confidence range of ${Annual net savings, 90% range}. The deployment cost of ${Deployment cost} is expected to be recovered in {Payback}. The biggest driver of savings is the cost of an unplanned failure, currently at ${Biggest driver}.\n\n## Risks\n\nThe cash ROI is negative if the annual net savings fall below {Annual net savings, low case}. This risk is mitigated by ensuring the model's workflow fit and user trust score meets the readiness verdict.\n\n## Next step\n\nAddress the readiness verdict by improving workflow fit and user trust score. Once achieved, proceed with deployment to realize the projected savings and ROI.",
+   "stop_reason": "end_turn",
+   "input_tokens": 312,
+   "output_tokens": 229,
+   "latency_ms": 1887,
+   "final": "## Recommendation\n\nInvest in predictive maintenance for machining lines, conditional on achieving a workflow fit and user trust score of at least 2.5 out of 5.\n\n## Value\n\nThe model, tested on 3,000 unseen records, shows a significant reduction in unplanned failures per year from 40 to an estimated 86%. This translates to an annual net savings of $$660,392, with a 90% confidence range of $$611,295 to $704,047. The deployment cost of $$150,000 is expected to be recovered in 4.7 months. The biggest driver of savings is the cost of an unplanned failure, currently at $Cost of an unplanned failure ($25,000).\n\n## Risks\n\nThe cash ROI is negative if the annual net savings fall below $163,971. This risk is mitigated by ensuring the model's workflow fit and user trust score meets the readiness verdict.\n\n## Next step\n\nAddress the readiness verdict by improving workflow fit and user trust score. Once achieved, proceed with deployment to realize the projected savings and ROI."
+  },
+  {
+   "agent": "memo",
+   "id": "MEMO-GENAI",
+   "reply": "## Recommendation\n\nInvest in the AI work-order assistant, conditional on addressing the error rate.\n\n## Value\n\nThe AI work-order assistant can save {Value of time saved per year} per year, with each planner saving {Minutes saved per work order before review} minutes per work order before review and spending {Review minutes per draft} minutes reviewing each draft. The total first-year cost is {Total first-year cost}, and the first-year ROI is {First-year ROI}. However, the first-year cash ROI is negative at {First-year cash ROI}.\n\n## Risks\n\nThe AI's draft has the wrong cause in 17% of cases, and 1.7% of drafts with errors reach the floor. This error rate could lead to costly mistakes and negatively impact the plant's operations.\n\n## Next step\n\nTo proceed with the investment, we recommend addressing the error rate through additional training, model refinement, or other measures. Once the error rate is reduced, the investment is likely to yield a positive cash ROI.",
+   "stop_reason": "end_turn",
+   "input_tokens": 373,
+   "output_tokens": 217,
+   "latency_ms": 1910,
+   "final": "## Recommendation\n\nInvest in the AI work-order assistant, conditional on addressing the error rate.\n\n## Value\n\nThe AI work-order assistant can save $27,500 per year, with each planner saving 15 minutes per work order before review and spending 4 minutes reviewing each draft. The total first-year cost is $16,093, and the first-year ROI is 71%. However, the first-year cash ROI is negative at -15%.\n\n## Risks\n\nThe AI's draft has the wrong cause in 17% of cases, and 1.7% of drafts with errors reach the floor. This error rate could lead to costly mistakes and negatively impact the plant's operations.\n\n## Next step\n\nTo proceed with the investment, we recommend addressing the error rate through additional training, model refinement, or other measures. Once the error rate is reduced, the investment is likely to yield a positive cash ROI."
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-CLEAN",
+   "reply": "```json\n{\n  \"objections\": []\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 392,
+   "output_tokens": 13,
+   "latency_ms": 344,
+   "final": "{\"objections\": [], \"verdict\": \"approve\", \"explained\": 0, \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-review_minutes_per_task",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"review_minutes_per_task\",\n      \"why\": \"The input assumes no review time is needed, despite the pilot showing 17% of drafts had the wrong cause, which implies a need for review.\",\n      \"test\": \"Monitor the review time for a sample of 100 work orders generated by the AI over a one-month period to determine the actual review time required.\"\n    }\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 419,
+   "output_tokens": 106,
+   "latency_ms": 1020,
+   "final": "{\"objections\": [{\"assumption\": \"review_minutes_per_task\", \"severity\": \"high\", \"issue\": \"No review time, but 17% of pilot drafts had the wrong cause.\", \"why\": \"The input assumes no review time is needed, despite the pilot showing 17% of drafts had the wrong cause, which implies a need for review.\", \"test\": \"Monitor the review time for a sample of 100 work orders generated by the AI over a one-month period to determine the actual review time required.\"}], \"verdict\": \"send back\", \"explained\": 1, \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-share_redeployed",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"share_redeployed\",\n      \"why\": \"Counting 100% of saved time as cash assumes that all the time saved can be fully converted into cash savings without any additional costs or operational changes, which is unlikely.\",\n      \"test\": \"Verify with the operations manager if the saved time can indeed be fully converted into cash savings by reducing overtime or hiring fewer staff, and document any additional costs or changes required.\"\n    }\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 422,
+   "output_tokens": 112,
+   "latency_ms": 1385,
+   "final": "{\"objections\": [{\"assumption\": \"share_redeployed\", \"severity\": \"high\", \"issue\": \"Counts 100% of saved time as cash; that needs fewer hires or less overtime.\", \"why\": \"Counting 100% of saved time as cash assumes that all the time saved can be fully converted into cash savings without any additional costs or operational changes, which is unlikely.\", \"test\": \"Verify with the operations manager if the saved time can indeed be fully converted into cash savings by reducing overtime or hiring fewer staff, and document any additional costs or changes required.\"}], \"verdict\": \"send back\", \"explained\": 1, \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-minutes_saved_per_task",
+   "reply": "```json\n{\n    \"objections\": [\n        {\n            \"assumption\": \"minutes_saved_per_task\",\n            \"why\": \"The claimed 45 minutes saved per work order seems implausibly high given that the task takes only 20 minutes by hand. This could overstate the value of the tool.\",\n            \"test\": \"Time and motion study of 100 randomly selected work orders to verify the actual time saved by the AI tool.\"\n        },\n        {\n            \"assumption\": \"review_minutes_per_task\",\n            \"why\": \"The review time of 4 minutes is under 10% of the time saved, which seems optimistic and could hide the true cost of the review process.\",\n            \"test\": \"Conduct a detailed review of 50 work order drafts to verify the actual time spent on reviewing and compare it with the assumed 4 minutes.\"\n        }\n    ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 446,
+   "output_tokens": 194,
+   "latency_ms": 1553,
+   "final": "{\"objections\": [{\"assumption\": \"minutes_saved_per_task\", \"severity\": \"high\", \"issue\": \"Saves 45 minutes on a task that takes 20 minutes.\", \"why\": \"The claimed 45 minutes saved per work order seems implausibly high given that the task takes only 20 minutes by hand. This could overstate the value of the tool.\", \"test\": \"Time and motion study of 100 randomly selected work orders to verify the actual time saved by the AI tool.\"}, {\"assumption\": \"review_minutes_per_task\", \"severity\": \"medium\", \"issue\": \"Review is under 10% of the time saved (4 minutes).\", \"why\": \"The review time of 4 minutes is under 10% of the time saved, which seems optimistic and could hide the true cost of the review process.\", \"test\": \"Conduct a detailed review of 50 work order drafts to verify the actual time spent on reviewing and compare it with the assumed 4 minutes.\"}], \"verdict\": \"send back\", \"explained\": 2, \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-tasks_per_year",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"tasks_per_year\",\n      \"why\": \"The number of tasks per year seems implausibly high, as it would require each of the 6 planners to work full-time just on writing work orders.\",\n      \"test\": \"Verify the actual number of work orders by reviewing the maintenance system logs for the past year.\"\n    }\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 443,
+   "output_tokens": 92,
+   "latency_ms": 784,
+   "final": "{\"objections\": [{\"assumption\": \"tasks_per_year\", \"severity\": \"high\", \"issue\": \"200,000 tasks at 20 minutes each would take 44.4 hours of every working day for each of 6 people.\", \"why\": \"The number of tasks per year seems implausibly high, as it would require each of the 6 planners to work full-time just on writing work orders.\", \"test\": \"Verify the actual number of work orders by reviewing the maintenance system logs for the past year.\"}], \"verdict\": \"send back\", \"explained\": 1, \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-setup_hours",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"setup_hours\",\n      \"why\": \"A tool that must be connected to the plant's maintenance system is unlikely to require zero setup hours, which could overstate the cost savings and understate the implementation costs.\",\n      \"test\": \"Verify the actual setup hours required to connect the AI tool to the plant's maintenance system by consulting with the IT department and the vendor within 30 days.\"\n    }\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 412,
+   "output_tokens": 107,
+   "latency_ms": 989,
+   "final": "{\"objections\": [{\"assumption\": \"setup_hours\", \"severity\": \"high\", \"issue\": \"0 setup hours for a tool that must be connected to another system.\", \"why\": \"A tool that must be connected to the plant's maintenance system is unlikely to require zero setup hours, which could overstate the cost savings and understate the implementation costs.\", \"test\": \"Verify the actual setup hours required to connect the AI tool to the plant's maintenance system by consulting with the IT department and the vendor within 30 days.\"}], \"verdict\": \"send back\", \"explained\": 1, \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-error_rate",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"Share of drafts with an error reaching the floor\",\n      \"why\": \"The assumption that no drafts with errors reach the floor is implausible given that 17% of the pilot drafts were wrong. This could overstate the value by ignoring potential rework and quality control costs.\",\n      \"test\": \"Review a random sample of 100 work orders generated by the AI over a one-month period to determine the actual error rate and assess the impact on the floor.\"\n    }\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 418,
+   "output_tokens": 120,
+   "latency_ms": 1042,
+   "final": "{\"objections\": [{\"assumption\": \"error_rate\", \"severity\": \"high\", \"issue\": \"Assumes no errors reach the floor, but 17% of pilot drafts were wrong.\", \"why\": null, \"test\": null}], \"verdict\": \"send back\", \"explained\": 0, \"dropped\": 1}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-hourly_cost",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"hourly_cost\",\n      \"why\": \"The loaded hourly cost of $400 is significantly higher than the typical range of $20-$150, which could overstate the value by inflating the cost savings.\",\n      \"test\": \"Verify the loaded hourly cost by reviewing the compensation packages and roles of similar positions in the industry within 30 days.\"\n    }\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 422,
+   "output_tokens": 103,
+   "latency_ms": 899,
+   "final": "{\"objections\": [{\"assumption\": \"hourly_cost\", \"severity\": \"high\", \"issue\": \"$400 an hour is outside the usual $20-$150 loaded cost.\", \"why\": \"The loaded hourly cost of $400 is significantly higher than the typical range of $20-$150, which could overstate the value by inflating the cost savings.\", \"test\": \"Verify the loaded hourly cost by reviewing the compensation packages and roles of similar positions in the industry within 30 days.\"}], \"verdict\": \"send back\", \"explained\": 1, \"dropped\": 0}"
+  },
+  {
+   "agent": "redteam",
+   "id": "RT-training_hours_per_person",
+   "reply": "```json\n{\n  \"objections\": [\n    {\n      \"assumption\": \"training_hours_per_person\",\n      \"why\": \"A new tool, especially one as complex as an AI work-order assistant, likely requires training to ensure effective and efficient use. Skipping this could lead to underperformance and increased errors.\",\n      \"test\": \"Verify the actual training hours required by interviewing the team that will use the tool and reviewing similar AI tool implementations.\"\n    }\n  ]\n}\n```",
+   "stop_reason": "end_turn",
+   "input_tokens": 411,
+   "output_tokens": 103,
+   "latency_ms": 1121,
+   "final": "{\"objections\": [{\"assumption\": \"training_hours_per_person\", \"severity\": \"medium\", \"issue\": \"0 training hours for a new tool.\", \"why\": \"A new tool, especially one as complex as an AI work-order assistant, likely requires training to ensure effective and efficient use. Skipping this could lead to underperformance and increased errors.\", \"test\": \"Verify the actual training hours required by interviewing the team that will use the tool and reviewing similar AI tool implementations.\"}], \"verdict\": \"approve with conditions\", \"explained\": 1, \"dropped\": 0}"
+  }
+ ]
+}
