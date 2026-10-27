@@ -1,6 +1,6 @@
 # AI Use-Case ROI Navigator: Solution Design
 
-*Independent concept project. The document structure follows the public format of Lenovo Validated Design solution guides (Introduction → Business Problem and Business Value → Technical Overview → Architectural Overview → Component Model → Operational Model → Deployment Considerations → Solution Validation → Solution Summary). It is not a Lenovo product and uses no Lenovo data.*
+*Independent concept project.*
 
 ---
 
