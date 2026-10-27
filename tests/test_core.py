@@ -14,7 +14,7 @@ def test_scoring_matches_hand_calculation():
 
 
 def test_verdict_rules():
-    dims = ["Data", "Workflow fit", "ROI clarity", "User trust", "Governance & risk"]
+    dims = ["Data", "Fits how people work", "Clear payoff", "People trust it", "Clear ownership"]
     assert verdict(dict.fromkeys(dims, 4.0))[0] == "Go"
     assert verdict({**dict.fromkeys(dims, 4.5), "Data": 2.0})[0] == "Fix first"
     assert verdict(dict.fromkeys(dims, 2.0))[0] == "Not ready"

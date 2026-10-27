@@ -1,13 +1,13 @@
-# Product roadmap: AI Use-Case ROI Navigator
+# Product roadmap: AI ROI Navigator
 
 *Last updated October 2026 · Owner: Chaitali Shekar · Format: Now / Next / Later*
 
 ## Vision
 
-Help an AI provider **match the right AI to each client and prove it keeps paying**, from the first conversation to a year after launch,
+Help a business **pick the AI that fits its need and prove it keeps paying**, from the first conversation to a year after launch,
 with numbers a CFO will sign and a person in charge of every decision.
 
-**Who it is for:** the AI business analyst or value engineer who builds the case; the sponsor (ops director, CFO) who
+**Who it is for:** the AI business systems analyst who builds the case; the sponsor (ops director, CFO) who
 funds it; the plant or business team who live with it after launch.
 
 **How we will know it works** (product metrics):
@@ -21,37 +21,38 @@ funds it; the plant or business team who live with it after launch.
 
 ## Status overview
 
-7 steps shipped (v1), including client matching. 5 items planned Next, 5 Later. Nothing blocked. One known risk: the agent tests are not blind (see N1).
+7 steps shipped (v1), plus a requirements pack (process maps, integration spec, acceptance tests, traceability). 5 items planned Next, 5 Later. Nothing blocked. One known risk: the agent tests are not blind (see N1).
 
 ## How items were prioritised
 
-The same value × feasibility scoring the app uses on step 1, each scored 1–5:
+The same value × ease scoring the app uses on step 1, each scored 1–5:
 
-| Item | Value | Feasibility | Priority | Quadrant |
+| Item | Value | Ease | Priority | Category |
 |---|---|---|---|---|
-| N1 Blind test set for the agents | 4 | 5 | 20 | Quick win |
-| N2 Scheduled pipeline with alerts | 4 | 4 | 16 | Quick win |
-| N3 Value models for every solution | 5 | 3 | 15 | Big bet, start small |
-| N5 Track AI running costs, not just savings | 4 | 4 | 16 | Quick win |
-| N4 Usage analytics on the live app | 3 | 5 | 15 | Quick win |
-| L1 Portfolio view across many AI projects | 5 | 2 | 10 | Big bet |
-| L2 Governance pack | 4 | 3 | 12 | Big bet |
-| L3 Connect to a real maintenance system | 5 | 2 | 10 | Big bet |
-| L4 LLM-as-judge, calibrated by people | 3 | 3 | 9 | Fill-in |
+| N1 Blind test set for the agents | 4 | 5 | 20 | Start now |
+| N2 Scheduled pipeline with alerts | 4 | 4 | 16 | Start now |
+| N3 Value models for every solution | 5 | 3 | 15 | Fix a blocker first (start small) |
+| N5 Track AI running costs, not just savings | 4 | 4 | 16 | Start now |
+| N4 Usage analytics on the live app | 3 | 5 | 15 | Start now |
+| L1 Portfolio view across many AI projects | 5 | 2 | 10 | Fix a blocker first |
+| L2 Governance pack | 4 | 3 | 12 | Fix a blocker first |
+| L3 Connect to a real maintenance system | 5 | 2 | 10 | Fix a blocker first |
+| L4 LLM-as-judge, calibrated by people | 3 | 3 | 9 | Small win |
 | L5 Sign-in and saved cases | 3 | 2 | 6 | Later, only with users |
 
 ## Now: shipped (v1)
 
 | Item | What it does | Status |
 |---|---|---|
-| Match AI to client | A library of 12 solutions matched to the client's problem, data, risk appetite and urgency, with reasons | **Done** |
+| Pick the right AI | 12 AI options matched to the business's problem, data quality, tolerance for mistakes and urgency, with reasons | **Done** |
 | Prove the value | Real model on the AI4I 2020 dataset, tuned for dollars; low / base / high case and the biggest risk | **Done** |
 | Check readiness | 10 questions, 5 areas, Go / Fix first / Not ready with actions | **Done** |
 | Business case | One-page summary for finance, downloadable | **Done** |
 | Track the value | Forecast vs actual, adoption and drift alerts, gap explained by cause; S3 → Databricks bronze / silver / gold pipeline | **Done** |
 | GenAI pilot | Bedrock work-order writer measured on 30 alerts; ROI across five cost categories | **Done** |
 | AI analyst agents | Intake, memo and red-team agents graded v1 → v3 | **Done** |
-| Client-first UX | Overview with the impact up front; every page answer first, analysis on demand | **Done** |
+| Clear, plain-language UX | Overview opens with a process chart of all 7 steps; every page answer first, details on demand | **Done** |
+| Requirements pack | As-is / to-be process maps, integration spec, data dictionary, 12 acceptance tests, traceability matrix | **Done** |
 
 ## Next: 1–3 months
 
@@ -59,9 +60,9 @@ The same value × feasibility scoring the app uses on step 1, each scored 1–5:
 |---|---|---|---|---|
 | N1 | **Blind test set for the agents** | The red-team checklist was written knowing the planted flaws, so 6 of 6 overstates it | 10 new cases written by someone else, scored once, result published even if worse | A second person to write cases |
 | N2 | **Scheduled pipeline with alerts** | Tracking only matters if it runs without anyone remembering | Monthly Databricks job unpaused; drift or low adoption sends an email (SNS); a run log page in the app | Databricks job (exists, paused) |
-| N3 | **Value models for every solution** | Step 1 now recommends the right AI for any client, but only predictive maintenance has a full dollar model behind it | The hospital's and retailer's matches get a business case from the generic time-saved / error-avoided calculator; the intake agent fills it from the client's own description | N1, so intake is trusted |
+| N3 | **Value models for every solution** | Step 1 recommends an AI for any business, but only predictive maintenance has a full dollar model behind it | The hospital's and retailer's recommendations get a business case from the generic time-saved / error-avoided calculator; the intake agent fills it from the business's own description | N1, so intake is trusted |
 | N5 | **Track AI running costs, not just savings** | Running cost is a fixed $60k assumption today. Model fees, managed-platform premiums and idle compute drift after launch, and nobody revisits them | Monthly actual running cost from the AWS cost data next to the business-case assumption, with an alert when it drifts 20%+ | AWS Cost Explorer access |
-| N4 | **Usage analytics on the live app** | Learn which steps people open and where they stop | Page views and "See the analysis" opens counted, no personal data | Public URL confirmed |
+| N4 | **Usage analytics on the live app** | Learn which steps people open and where they stop | Page views and "Show the details" opens counted, no personal data | Public URL confirmed |
 
 ## Later: 3–6+ months (directional)
 
@@ -69,7 +70,7 @@ The same value × feasibility scoring the app uses on step 1, each scored 1–5:
 |---|---|---|
 | L1 | **Portfolio view** | Leaders fund many AI projects at once; one screen ranking them by value delivered vs promised |
 | L2 | **Governance pack** | Each business case also produces a model card and a NIST AI RMF / EU AI Act checklist, so risk review is not a separate project |
-| L3 | **Connect to a real maintenance system** | Replace the simulated rollout with a live export (SAP PM, IBM Maximo or a CMMS CSV) at a pilot site |
+| L3 | **Connect to a real maintenance system** | Build the integration spec in [requirements.md](requirements.md) §3 and replace the simulated rollout with a live export (SAP PM, IBM Maximo or a CMMS CSV) at a pilot site |
 | L4 | **LLM-as-judge, calibrated by people** | Grade open-ended agent output (memo quality) where exact-match graders cannot, checked against human ratings |
 | L5 | **Sign-in and saved cases** | Only once there are repeat users; until then a download is enough |
 

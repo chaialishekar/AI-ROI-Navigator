@@ -1,16 +1,19 @@
-# AI Use-Case ROI Navigator: Solution Design
+# AI ROI Navigator: Solution Design
 
 *Independent concept project.*
 
 ---
 
 ## 1. Introduction
-The AI Use-Case ROI Navigator is a browser-based decision tool that helps an operations leader:
-1. choose which AI use case to start with,
-2. prove its value in dollars using a real model, and
-3. check whether the organization is ready to move from pilot to production.
+The AI ROI Navigator is a browser-based tool for the work of an **AI business systems analyst**: taking a business need through to an AI that is live and paying off. It helps the analyst and an operations leader:
+1. pick the AI that fits the business need,
+2. prove its value in dollars using a real model,
+3. check whether the team is ready, and get finance to sign off, and
+4. after launch, check every month that it delivers what was promised.
 
-**Intended audience:** operations leaders evaluating AI, and the AI business analysts who advise them.
+**Intended audience:** operations leaders evaluating AI, and the AI business systems analysts who work with them.
+
+Process maps, the integration spec, data dictionary, acceptance tests and traceability matrix are in [requirements.md](requirements.md).
 
 **Hero use case:** predictive maintenance in manufacturing, demonstrated on the public AI4I 2020 dataset.
 
@@ -52,8 +55,8 @@ Operations leaders at mid-size manufacturers face three gaps when adopting AI:
 ### 3.1 Use cases
 | ID | Use case | Primary actor | Trigger | Outcome |
 |---|---|---|---|---|
-| UC-1 | Prioritize AI use cases | Dana | Leadership asks "where should we start with AI?" | Ranked shortlist with quick wins identified |
-| UC-2 | Prove value of predictive maintenance | Dana, with the AI BA | A quick win is selected | Annual $ saved, ROI and payback from a tested model |
+| UC-1 | Pick the right AI | Dana, with the AI BSA | Leadership asks "which AI would help with our breakdowns?" | Recommended option, with reasons and a ranked shortlist |
+| UC-2 | Prove value of predictive maintenance | Dana, with the AI BSA | An option rated "Start now" is picked | Annual $ saved, ROI and payback from a tested model |
 | UC-3 | Check production readiness | Dana | Business case is positive | Go / Fix first / Not ready, with top actions |
 | UC-4 | Share the business case | Dana | Ready to request funding | One-page summary for the CFO |
 
@@ -62,7 +65,7 @@ Operations leaders at mid-size manufacturers face three gaps when adopting AI:
 - **Main flow:**
   1. Dana enters her plant's costs (missed failure, false alarm, deployment, running cost).
   2. The tool shows annual net savings, ROI and payback against a "no AI" baseline.
-  3. The AI BA moves the alert-threshold slider; failures caught, false alarms and dollars update.
+  3. The AI BSA moves the alert-threshold slider; failures caught, false alarms and dollars update.
   4. The tool highlights the dollar-optimal threshold next to the accuracy-optimal one.
   5. Dana sets months to deploy and sees first-year value.
 - **Alternate flow:** if net savings are negative at every threshold, the tool recommends **do not deploy** and shows which cost drives the loss.
@@ -85,19 +88,19 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 |---|---|---|
 | US-1.1 | As an ops director, I want AI use cases ranked by value and feasibility, so that I know which to start with. | 12 use cases across 3 industries; each scored 1–5 on 7 criteria; each placed in a quadrant; chart numbers match the ranked list. |
 | US-1.2 | As an ops director, I want to filter by industry, so that I see only relevant ideas. | Chart and list update immediately. |
-| US-1.3 | As an AI BA, I want to adjust weights and scores, so that the ranking fits this customer. | Weight sliders for every criterion; scores accept whole numbers 1–5; ranking updates in under 1 second. |
+| US-1.3 | As an AI BSA, I want to adjust weights and scores, so that the ranking fits this customer. | Weight sliders for every criterion; scores accept whole numbers 1–5; ranking updates in under 1 second. |
 | US-1.4 | As an ops director, I want a recommended next step per use case, so that I know what to do with it. | Each row shows a next step based on its quadrant. |
-| US-1.5 | As a value engineer at an AI provider, I want the solution library matched to one client's main problem, data maturity, risk appetite and urgency, so that each client gets the AI that fits them, not our favourite product. | Only solutions that serve the client's industry; solving the main problem raises value; data maturity shifts feasibility; risk and urgency set the weights; three example clients get three different recommendations (unit test). | Must (done) |
-| US-1.6 | As a client sponsor, I want to see why a solution was recommended, so that I can challenge it. | The recommendation lists its reasons (problem fit, data, risk, speed) and, for a big bet, names the blocker and how to fix it. | Must (done) |
+| US-1.5 | As an AI business systems analyst, I want the 12 AI options matched to the business's main problem, data quality, tolerance for AI mistakes and urgency, so that the business gets the AI that fits its need, not the most fashionable one. | Only solutions that serve the client's industry; solving the main problem raises value; data maturity shifts feasibility; risk and urgency set the weights; three example clients get three different recommendations (unit test). | Must (done) |
+| US-1.6 | As a business sponsor, I want to see why an option was recommended, so that I can challenge it. | The recommendation lists its reasons (problem fit, data, risk, speed) and, for a "Fix a blocker first" option, names the blocker and how to fix it. | Must (done) |
 
 #### Epic 2 · Prove value (UC-2)
 | ID | User story | Acceptance criteria |
 |---|---|---|
 | US-2.1 | As an ops director, I want to enter my own costs, so that savings reflect my plant. | Inputs: missed-failure cost, false-alarm cost, deployment cost, yearly running cost, machines in scope. Defaults provided; values must be > 0. |
 | US-2.2 | As an ops director, I want annual savings, ROI and payback, so that I can take a business case to my CFO. | Compared against "no AI" (all failures missed); shows net savings, ROI % and payback months; updates on every input change. |
-| US-2.3 | As an AI BA, I want to adjust the alert threshold and see the dollar effect, so that I can show accuracy is not the same as value. | Slider; shows recall, precision, caught, missed, false alarms, net $; highlights dollar-optimal vs accuracy-optimal threshold. |
+| US-2.3 | As an AI BSA, I want to adjust the alert threshold and see the dollar effect, so that I can show accuracy is not the same as value. | Slider; shows recall, precision, caught, missed, false alarms, net $; highlights dollar-optimal vs accuracy-optimal threshold. |
 | US-2.4 | As an ops director, I want results in plain language, so that I don't need ML knowledge. | e.g. "Catches 8 of 10 failures. About 1 in 3 alerts is a false alarm." |
-| US-2.5 | As an AI BA, I want the model tested on unseen data, so that the numbers are trustworthy. | Train/test split; all reported metrics come from the test set. |
+| US-2.5 | As an AI BSA, I want the model tested on unseen data, so that the numbers are trustworthy. | Train/test split; all reported metrics come from the test set. |
 | US-2.6 | As an ops director, I want to compare a custom build with a ready-made solution, so that I see how deployment time changes first-year value. | Input months to deploy; first-year value = annual savings × (12 − months) ÷ 12. |
 | US-2.7 | As a CFO, I want a range instead of a single number, so that I know how much the savings could vary. | Savings, payback, ROI, caught, missed and false alarms each show a 90% range from a bootstrap of the test set; the range always contains the point estimate. |
 | US-2.8 | As an ops director, I want low / base / high cases and to see which cost assumption matters most, so that we firm up the right numbers before committing. | Editable low and high value for every cost input; table of low / base / high annual savings, 3-year value, ROI and payback; tornado chart sorted by impact; warning if the low case never pays back within 3 years. |
@@ -105,7 +108,7 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 #### Epic 3 · Readiness (UC-3)
 | ID | User story | Acceptance criteria |
 |---|---|---|
-| US-3.1 | As an ops director, I want a short readiness checklist, so that I know if we're ready to go live. | ≤ 10 questions rated 1–5 across 5 dimensions: data, workflow integration, ROI clarity, user trust, governance and risk. Score per dimension. |
+| US-3.1 | As an ops director, I want a short readiness checklist, so that I know if we're ready to go live. | ≤ 10 questions rated 1–5 across 5 areas: data, fits how people work, clear payoff, people trust it, clear ownership. Score per dimension. |
 | US-3.2 | As an ops director, I want a verdict and top actions, so that I know what to fix before launch. | **Go:** average ≥ 3.5 and no dimension < 2.5. **Fix first:** any dimension < 2.5. **Not ready:** average < 2.5. Shows 3 weakest dimensions with an action each. |
 
 #### Epic 4 · Share (UC-4)
@@ -124,10 +127,10 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 #### Epic 6 · Adoption & value tracking (Adoption → Managed services)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should (done) (Track the value page; gap split into volume, recall, adoption and false alarms) |
+| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should (done) (step 5; gap split into volume, recall, adoption and false alarms) |
 | US-6.2 | As an AI business analyst, I want to track adoption (share of alerts acted on), so that I can spot when users stop trusting the AI. | Adoption rate shown monthly; alert if it drops below 70%. | Should (done) |
 | US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could (done) (3-month rolling recall, since ~3 failures a month is too few to judge one month alone) |
-| US-6.4 | As an ops director, I want the tool to suggest the next AI use case once the first is live, so that we expand value step by step. | After a "Go" verdict, the summary lists the next 2 quick wins from Epic 1. | Could (v2) |
+| US-6.4 | As an ops director, I want the tool to suggest the next AI use case once the first is live, so that we expand value step by step. | After a "Go" verdict, the summary lists the next 2 "Start now" options from Epic 1. | Could (v2) |
 
 #### Epic 7 · GenAI pilot (Advisory → Implementation)
 | ID | User story | Acceptance criteria | Priority |
@@ -174,14 +177,14 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 User (browser)
    │
    ▼
-Streamlit web app ──► Overview: client and impact up front + interactive tour of the steps
-   │  Plan the project ├► 1 Match AI to client ──► use_cases.csv + matching.py + scoring
-   │                   ├► 2 Prove the value   ──► trained model + test predictions + cost engine
-   │                   ├► 3 Check readiness   ──► checklist + verdict rules
-   │                   └► 4 Business case     ──► one-page business case (download)
-   │  After launch     └► 5 Track the value   ──► tracking engine + S3 → Databricks gold export
-   │  Generative AI    ├► 6 GenAI pilot       ──► saved Bedrock pilot runs + GenAI cost engine
-   │                   └► 7 AI analyst agents ──► saved Bedrock agent runs + graders (live only with AWS credentials)
+Streamlit web app ──► Overview: process chart of all 7 steps + a closer look at each
+   │  Before launch    ├► 1 Pick the right AI       ──► use_cases.csv + matching.py + scoring
+   │                   ├► 2 Prove it's worth it     ──► trained model + test predictions + cost engine
+   │                   ├► 3 Get the team ready      ──► checklist + verdict rules
+   │                   └► 4 Get sign-off            ──► one-page business case (download)
+   │  After launch     └► 5 Check it pays off       ──► tracking engine + S3 → Databricks gold export
+   │  Where GenAI helps├► 6 AI writes repair orders ──► saved Bedrock pilot runs + GenAI cost engine
+   │                   └► 7 AI does the paperwork   ──► saved Bedrock agent runs + graders (live only with AWS credentials)
    ▼
 Hosted on Streamlit Community Cloud (public link)
 ```
@@ -224,9 +227,9 @@ How a typical 30-minute session runs:
 
 | Step | Who | Activity | Output |
 |---|---|---|---|
-| 1. Discover | AI BA with Dana | Agree the client's main problem, data maturity, risk appetite and urgency | Client profile |
-| 2. Match | AI BA with Dana | Review the recommended solution, its reasons and the ranked library | Recommended AI and the blocker to fix, if any |
-| 3. Prove value | AI BA with Dana | Enter plant costs; tune the threshold | Dollar business case |
+| 1. Discover | AI BSA with Dana | Agree the business's main problem, data quality, tolerance for AI mistakes and urgency | Business profile |
+| 2. Pick | AI BSA with Dana | Review the recommended solution, its reasons and the ranked library | Recommended AI and the blocker to fix, if any |
+| 3. Prove value | AI BSA with Dana | Enter plant costs; set the warning level | Dollar business case |
 | 4. Check readiness | Dana | Complete the checklist | Verdict and top 3 actions |
 | 5. Share | Dana | Download the one-page summary | CFO-ready business case |
 
@@ -264,9 +267,9 @@ After launch the plant banked 70% of the forecast. Before measuring anything, th
 
 R = does the work, A = accountable (one per row), C = consulted, I = informed.
 
-| Activity | Value engineer (provider) | Client ops director | Maintenance manager | Data / IT lead | Finance partner |
+| Activity | AI BSA | Ops director | Maintenance manager | Data / IT lead | Finance partner |
 |---|---|---|---|---|---|
-| Match the AI to the client | R | A | C | C | I |
+| Pick the AI for the business need | R | A | C | C | I |
 | Agree the cost assumptions | R | C | C | I | A |
 | Readiness actions before launch | C | A | R | R | I |
 | Send monthly actuals file | I | I | C | A, R | I |
@@ -325,14 +328,14 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 ---
 
 ## 9. Solution Summary
-The Navigator turns a list of AI ideas into a funded, production-ready business case: it **prioritizes** use cases on value vs feasibility, **proves value** by tuning a real model for dollars instead of accuracy, and **checks readiness** so pilots don't stall.
+The Navigator turns a list of AI ideas into a funded, production-ready business case: it **picks the AI that fits** the business need, **proves value** by tuning a real model for dollars instead of accuracy, **checks readiness** so pilots don't stall, and **checks every month after launch** that the promise is kept.
 
 ---
 
 ## Appendix A: Abbreviations
 | Term | Meaning |
 |---|---|
-| AI BA | AI business analyst |
+| AI BSA | AI business systems analyst |
 | ROI | Return on investment |
 | AC | Acceptance criteria |
 | UC / US | Use case / user story |

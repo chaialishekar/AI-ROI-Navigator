@@ -35,19 +35,19 @@ def _weighted(df: pd.DataFrame, weights: dict) -> pd.Series:
 
 def quadrant(value: float, feasibility: float, threshold: float = THRESHOLD) -> str:
     if value >= threshold and feasibility >= threshold:
-        return "Quick win"
+        return "Start now"
     if value >= threshold:
-        return "Big bet"
+        return "Fix a blocker first"
     if feasibility >= threshold:
-        return "Fill-in"
-    return "Deprioritize"
+        return "Small win"
+    return "Not now"
 
 
 NEXT_STEP = {
-    "Quick win": "Pilot now: high value and ready to build.",
-    "Big bet": "Fix the blocker first (data, risk or complexity), then build.",
-    "Fill-in": "Do when there is spare capacity.",
-    "Deprioritize": "Park it and revisit next planning cycle.",
+    "Start now": "Run a pilot now: high value and ready to build.",
+    "Fix a blocker first": "Worth it, but fix the main blocker before building.",
+    "Small win": "Easy but low value: do it when there is spare time.",
+    "Not now": "Park it and look again next planning cycle.",
 }
 
 
