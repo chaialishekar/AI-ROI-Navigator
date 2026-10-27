@@ -59,7 +59,7 @@ from src.value import (
     sweep,
 )
 
-st.set_page_config(page_title="AI Use-Case ROI Navigator", page_icon="📈", layout="wide")
+st.set_page_config(page_title="AI Use-Case ROI Navigator", page_icon=":material/insights:", layout="wide")
 
 QUADRANT_COLORS = {
     "Quick win": "#1d7a45",
@@ -515,6 +515,22 @@ def load_pipeline() -> dict | None:
     return {"gold": gold, "log": log, "matches": bool(matches)}
 
 
+def monthly_vs_forecast(t: pd.DataFrame, ok_color: str, alert_color: str, height: int = 320) -> go.Figure:
+    """Actual net savings per month as bars, the monthly forecast as a dashed line; alert months highlighted."""
+    alert = t["adoption_alert"] | t["drift_alert"]
+    why = np.where(t["drift_alert"] & t["adoption_alert"], "adoption and drift alert",
+                   np.where(t["drift_alert"], "drift alert", np.where(t["adoption_alert"], "adoption alert", "on track")))
+    fig = go.Figure([
+        go.Bar(x=t["month"], y=t["actual"], name="Actual", showlegend=False, marker=dict(color=np.where(alert, alert_color, ok_color),
+                                                                         cornerradius=6),
+               customdata=why, hovertemplate="%{x}: %{y:$,.0f} (%{customdata})<extra></extra>"),
+        go.Scatter(x=t["month"], y=t["forecast"], name="Forecast", mode="lines", line=dict(color="#15222a", dash="dash", width=2),
+                   hovertemplate="Forecast %{y:$,.0f}<extra></extra>")])
+    fig.update_layout(height=height, margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(tickformat="$,.0f", title=""),
+                      xaxis_title="", legend=dict(orientation="h", y=-0.2), bargap=0.25)
+    return fig
+
+
 def page_track():
     answer, client, detail = page_header(5, "Is it paying off?",
                                          "After launch, monthly counts from the maintenance system are turned into "
@@ -546,7 +562,7 @@ def page_track():
                 f"flow through bronze (as received) → silver (checked) → gold (dollars, adoption, drift). "
                 f"Last refresh {log['refreshed_at'][:16].replace('T', ' ')} UTC: {log['bronze_rows']} files received, "
                 f"{log['silver_rows']} passed the checks, {len(log['quarantined'])} quarantined. "
-                + ("Gold matches this page's formula exactly." if pipe["matches"] else "⚠️ Gold differs from this page's formula.")))
+                + ("Gold matches this page's formula exactly." if pipe["matches"] else "Warning: gold differs from this page's formula.")))
             for q in log["quarantined"]:
                 st.markdown(md(f"- Quarantined `{q['file']}` ({q['month']}): {q['reason']}"))
         st.caption("The data is a simulated 12-month rollout, not real plant data: adoption is slow at first, then "
@@ -632,17 +648,7 @@ def page_track():
     with t_data:
         st.dataframe(t[COLUMNS + ["recall", "adoption", "actual", "forecast"]].round(2), hide_index=True, width="stretch")
 
-    lo, hi = val["band"]["annual_net"]
-    k = np.arange(1, n + 1)
-    figc = go.Figure()
-    figc.add_trace(go.Scatter(x=t["month"], y=hi / 12 * k, mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip"))
-    figc.add_trace(go.Scatter(x=t["month"], y=lo / 12 * k, mode="lines", fill="tonexty", fillcolor="rgba(15,109,116,0.12)",
-                              line=dict(width=0), name="Forecast range", hoverinfo="skip"))
-    figc.add_trace(go.Scatter(x=t["month"], y=t["cum_forecast"], name="Forecast", mode="lines",
-                              line=dict(color="#0f6d74", dash="dash")))
-    figc.add_trace(go.Scatter(x=t["month"], y=t["cum_actual"], name="Actual", mode="lines+markers", line=dict(color="#a25f00")))
-    figc.update_layout(height=320, margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(tickformat="$,.0f", title=""),
-                       xaxis_title="", legend=dict(orientation="h", y=-0.2))
+    figc = monthly_vs_forecast(t, "#0f6d74", "#c98a2b", height=320)
 
     steps = []
     if tk["drift_now"]:
@@ -661,7 +667,7 @@ def page_track():
               ("Forecast delivered", f"{pct*100:.0f}%" if np.isfinite(pct) else "n/a", f"of {money(promised)}"),
               ("Failures caught now", f"{recall_now*100:.0f}%" if np.isfinite(recall_now) else "n/a",
                f"{val['recall']*100:.0f}% at launch")])
-        st.markdown("**Cumulative net savings since go-live**")
+        st.markdown("**Net savings each month vs the forecast** (amber = a month with an adoption or drift alert)")
         st.plotly_chart(figc, width="stretch")
         if steps:
             next_steps(steps)
@@ -774,7 +780,7 @@ def page_pilot():
         d1, d2 = st.columns(2)
         for col, v in ((d1, 1), (d2, 2)):
             row = pilot["runs"][v].set_index("case_id").loc[pick]
-            col.markdown(f"**Version {v}** {'✅' if row['correct_mode'] else '❌'}")
+            col.markdown(f"**Version {v}** · {'right cause' if row['correct_mode'] else 'wrong cause'}")
             with col:
                 show_draft(row["reply"])
 
@@ -838,8 +844,7 @@ def show_objections(reply: str):
     d = parse(reply) or {}
     esc = lambda t: md(str(t)).replace("*", "\\*")
     for o in d.get("objections", []):
-        icon = {"high": "🔴", "medium": "🟠", "low": "⚪"}.get(o.get("severity"), "⚪")
-        line = f"{icon} **{esc(o.get('assumption'))}** ({o.get('severity', 'n/a')}): {esc(o.get('issue') or o.get('why') or '')}"
+        line = f"**{str(o.get('severity', 'n/a')).upper()}** · **{esc(o.get('assumption'))}**: {esc(o.get('issue') or o.get('why') or '')}"
         if o.get("issue") and o.get("why"):
             line += f"  \n{esc(o['why'])}"
         st.markdown(line)
@@ -932,7 +937,7 @@ def page_agents():
         m1, m2 = st.columns(2)
         for c, v in ((m1, "v1"), (m2, "v2")):
             g = next(r for r in sc[v]["rows"]["memo"] if r["id"] == pick)
-            c.markdown(f"**{v}** {'✅ every number traces to a fact' if g['faithful'] else '❌ invented: ' + ', '.join(f'{n:,.0f}' for n in g['invented'])}")
+            c.markdown(f"**{v}** {'· every number traces to a fact' if g['faithful'] else '· invented: ' + ', '.join(f'{n:,.0f}' for n in g['invented'])}")
             c.markdown(md(agent_reply(v, pick)).replace("## ", "#### "))
 
     with t_rt:
@@ -1149,22 +1154,15 @@ def tour_content(step: str) -> dict:
         t = default_track_frame()
         tk = default_tracking()
         drift = t.loc[t["drift_alert"], "month"].tolist()
-        fig = go.Figure([
-            go.Scatter(x=t["month"], y=t["cum_forecast"], mode="lines", line=dict(color=SAGE, width=3, dash="dot"),
-                       hoverinfo="skip"),
-            go.Scatter(x=t["month"], y=t["cum_actual"], mode="lines", line=dict(color=INK, width=3), fill="tozeroy",
-                       fillcolor="rgba(212,238,94,0.45)", hoverinfo="skip")])
-        fig.add_annotation(x=t["month"].iloc[-1], y=t["cum_forecast"].iloc[-1], text="forecast", showarrow=False,
-                           xanchor="right", yshift=14, font=dict(color="#6b766d"))
-        fig.add_annotation(x=t["month"].iloc[-1], y=t["cum_actual"].iloc[-1], text=f"actual {money(tk['delivered'])}",
-                           showarrow=False, xanchor="right", yshift=-28, font=dict(color=INK), bgcolor="rgba(255,255,255,0.85)")
+        fig = mini_chart(monthly_vs_forecast(t, SAGE, "#e3a948", height=260), 260)
+        fig.update_yaxes(showticklabels=False)
         return dict(page="track", label="Step 5 · Track the value", q="After launch, is it delivering what was promised?",
                     a=f"Monthly maintenance data flows from S3 through a Databricks pipeline. After {tk['months']} months "
                       f"it delivered **{tk['pct']*100:.0f}% of the forecast**. The app splits the gap into causes and "
                       + (f"flagged in {drift[0]} that the model had started missing failures." if drift
                          else "watches for the model getting worse."),
                     chips=["S3 → Databricks", "Bronze · silver · gold", "Drift and adoption alerts"],
-                    chart_title="Cumulative net savings since go-live (simulated rollout)", fig=mini_chart(fig))
+                    chart_title="Net savings each month vs forecast (amber = alert month, simulated rollout)", fig=fig)
     pilot = load_pilot()["summary"]
     if step == "GenAI pilot":
         s1, s2 = pilot[1], pilot[2]
@@ -1205,7 +1203,7 @@ def page_home():
             'toolkit an AI business analyst uses to answer both questions with numbers, worked end to end on one '
             'example:</div>'
             + "".join(f'<span class="chip">{esc_html(x)}</span>' for x in
-                      ("🏭 A mid-size factory", f"{c.failures_per_year} surprise breakdowns a year",
+                      ("A mid-size factory", f"{c.failures_per_year} surprise breakdowns a year",
                        f"{money(c.cost_missed)} each", "AI that warns before a machine fails")),
             unsafe_allow_html=True)
         right.markdown(
@@ -1239,10 +1237,10 @@ def page_home():
     st.markdown('<div class="row-label">What changes for the business</div>', unsafe_allow_html=True)
     i1, i2, i3 = st.columns(3)
     for col, (icon, head, body) in zip((i1, i2, i3), (
-            ("🎯", "Fund the right project", "Ideas are ranked on value and feasibility before anyone writes code."),
-            ("💵", "A number finance can sign", f"{money(val['annual_net'])} a year, with a pessimistic case and the "
+            ("01", "Fund the right project", "Ideas are ranked on value and feasibility before anyone writes code."),
+            ("02", "A number finance can sign", f"{money(val['annual_net'])} a year, with a pessimistic case and the "
                                                "one assumption to check first."),
-            ("🔔", "Problems caught in months, not years", "Ignored alerts and a weakening model show up in the "
+            ("03", "Problems caught in months, not years", "Ignored alerts and a weakening model show up in the "
                                                          "monthly data, with what to do about each."))):
         col.markdown(f'<div class="why"><div class="why-icon">{icon}</div><b>{esc_html(head)}</b>'
                      f'<div class="why-text">{esc_html(body)}</div></div>', unsafe_allow_html=True)
@@ -1310,7 +1308,7 @@ st.markdown("""
 .chart-title { font-size: 0.85rem; color: #6b766d; margin-bottom: 0.2rem; }
 [data-testid="stButtonGroup"] button { border-radius: 999px !important; padding: 0.35rem 1rem; }
 .why { background: #fff; border-radius: 22px; padding: 1.1rem 1.3rem; min-height: 9.5rem; margin-bottom: 0.4rem; box-shadow: 0 4px 16px rgba(29, 37, 33, 0.05); }
-.why-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+.why-icon { display: inline-block; font-size: 0.78rem; font-weight: 700; background: #d4ee5e; border-radius: 999px; padding: 0.15rem 0.6rem; margin-bottom: 0.5rem; }
 .why-text { font-size: 0.9rem; color: #4e5952; margin-top: 0.2rem; }
 @media (max-width: 640px) { .hero-title { font-size: 1.9rem; } .st-key-hero { padding: 1.4rem 1.2rem; border-radius: 24px; } }
 [data-testid="stExpander"] summary { font-weight: 600; }

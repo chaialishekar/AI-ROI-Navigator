@@ -73,10 +73,10 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 
 | Lifecycle stage | Customer question | Epics | Built in v1 |
 |---|---|---|---|
-| **Advisory** | Which AI should we do, and is it worth it? | Epic 1 Prioritize, Epic 2 Prove value | ✅ |
-| **Implementation** | Are we ready, and how do we deploy safely? | Epic 3 Readiness, Epic 5 Responsible AI & deployment | ✅ partly |
-| **Adoption** | Will people use it, and can we prove it to finance? | Epic 4 Share, Epic 6 Adoption & value tracking | ✅ |
-| **Managed services** | Is it still delivering value after launch? | Epic 6 Adoption & value tracking | ✅ partly |
+| **Advisory** | Which AI should we do, and is it worth it? | Epic 1 Prioritize, Epic 2 Prove value | Done |
+| **Implementation** | Are we ready, and how do we deploy safely? | Epic 3 Readiness, Epic 5 Responsible AI & deployment | Partly |
+| **Adoption** | Will people use it, and can we prove it to finance? | Epic 4 Share, Epic 6 Adoption & value tracking | Done |
+| **Managed services** | Is it still delivering value after launch? | Epic 6 Adoption & value tracking | Partly |
 
 ### 3.2 Functional requirements (user stories and acceptance criteria)
 
@@ -117,41 +117,41 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 |---|---|---|---|
 | US-5.1 | As an ops director, I want to see why the model flagged a machine, so that technicians trust and act on alerts. | Each alert shows its top 3 drivers (e.g. tool wear, torque) in plain language. | Should (v2) |
 | US-5.2 | As an IT lead, I want to choose whether the model runs on-premises, at the edge or in the cloud, so that sensitive plant data stays where our policy requires. | Deployment option is selectable; running cost and data-location note update with the choice. | Could (v2) |
-| US-5.3 | As a governance owner, I want an accountable owner and a review trigger for model performance, so that the AI stays safe and accurate after launch. | Readiness check includes owner and monitoring questions; verdict flags gaps. | Must ✅ (covered by US-3.1) |
+| US-5.3 | As a governance owner, I want an accountable owner and a review trigger for model performance, so that the AI stays safe and accurate after launch. | Readiness check includes owner and monitoring questions; verdict flags gaps. | Must (done) (covered by US-3.1) |
 
 #### Epic 6 · Adoption & value tracking (Adoption → Managed services)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should ✅ (Track the value page; gap split into volume, recall, adoption and false alarms) |
-| US-6.2 | As an AI business analyst, I want to track adoption (share of alerts acted on), so that I can spot when users stop trusting the AI. | Adoption rate shown monthly; alert if it drops below 70%. | Should ✅ |
-| US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could ✅ (3-month rolling recall, since ~3 failures a month is too few to judge one month alone) |
+| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should (done) (Track the value page; gap split into volume, recall, adoption and false alarms) |
+| US-6.2 | As an AI business analyst, I want to track adoption (share of alerts acted on), so that I can spot when users stop trusting the AI. | Adoption rate shown monthly; alert if it drops below 70%. | Should (done) |
+| US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could (done) (3-month rolling recall, since ~3 failures a month is too few to judge one month alone) |
 | US-6.4 | As an ops director, I want the tool to suggest the next AI use case once the first is live, so that we expand value step by step. | After a "Go" verdict, the summary lists the next 2 quick wins from Epic 1. | Could (v2) |
 
 #### Epic 7 · GenAI pilot (Advisory → Implementation)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-7.1 | As an AI business analyst, I want to count every cost of a GenAI assistant, not just the subscription, so that the ROI isn't overstated. | Five cost categories (usage, setup, review, training, errors); reproduces the Forbes worked example (162%). | Must ✅ |
-| US-7.2 | As a finance partner, I want to see cash value separately from freed-up time, so that I only bank savings that reach the P&L. | Share of saved hours that becomes cash is an input; cash ROI shown next to ROI. | Must ✅ |
-| US-7.3 | As an AI business analyst, I want to measure cost, speed and accuracy in a real pilot before committing, so that the business case uses evidence instead of guesses. | 30 real alerts run on Amazon Bedrock; tokens, latency and cost recorded per call; drafts graded against the known cause. | Must ✅ |
-| US-7.4 | As a maintenance manager, I want the AI's diagnosis to be reliable, so that technicians don't act on a wrong cause. | Diagnosis moved to a rule check; model only writes the work order; right cause on all real failures in the pilot. | Must ✅ |
-| US-7.5 | As an AI business analyst, I want to know the review time at which the assistant stops paying, so that I know what to measure in production. | Break-even review minutes per draft shown. | Should ✅ |
+| US-7.1 | As an AI business analyst, I want to count every cost of a GenAI assistant, not just the subscription, so that the ROI isn't overstated. | Five cost categories (usage, setup, review, training, errors); reproduces the Forbes worked example (162%). | Must (done) |
+| US-7.2 | As a finance partner, I want to see cash value separately from freed-up time, so that I only bank savings that reach the P&L. | Share of saved hours that becomes cash is an input; cash ROI shown next to ROI. | Must (done) |
+| US-7.3 | As an AI business analyst, I want to measure cost, speed and accuracy in a real pilot before committing, so that the business case uses evidence instead of guesses. | 30 real alerts run on Amazon Bedrock; tokens, latency and cost recorded per call; drafts graded against the known cause. | Must (done) |
+| US-7.4 | As a maintenance manager, I want the AI's diagnosis to be reliable, so that technicians don't act on a wrong cause. | Diagnosis moved to a rule check; model only writes the work order; right cause on all real failures in the pilot. | Must (done) |
+| US-7.5 | As an AI business analyst, I want to know the review time at which the assistant stops paying, so that I know what to measure in production. | Break-even review minutes per draft shown. | Should (done) |
 
 #### Epic 8 · Analyst agents and evals (Implementation)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-8.1 | As an ops manager, I want to describe a use case in plain English and get calculator inputs, so that I don't need to know the ROI model. | Intake agent extracts tasks/year, minutes saved, review minutes, hourly cost and people; converts units in code; anything not stated stays blank with a question. | Must ✅ |
-| US-8.2 | As a CFO, I want a one-page memo where every number matches the business case, so that I can trust what I sign. | Memo agent writes with `{fact}` placeholders that code fills in; grader finds no number that isn't in the facts. | Must ✅ |
-| US-8.3 | As a CFO, I want a skeptical review that finds the weakest assumption, so that inflated business cases are sent back before approval. | Planted flaw in 6 of 6 cases raised as high/medium and listed first; no high-severity alarm on a sound case; each flag has a 30-day test. | Must ✅ |
-| US-8.4 | As an AI business analyst, I want every agent graded automatically on cases with known answers, so that prompt changes are measured, not judged by eye. | `python -m agents.grade` prints a v1 / v2 / v3 scorecard from saved runs; graders covered by unit tests. | Must ✅ |
-| US-8.5 | As the app owner, I want the public demo to show saved results and run live only where AWS credentials exist, so that visitors can't spend my credits. | Live intake only when an AWS profile is available; otherwise saved results with an explanation. | Should ✅ |
+| US-8.1 | As an ops manager, I want to describe a use case in plain English and get calculator inputs, so that I don't need to know the ROI model. | Intake agent extracts tasks/year, minutes saved, review minutes, hourly cost and people; converts units in code; anything not stated stays blank with a question. | Must (done) |
+| US-8.2 | As a CFO, I want a one-page memo where every number matches the business case, so that I can trust what I sign. | Memo agent writes with `{fact}` placeholders that code fills in; grader finds no number that isn't in the facts. | Must (done) |
+| US-8.3 | As a CFO, I want a skeptical review that finds the weakest assumption, so that inflated business cases are sent back before approval. | Planted flaw in 6 of 6 cases raised as high/medium and listed first; no high-severity alarm on a sound case; each flag has a 30-day test. | Must (done) |
+| US-8.4 | As an AI business analyst, I want every agent graded automatically on cases with known answers, so that prompt changes are measured, not judged by eye. | `python -m agents.grade` prints a v1 / v2 / v3 scorecard from saved runs; graders covered by unit tests. | Must (done) |
+| US-8.5 | As the app owner, I want the public demo to show saved results and run live only where AWS credentials exist, so that visitors can't spend my credits. | Live intake only when an AWS profile is available; otherwise saved results with an explanation. | Should (done) |
 
 #### Epic 9 · Data pipeline (Implementation → Managed services)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-9.1 | As a plant IT lead, I want to drop each month's actuals file in one secure place, so that nobody emails spreadsheets around. | Private S3 bucket in us-east-2: public access blocked, encrypted, versioned, HTTPS only, access logged to CloudWatch. | Must ✅ |
-| US-9.2 | As an AI business analyst, I want bad files stopped before they reach the numbers, so that finance never sees impossible savings. | Silver layer applies the Track value checks; failing rows go to a quarantine table with the reason; a planted bad file is quarantined. | Must ✅ |
-| US-9.3 | As a finance partner, I want the pipeline's numbers to match the app exactly, so that there is one version of the truth. | Gold table (Databricks SQL) equals `src/tracking.py` (pandas) for every month, to the cent, including alert flags; checked by a unit test and shown in the app. | Must ✅ |
-| US-9.4 | As a data engineer, I want re-runs to be safe, so that a retry never double-counts a month. | `COPY INTO` skips files already loaded (second run loads 0 rows); a resent file for a month replaces the earlier one in silver. | Should ✅ |
+| US-9.1 | As a plant IT lead, I want to drop each month's actuals file in one secure place, so that nobody emails spreadsheets around. | Private S3 bucket in us-east-2: public access blocked, encrypted, versioned, HTTPS only, access logged to CloudWatch. | Must (done) |
+| US-9.2 | As an AI business analyst, I want bad files stopped before they reach the numbers, so that finance never sees impossible savings. | Silver layer applies the Track value checks; failing rows go to a quarantine table with the reason; a planted bad file is quarantined. | Must (done) |
+| US-9.3 | As a finance partner, I want the pipeline's numbers to match the app exactly, so that there is one version of the truth. | Gold table (Databricks SQL) equals `src/tracking.py` (pandas) for every month, to the cent, including alert flags; checked by a unit test and shown in the app. | Must (done) |
+| US-9.4 | As a data engineer, I want re-runs to be safe, so that a retry never double-counts a month. | `COPY INTO` skips files already loaded (second run loads 0 rows); a resent file for a month replaces the earlier one in silver. | Should (done) |
 
 ### 3.3 Non-functional requirements
 | Category | Requirement |
@@ -245,31 +245,31 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 
 | Test | Linked stories | Method | Result |
 |---|---|---|---|
-| Ranking matches manual calculation for 3 use cases | US-1.1 | Compare app output to hand calculation | ✅ Passed (e.g. predictive maintenance: value 4.75, feasibility 3.80, priority 18.05) |
-| Filters and weight changes update instantly | US-1.2, US-1.3 | Manual UI test | ✅ Passed |
-| Model metrics come from test data only | US-2.5 | Stratified 70/30 split; all metrics on 3,000 unseen records | ✅ Passed |
-| Dollar-optimal threshold differs from accuracy-optimal | US-2.3 | Compare both on the test set (default costs) | ✅ Passed: 0.05 vs 0.90; dollar-optimal saves $29k/year more |
-| Verdict rules give the expected result for 3 sample checklists | US-3.2 | Unit tests (`tests/test_core.py`) | ✅ Passed |
-| Dollar math matches hand calculation | US-2.2 | Unit test on a 4-record example | ✅ Passed |
-| Uncertainty range contains the point estimate | US-2.7 | Unit test (`tests/test_core.py`) | ✅ Passed: default case $660k, range $611k–$704k |
-| Scenarios are ordered low ≤ base ≤ high; tornado sorted by impact | US-2.8 | Unit test (`tests/test_core.py`) | ✅ Passed: low case $164k/year, 20.5-month payback |
-| Actual savings match hand calculation; adoption and drift alerts fire on the right months | US-6.1, US-6.2, US-6.3 | Unit test on a 4-month example | ✅ Passed |
-| Gap causes add up exactly to actual − forecast; actuals equal to the forecast give no gap | US-6.1 | Unit tests (5 simulated rollouts + exact-match case) | ✅ Passed: sample rollout $464k vs $660k forecast, gap −$197k |
-| Bad actuals files are rejected with a clear message | US-6.1 | Unit test (missing column, impossible counts) | ✅ Passed |
-| GenAI ROI reproduces the Forbes bookkeeping example | US-7.1 | Unit test | ✅ Passed: cost $6,350, gain $16,640, ROI 162% |
-| Cash + capacity = total gain; break-even review gives zero net value | US-7.2, US-7.5 | Unit tests | ✅ Passed |
-| Pilot v1 (model diagnoses and writes) | US-7.3 | 30 Bedrock calls, graded against true cause | ❌ 33% right cause (42% on real failures, 0 of 6 false alarms); $0.000038 per draft, 0.9 s |
-| Pilot v2 (rule check diagnoses, model writes) | US-7.4 | Same 30 alerts | ✅ 100% right cause on real failures (83% overall), diagnosis kept in 30/30 drafts; 4 drafts mention PC parts, so review stays |
-| Rule check matches the manual and every real failure in the pilot set | US-7.4 | Unit test | ✅ Passed |
-| Agents v1 (model does everything) | US-8.1–8.3 | 17 Bedrock calls (Nova Lite), graded in code | ❌ Intake 42% fields right (arithmetic inside JSON); 1 of 2 memos invented a number; red team caught 3 of 6 planted flaws |
-| Agents v2 (model quotes, code converts and fills in numbers) | US-8.1, US-8.2 | 19 calls, same graders | ✅ Intake 100%, nothing invented; 2 of 2 memos faithful. ❌ Red team still 2 of 6, even when given the ratios |
-| Agents v3 red team (code checklist judges, model explains) | US-8.3 | 9 calls | ✅ 6 of 6 planted flaws caught and listed first; 0 false alarms on the sound case; model explained 8 of 9 flags. Held-out flaws 2 of 2, but known when the checklist was written, so not a blind test |
-| Unit conversion, quote check, placeholder fill-in, checklist verdict | US-8.1–8.4 | Unit tests | ✅ Passed |
-| Live mode hidden without AWS credentials | US-8.5 | Manual test with credentials removed | ✅ Passed |
-| Bucket controls in place | US-9.1 | Read back every setting after creation | ✅ Passed: public access blocked, ACLs disabled, versioning on, SSE-S3 with SSE-C blocked, HTTPS-only policy, logs to CloudWatch, us-east-2 |
-| Planted bad file is quarantined | US-9.2 | 13 files landed, one with prevented > flagged | ✅ Passed: 12 months in silver, `month=2027-01/actuals.csv` quarantined with both reasons |
-| Gold table equals the app's formula | US-9.3 | Unit test on the exported gold table | ✅ Passed: identical savings, adoption, recall and flags; $463,500 delivered vs $660,392 forecast |
-| Re-run does not double-count | US-9.4 | Run the job twice | ✅ Passed: second run loaded 0 rows |
+| Ranking matches manual calculation for 3 use cases | US-1.1 | Compare app output to hand calculation | Passed (e.g. predictive maintenance: value 4.75, feasibility 3.80, priority 18.05) |
+| Filters and weight changes update instantly | US-1.2, US-1.3 | Manual UI test | Passed |
+| Model metrics come from test data only | US-2.5 | Stratified 70/30 split; all metrics on 3,000 unseen records | Passed |
+| Dollar-optimal threshold differs from accuracy-optimal | US-2.3 | Compare both on the test set (default costs) | Passed: 0.05 vs 0.90; dollar-optimal saves $29k/year more |
+| Verdict rules give the expected result for 3 sample checklists | US-3.2 | Unit tests (`tests/test_core.py`) | Passed |
+| Dollar math matches hand calculation | US-2.2 | Unit test on a 4-record example | Passed |
+| Uncertainty range contains the point estimate | US-2.7 | Unit test (`tests/test_core.py`) | Passed: default case $660k, range $611k–$704k |
+| Scenarios are ordered low ≤ base ≤ high; tornado sorted by impact | US-2.8 | Unit test (`tests/test_core.py`) | Passed: low case $164k/year, 20.5-month payback |
+| Actual savings match hand calculation; adoption and drift alerts fire on the right months | US-6.1, US-6.2, US-6.3 | Unit test on a 4-month example | Passed |
+| Gap causes add up exactly to actual − forecast; actuals equal to the forecast give no gap | US-6.1 | Unit tests (5 simulated rollouts + exact-match case) | Passed: sample rollout $464k vs $660k forecast, gap −$197k |
+| Bad actuals files are rejected with a clear message | US-6.1 | Unit test (missing column, impossible counts) | Passed |
+| GenAI ROI reproduces the Forbes bookkeeping example | US-7.1 | Unit test | Passed: cost $6,350, gain $16,640, ROI 162% |
+| Cash + capacity = total gain; break-even review gives zero net value | US-7.2, US-7.5 | Unit tests | Passed |
+| Pilot v1 (model diagnoses and writes) | US-7.3 | 30 Bedrock calls, graded against true cause | Failed: 33% right cause (42% on real failures, 0 of 6 false alarms); $0.000038 per draft, 0.9 s |
+| Pilot v2 (rule check diagnoses, model writes) | US-7.4 | Same 30 alerts | Passed: 100% right cause on real failures (83% overall), diagnosis kept in 30/30 drafts; 4 drafts mention PC parts, so review stays |
+| Rule check matches the manual and every real failure in the pilot set | US-7.4 | Unit test | Passed |
+| Agents v1 (model does everything) | US-8.1–8.3 | 17 Bedrock calls (Nova Lite), graded in code | Failed: Intake 42% fields right (arithmetic inside JSON); 1 of 2 memos invented a number; red team caught 3 of 6 planted flaws |
+| Agents v2 (model quotes, code converts and fills in numbers) | US-8.1, US-8.2 | 19 calls, same graders | Passed: Intake 100%, nothing invented; 2 of 2 memos faithful. Failed: Red team still 2 of 6, even when given the ratios |
+| Agents v3 red team (code checklist judges, model explains) | US-8.3 | 9 calls | Passed: 6 of 6 planted flaws caught and listed first; 0 false alarms on the sound case; model explained 8 of 9 flags. Held-out flaws 2 of 2, but known when the checklist was written, so not a blind test |
+| Unit conversion, quote check, placeholder fill-in, checklist verdict | US-8.1–8.4 | Unit tests | Passed |
+| Live mode hidden without AWS credentials | US-8.5 | Manual test with credentials removed | Passed |
+| Bucket controls in place | US-9.1 | Read back every setting after creation | Passed: public access blocked, ACLs disabled, versioning on, SSE-S3 with SSE-C blocked, HTTPS-only policy, logs to CloudWatch, us-east-2 |
+| Planted bad file is quarantined | US-9.2 | 13 files landed, one with prevented > flagged | Passed: 12 months in silver, `month=2027-01/actuals.csv` quarantined with both reasons |
+| Gold table equals the app's formula | US-9.3 | Unit test on the exported gold table | Passed: identical savings, adoption, recall and flags; $463,500 delivered vs $660,392 forecast |
+| Re-run does not double-count | US-9.4 | Run the job twice | Passed: second run loaded 0 rows |
 
 ---
 
