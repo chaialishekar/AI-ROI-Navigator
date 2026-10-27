@@ -209,6 +209,7 @@ Every Must story, where it is built, how it is tested and the result. Should and
 | US-1.6 Explain why an option was picked | `src/matching.py` `reasons()` | `test_matching_recommends_by_client` | UAT-01 | Pass |
 | US-2.2 Savings in dollars | `src/value.py` `evaluate()` | `test_value_math` | UAT-03 | Pass |
 | US-2.3 Warning level set for money, not accuracy | `src/value.py` `sweep()`, step 2 | Validation table, solution_design.md §8 | UAT-03 | Pass |
+| US-2.9 Compare with options that need no AI | `src/workorder.py` `rule_alerts()`, step 2 | `test_rule_alerts_align_with_test_set` | n/a | Pass |
 | US-2.7 / 2.8 Ranges and best / worst case | `src/value.py` `bootstrap()`, `scenarios()` | `test_bootstrap_range_contains_point_estimate`, `test_sensitivity_and_scenarios_are_ordered` | UAT-03 | Pass |
 | US-3.1 / 3.2 Readiness check and verdict | `src/readiness.py` | `test_verdict_rules` | UAT-05 | Pass |
 | US-4.1 One-page case and recommendation for finance | step 4, `decision_rule()` | n/a | UAT-04, UAT-13 | Pass |

@@ -271,3 +271,13 @@ def test_matching_data_maturity_lowers_feasibility():
     poor = Client("B", "Manufacturing", "Unplanned downtime", 1, "Medium", "Within a year")
     f = lambda c: match(lib, c).set_index("use_case").loc["Predictive maintenance", "feasibility"]
     assert f(poor) < f(rich)
+
+
+def test_rule_alerts_align_with_test_set():
+    from src.model import train_and_score
+    from src.workorder import rule_alerts
+    res, rules = train_and_score(), rule_alerts()
+    assert len(rules) == len(res["y_test"])
+    r = evaluate(res["y_test"], rules, 0.5, Costs())
+    assert r["recall"] > 0.9          # failures were generated from these limits
+    assert r["false_alarms"] > 5 * evaluate(res["y_test"], res["models"]["Gradient boosting"]["proba"], 0.05, Costs())["false_alarms"]

@@ -39,6 +39,7 @@ from src.scoring import (
     VALUE_CRITERIA,
     score,
 )
+from src.brief import build_brief
 from src.model import load_data, train_and_score
 from src.matching import EXAMPLE_CLIENTS, INDUSTRIES, RISK_WEIGHT, URGENCY_WEIGHT, Client, match, problems, weights
 from src.readiness import ACTIONS, DIMENSIONS, verdict
@@ -48,7 +49,7 @@ from src.tracking import ADOPTION_FLOOR, COLUMNS, DRIFT_DROP, DRIFT_WINDOW, expl
 from src.agents import ASSUMPTIONS as AGENT_ASSUMPTIONS, INTAKE_FIELDS, run_live
 from src.agents import MODEL_ID as AGENT_MODEL_ID
 from agents.grade import scorecard
-from src.workorder import MODEL_ID, MODES, grade, parse, summary as pilot_summary
+from src.workorder import MODEL_ID, MODES, grade, parse, rule_alerts, summary as pilot_summary
 from src.value import (
     ASSUMPTIONS,
     Costs,
@@ -69,6 +70,22 @@ QUADRANT_COLORS = {
     "Small win": "#a25f00",
     "Not now": "#8a979c",
 }
+
+
+@st.cache_data
+def manual_rule_alerts() -> np.ndarray:
+    return rule_alerts()
+
+
+def alternatives(r: dict, costs: Costs) -> dict:
+    """The AI against two options without it: do nothing, and alerts from the maintenance manual's limits.
+
+    Also the inspection cost above which the AI beats the rules on money (it raises far fewer false alarms)."""
+    rules = evaluate(get_model_results()["y_test"], manual_rule_alerts(), 0.5, costs)
+    extra_fa = rules["false_alarms"] - r["false_alarms"]
+    gap = rules["annual_net"] - r["annual_net"]
+    flip = costs.cost_false_alarm + gap / extra_fa if extra_fa > 0 and gap > 0 else None
+    return {"rules": rules, "flip_inspection_cost": flip}
 
 
 @st.cache_data
@@ -361,6 +378,30 @@ def page_value():
                          "Annual net savings": money(b["annual_net"]), "Payback (months)": round(b["payback_months"], 1)})
         st.markdown("**Models compared**, each at its most profitable threshold")
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+        alt = alternatives(r, costs)
+        rl = alt["rules"]
+        st.markdown("**Without AI: alerts from the maintenance manual's limits**")
+        st.dataframe(pd.DataFrame([
+            {"Option": "Do nothing", "Breakdowns caught": "0%", "Alerts that are real": "n/a",
+             "False alarms a year": "0", "Annual net savings": money(0)},
+            {"Option": "Rules from the manual", "Breakdowns caught": f"{rl['recall']*100:.0f}%",
+             "Alerts that are real": f"{rl['precision']*100:.0f}%", "False alarms a year": f"{rl['false_alarms']:.0f}",
+             "Annual net savings": money(rl["annual_net"])},
+            {"Option": f"AI ({model_name.lower()})", "Breakdowns caught": f"{r['recall']*100:.0f}%",
+             "Alerts that are real": f"{r['precision']*100:.0f}%", "False alarms a year": f"{r['false_alarms']:.0f}",
+             "Annual net savings": money(r["annual_net"])},
+        ]), hide_index=True, width="stretch")
+        st.markdown(md(
+            f"On this dataset the rules look as good as the AI, or better: they save {money(rl['annual_net'])} a year "
+            f"against {money(r['annual_net'])}. That is because the dataset is synthetic and its breakdowns were "
+            "generated from these same limits; in a real plant failures do not follow the manual this neatly. "
+            f"The rules also raise **{rl['false_alarms']:.0f} false alarms a year against {r['false_alarms']:.0f}**: "
+            f"only {rl['precision']*100:.0f}% of their alerts are real, and crew trust is already the weakest "
+            "readiness area."
+            + (f" The AI also wins on money once an inspection, including stopping the machine, costs more than "
+               f"**{money(alt['flip_inspection_cost'])}** (assumed: {money(costs.cost_false_alarm)})."
+               if alt["flip_inspection_cost"] else "")
+            + " Recommendation: the AI, with the manual's limits kept as the rule check that explains each warning."))
         st.markdown("**Custom build vs ready-made solution**")
         cc1, cc2 = st.columns(2)
         custom_m = cc1.number_input("Months to deploy: custom build", 0, 24, 6, 1, key="custom_m")
@@ -427,6 +468,9 @@ def page_value():
                f"changes the answer most ({money(top['swing'])} over 3 years)."),
             md("**Set the warning level to save the most money, not to be the most accurate**"
                + (f": that is worth {money(gap)} more a year." if gap > 1 else ".")),
+            md(f"**Choose the AI over simpler rules.** Alerts from the maintenance manual save "
+               f"{money(alt['rules']['annual_net'])} on this synthetic data but raise {alt['rules']['false_alarms']:.0f} "
+               f"false alarms a year against {r['false_alarms']:.0f} (see Other options)."),
             md(f"**Go live soon.** Every month of delay costs about {money(r['annual_net'] / 12)}."),
         ])
     nav_footer("value")
@@ -534,6 +578,85 @@ def decision_rule(val: dict, rd: dict) -> tuple[str, str]:
     return "Proceed", f"It saves money even in the worst case ({money(worst)} a year) and the team is ready."
 
 
+GAP_OWNER = {"Data": "Data / IT lead", "Fits how people work": "Maintenance manager", "Clear payoff": "Finance",
+             "People trust it": "Operations director", "Clear ownership": "Operations director"}
+GAP_EFFECT = {"Data": "The AI misses breakdowns it should catch",
+              "Fits how people work": "Warnings do not reach the crew; savings fall short",
+              "Clear payoff": "Finance cannot verify the savings",
+              "People trust it": "The crew ignores correct warnings",
+              "Clear ownership": "Nobody notices when the AI gets weaker"}
+
+
+def business_case_brief(val: dict, rd: dict) -> dict:
+    """Everything the executive brief PDF shows, as formatted strings (layout is in src/brief.py)."""
+    c, cases = val["costs"], val["cases"]
+    rules = alternatives(val, c)["rules"]
+    label, reason = decision_rule(val, rd)
+    calc = [["Breakdowns today", money(val["cost_without"]), f"{c.failures_per_year:.0f} breakdowns x {money(c.cost_missed)}"],
+            ["Warned in time, repaired as planned", money(val["caught"] * c.cost_caught),
+             f"{val['caught']:.1f} x {money(c.cost_caught)} planned repair"],
+            ["Missed breakdowns", money(val["missed"] * c.cost_missed), f"{val['missed']:.1f} x {money(c.cost_missed)}"],
+            ["False alarms", money(val["false_alarms"] * c.cost_false_alarm),
+             f"{val['false_alarms']:.1f} inspections x {money(c.cost_false_alarm)}"],
+            ["Running the AI", money(c.running_cost), "licence, computing and support"],
+            ["Net savings", money(val["annual_net"]), "breakdowns today minus the four costs above"]]
+    risks = [[f"{d} ({s:.1f} / 5)", GAP_EFFECT[d], ACTIONS[d], GAP_OWNER[d]] for d, s in rd["weakest"][:2] if s < 3.5]
+    risks += [[f"Cost of a breakdown is an estimate", f"Moves 3-year value by {money(val['top_swing'])}",
+               "Agree it with finance from repair invoices before approval", "Finance"],
+              ["The dataset is synthetic", "Accuracy in a real plant is likely lower; simple rules look unrealistically good",
+               "Pilot on one line and measure catch rate and false alarms before scaling", "Data / IT lead"],
+              ["The AI gets weaker over time", "Fewer breakdowns caught",
+               f"Monthly check; update the AI if its catch rate drops {DRIFT_DROP*100:.0f}+ points over {DRIFT_WINDOW} months",
+               "Data / IT lead"]]
+    m = c.months_to_deploy
+    return {
+        "title": "Predictive maintenance for a mid-size factory", "client": "Mid-size factory, manufacturing",
+        "author": "Chaitali Shekar", "decision": label, "decision_reason": reason,
+        "kpis": [("Projected savings a year", money(val["annual_net"]), "after AI running costs"),
+                 ("Pays for itself in", months(val["payback_months"]), f"{money(c.deployment_cost)} to set up"),
+                 ("3-year ROI", f"{val['roi_3y']*100:,.0f}%", f"{money(val['three_year'])} net over 3 years"),
+                 ("If costs are worse", money(cases["Low"]["annual_net"]), "savings a year, worst case")],
+        "situation": (f"A mid-size parts maker has about {c.failures_per_year:.0f} unplanned machine breakdowns a year at "
+                      f"about {money(c.cost_missed)} each in downtime and emergency repair: <b>{money(val['cost_without'])} "
+                      "a year</b>. The machines already record temperature, speed, torque and tool wear, so a model can "
+                      f"warn before a breakdown and turn it into a planned repair at about {money(c.cost_caught)}. "
+                      "Predictive maintenance was the best fit of 12 AI options evaluated, and the only one aimed at "
+                      "unplanned downtime."),
+        "options": [["Do nothing", "0%", "0", money(0), f"Keeps losing {money(val['cost_without'])} a year"],
+                    ["Alerts from the maintenance manual's limits", f"{rules['recall']*100:.0f}%",
+                     f"{rules['false_alarms']:.0f}", money(rules["annual_net"]),
+                     f"Only {rules['precision']*100:.0f}% of alerts are real. Strong here only because the synthetic "
+                     "data was generated from these same limits"],
+                    [f"AI warning model (selected)", f"{val['recall']*100:.0f}%", f"{val['false_alarms']:.0f}",
+                     money(val["annual_net"]), f"{val['precision']*100:.0f}% of alerts are real, which protects crew trust; "
+                     "the manual's limits are kept to explain each warning"]],
+        "calc": calc,
+        "cases": [[name, money(x["annual_net"]), money(x["three_year"]), months(x["payback_months"])]
+                  for name, x in zip(["Costs worse than expected", "As planned", "Costs better than expected"],
+                                     cases.values())],
+        "driver": (f"Biggest driver: {val['top_driver'].lower()}, which moves 3-year value by {money(val['top_swing'])}. "
+                   "Worse case = every cost assumption at the end of its range that hurts value."),
+        "risks": risks,
+        "rules": [list(r) for r in DECISION_RULES], "rule_index": [r[0] for r in DECISION_RULES].index(label),
+        "plan": [["Month 0", f"Approve the {money(c.deployment_cost)} setup budget; agree the cost of a breakdown with finance",
+                  "Savings stay positive in the worst case"],
+                 [f"Months 1-{m:.0f}" if m > 1 else "Month 1",
+                  "Connect warnings to the maintenance system, close the readiness gaps, train the crew",
+                  "Readiness verdict is Go; all 13 acceptance tests pass"],
+                 ["Launch", "Warnings go live on one line; a planner approves every work order",
+                  "No work order released without approval"],
+                 ["Every month", "Compare savings with the forecast and explain any gap",
+                  f"Crew acts on {ADOPTION_FLOOR:.0%}+ of warnings; catch rate within {DRIFT_DROP*100:.0f} points of launch"],
+                 ["Month 6", "Decide whether to scale to more lines, improve, or reconsider",
+                  "At least 90% of the forecast delivered to scale"]],
+        "evidence": [["Catch, miss and false-alarm rates", "Measured", "3,000 held-out machine records (AI4I 2020, synthetic)"],
+                     ["Plant costs", "Assumption", "Illustrative defaults, editable in the app"],
+                     ["AI option scores", "Estimate", "My scoring of 12 options on 7 criteria"],
+                     ["Readiness scores", "Assessment", "Example ratings for the factory"],
+                     ["Results after launch", "Simulated", "12 made-up months run through the S3 to Databricks pipeline"]],
+    }
+
+
 def page_case():
     answer, client, detail = page_header(4, "Ready for sign-off?",
                                          "Everything so far on one page for finance to approve. "
@@ -600,8 +723,11 @@ Acceptance criteria: 12 user acceptance tests and a requirements traceability ma
               ("Team ready?", rd["verdict"], f"average {rd['avg']:.1f} / 5")])
         st.markdown("**How the recommendation is decided**")
         st.markdown(rules_md.replace(f"| {label} |", f"| **{label}** (this case) |"))
-        st.download_button("Download the one-pager (.md)", summary, file_name="ai_business_case.md", key="dl_summary",
-                           type="primary")
+        b1, b2, _ = st.columns([1.3, 1, 1.2])
+        b1.download_button("Download the decision brief (PDF)", build_brief(business_case_brief(val, rd)),
+                           file_name="ai_decision_brief.pdf", mime="application/pdf", key="dl_brief", type="primary",
+                           icon=":material/picture_as_pdf:")
+        b2.download_button("Plain-text version (.md)", summary, file_name="ai_business_case.md", key="dl_summary")
     with detail:
         st.markdown(md(summary))
     nav_footer("case")
@@ -1309,7 +1435,8 @@ def tour_content(stage: str) -> dict:
         return dict(page="pick", q="Which AI fits this need, and why that one?",
                     how="Scored 12 AI options on 7 criteria (3 for value, 4 for ease, including how ready the data is), "
                         "then adjusted the scores for this factory's main problem, data quality, tolerance for AI "
-                        "mistakes and how fast it needs results.",
+                        "mistakes and how fast it needs results. In stage 2 the pick is also priced against doing "
+                        "nothing and against simple alerts from the maintenance manual.",
                     made="Weighted decision matrix, value vs effort map, and the reasons for the pick.",
                     docs=[],
                     decision=f"{m.iloc[0]['use_case']}: the only option that solves unplanned downtime, and ready to start.",
@@ -1320,6 +1447,7 @@ def tour_content(stage: str) -> dict:
     if stage.startswith("2"):
         ap = accuracy_vs_profit()
         low = val["cases"]["Low"]["annual_net"]
+        rules = alternatives(val, c)["rules"]
         return dict(page="value", q="Does it save more than it costs, and how sure are we?",
                     how="Trained a breakdown-warning model on real machine data and turned every catch, miss and false "
                         "alarm into dollars. Set the warning level to save the most money rather than to be the most "
@@ -1329,7 +1457,9 @@ def tour_content(stage: str) -> dict:
                     docs=[],
                     decision=f"Invest: {money(val['annual_net'])} a year after running costs, {money(c.deployment_cost)} "
                              f"to set up, pays back in {months(val['payback_months'])}. Still {money(low)} a year if "
-                             "every cost estimate is too optimistic.",
+                             f"every cost estimate is too optimistic. Rules from the manual save {money(rules['annual_net'])} "
+                             f"on this synthetic data but raise {rules['false_alarms']:.0f} false alarms a year against "
+                             f"{val['false_alarms']:.0f}, so the AI is recommended.",
                     evidence="Projection: real model results, assumed plant costs.",
                     chart_title="Cost of breakdowns each year",
                     fig=mini_bars(["Today", "With the AI", "Saved"],

@@ -76,6 +76,21 @@ def diagnose(case: pd.Series) -> tuple[str, str]:
     return "no fault found", "no limit in the maintenance manual is breached"
 
 
+def rule_alerts() -> np.ndarray:
+    """A no-AI alternative: alert on every test-set record that breaks a limit in the maintenance manual.
+
+    Returns 1.0 / 0.0 per record, in the same order as train_and_score()'s test set, so it can be priced
+    with value.evaluate() at any threshold between 0 and 1. In AI4I 2020 the failures were generated from
+    these same limits, so this baseline is unrealistically strong on this dataset.
+    """
+    df = load_data()
+    _, idx_te = train_test_split(df.index, test_size=0.3, stratify=df[TARGET], random_state=RANDOM_STATE)
+    test = df.loc[idx_te]
+    f = build_features(test)
+    f["variant"] = test["Type"].values
+    return np.array([diagnose(r)[0] != "no fault found" for _, r in f.iterrows()], dtype=float)
+
+
 def _true_mode(row: pd.Series) -> str:
     hits = [k for k in ["TWF", "HDF", "PWF", "OSF"] if row[k] == 1]
     return "NONE" if row[TARGET] == 0 else (hits[0] if len(hits) == 1 else "MULTI")
