@@ -2,7 +2,7 @@
 
 > Most teams judge AI models by accuracy. This tool judges them by dollars.
 
-Most AI projects stall between pilot and production: companies pick projects on hype, judge models by accuracy instead of business value, and launch before they're ready. The ROI Navigator follows one project through 7 steps in three stages. It opens on an overview that tells the story in four clickable cards. Every page then follows one template: **the client view first** (the question, the answer, three numbers, one chart and what to do next), and **the analysis on demand** under *See the analysis* (assumptions, method and data), then a link to the next step:
+Most AI projects stall between pilot and production: companies pick projects on hype, judge models by accuracy instead of business value, and launch before they're ready. The ROI Navigator follows one project through 7 steps in three stages. It opens on an overview that states the problem and the money at stake, with an interactive tour of the steps. Every page then follows one template: **the client view first** (the question, the answer, three numbers, one chart and what to do next), and **the analysis on demand** under *See the analysis* (assumptions, method and data), then a link to the next step:
 
 | Step | Question it answers |
 |---|---|
@@ -73,3 +73,7 @@ Matzka, S. (2020). *AI4I 2020 Predictive Maintenance Dataset*. UCI Machine Learn
 
 ## Author
 Chaitali Shekar · MS Engineering Management, NC State University
+
+## Roadmap
+
+What comes next, prioritised with the same value × feasibility scoring the app uses: [docs/roadmap.md](docs/roadmap.md).

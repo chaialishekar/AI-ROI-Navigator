@@ -161,7 +161,7 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 | Transparency | Every assumption is labeled and editable |
 | Trust | Model metrics reported on held-out test data only |
 | Branding | Independent project; no company branding |
-| Clarity | A first-time visitor understands the point in under a minute: an overview that tells the story in four clickable cards, and every page shows the client view first (question, answer, three numbers, one chart, next steps) with the analysis (assumptions, method, data) one click away |
+| Clarity | A first-time visitor understands the point in under a minute: an overview that states the problem and the money at stake, with an interactive tour of the steps, and every page shows the client view first (question, answer, three numbers, one chart, next steps) with the analysis (assumptions, method, data) one click away |
 | Navigation | Pages grouped by stage (Plan the project, After launch, Generative AI) with their own links, Back / Next buttons on every page, and every page works on its own with default inputs |
 | Motion | Short fade-in when a page opens; switched off for visitors who ask their system for reduced motion |
 
@@ -172,7 +172,7 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 User (browser)
    │
    ▼
-Streamlit web app ──► Overview: the journey in 4 clickable cards + where GenAI fits
+Streamlit web app ──► Overview: client and impact up front + interactive tour of the steps
    │  Plan the project ├► 1 Pick a use case   ──► use_cases.csv + scoring engine
    │                   ├► 2 Prove the value   ──► trained model + test predictions + cost engine
    │                   ├► 3 Check readiness   ──► checklist + verdict rules

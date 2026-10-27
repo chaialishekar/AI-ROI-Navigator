@@ -395,7 +395,7 @@ def page_ready():
     answer.markdown({"Go": f"**Yes, go.** Keep an eye on {weak}.",
                      "Fix first": f"**Not yet.** The model is fine; fix {weak} before launch.",
                      "Not ready": f"**No.** Too many gaps; start with {weak}."}[v])
-    st.session_state["readiness"] = {"verdict": v, "avg": avg, "weakest": weakest}
+    st.session_state["readiness"] = {"verdict": v, "avg": avg, "weakest": weakest, "dims": dim_scores}
 
     figr = px.bar(pd.DataFrame({"Area": list(dim_scores), "Score": list(dim_scores.values())}),
                   x="Score", y="Area", orientation="h", range_x=[0, 5], height=260, text="Score")
@@ -1070,61 +1070,194 @@ def nav_footer(name: str):
 
 
 # ---------------------------------------------------------------- Overview
-def story_card(key: str, page: str, step: str, number: str, line: str):
-    """A clickable card: the whole card links to the page."""
-    with st.container(border=True, key=f"story_{key}"):
-        st.markdown(f'<div class="story-step">{esc_html(step)}</div><div class="story-num">{esc_html(number)}</div>'
-                    f'<div class="story-line">{esc_html(line)}</div>', unsafe_allow_html=True)
-        st.page_link(PAGES[page], label="Open", icon=":material/arrow_forward:")
+SAGE, LIME, INK = "#c8d2c3", "#d4ee5e", "#1d2521"
+
+
+@st.cache_data
+def accuracy_vs_profit() -> dict:
+    """Savings at the most accurate vs the most profitable alert threshold, default plant costs."""
+    res = get_model_results()
+    curve = sweep(res["y_test"], res["models"]["Gradient boosting"]["proba"], Costs())
+    return {"accurate": float(curve.loc[curve["accuracy"].idxmax(), "annual_net"]),
+            "profitable": float(curve.loc[curve["annual_net"].idxmax(), "annual_net"])}
+
+
+def default_track_frame() -> pd.DataFrame:
+    val, pipe = get_value(), load_pipeline()
+    actuals = pipe["gold"][COLUMNS] if pipe else pd.read_csv("data/sample_actuals.csv")
+    return track(actuals, val, val["costs"])
+
+
+def mini_chart(fig: go.Figure, height: int = 260) -> go.Figure:
+    fig.update_layout(height=height, margin=dict(l=0, r=0, t=10, b=0), showlegend=False,
+                      paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=dict(color=INK))
+    fig.update_xaxes(showgrid=False, zeroline=False, title="")
+    fig.update_yaxes(showgrid=False, zeroline=False, title="", showticklabels=False)
+    return fig
+
+
+def mini_bars(labels, values, texts, highlight, horizontal=False) -> go.Figure:
+    colors = [LIME if h else SAGE for h in highlight]
+    bar = (go.Bar(y=labels, x=values, orientation="h") if horizontal else go.Bar(x=labels, y=values))
+    bar.update(text=texts, textposition="outside", cliponaxis=False, marker=dict(color=colors, cornerradius=14),
+               hoverinfo="skip", textfont=dict(size=15, color=INK))
+    fig = mini_chart(go.Figure(bar))
+    if horizontal:
+        fig.update_yaxes(showticklabels=True, autorange="reversed")
+        fig.update_xaxes(showticklabels=False, range=[0, max(values) * 1.2])
+    else:
+        fig.update_yaxes(range=[0, max(values) * 1.25])
+    return fig
+
+
+def tour_content(step: str) -> dict:
+    """Question, plain answer, chips and a small chart for one step of the overview tour."""
+    val, rd = get_value(), get_readiness()
+    if step == "Choose":
+        scored = score(load_use_cases(), DEFAULT_VALUE_WEIGHTS, DEFAULT_FEAS_WEIGHTS).head(7)
+        wins = scored[scored["quadrant"] == "Quick win"]
+        return dict(page="pick", label="Step 1 · Pick a use case", q="Which AI idea should a company fund first?",
+                    a=f"12 AI ideas from manufacturing, retail and healthcare, each scored on value (money, strategy, "
+                      f"scale) and feasibility (data, effort, risk, speed). {len(wins)} are quick wins: worth a lot "
+                      "and realistic to build.",
+                    chips=list(wins["use_case"]), chart_title="Priority = value × feasibility, out of 25 (lime = quick win)",
+                    fig=mini_bars(scored["use_case"], scored["priority"], [f"{p:.1f}" for p in scored["priority"]],
+                                  scored["quadrant"] == "Quick win", horizontal=True))
+    if step == "Prove":
+        ap = accuracy_vs_profit()
+        return dict(page="value", label="Step 2 · Prove the value", q="What is predictive maintenance worth in dollars?",
+                    a=f"A model trained on 10,000 real machine records warns before a breakdown. Tuned for savings "
+                      f"instead of accuracy, it saves {money(val['annual_net'])} a year and pays back in "
+                      f"{months(val['payback_months'])}: {money(ap['profitable'] - ap['accurate'])} a year more than "
+                      "the most accurate setting.",
+                    chips=["Real dataset: AI4I 2020", "3 models compared", "Low / base / high case"],
+                    chart_title="Net savings a year, same model, two alert settings",
+                    fig=mini_bars(["Most accurate", "Most profitable"], [ap["accurate"], ap["profitable"]],
+                                  [money(ap["accurate"]), money(ap["profitable"])], [False, True]))
+    if step == "Get ready":
+        dims = rd.get("dims") or {d: sum(v) / len(v) for d, v in EXAMPLE_PILOT.items()}
+        weak = {d for d, _ in rd["weakest"][:2]}
+        return dict(page="ready", label="Step 3 · Check readiness", q="Is the team ready to launch it?",
+                    a=f"Most AI pilots stall on people and process, not the model. A 10-question check across 5 areas "
+                      f"says **{rd['verdict'].lower()}**: the model and data are fine, but "
+                      f"{' and '.join(d.lower() for d, _ in rd['weakest'][:2])} need work first.",
+                    chips=[f"Fix: {d}" for d, _ in rd["weakest"][:2]] + ["Then: one-page business case"],
+                    chart_title="Readiness score out of 5 (lime = fix first)",
+                    fig=mini_bars(list(dims), list(dims.values()), [f"{v:.1f}" for v in dims.values()],
+                                  [d in weak for d in dims], horizontal=True))
+    if step == "Keep it paying":
+        t = default_track_frame()
+        tk = default_tracking()
+        drift = t.loc[t["drift_alert"], "month"].tolist()
+        fig = go.Figure([
+            go.Scatter(x=t["month"], y=t["cum_forecast"], mode="lines", line=dict(color=SAGE, width=3, dash="dot"),
+                       hoverinfo="skip"),
+            go.Scatter(x=t["month"], y=t["cum_actual"], mode="lines", line=dict(color=INK, width=3), fill="tozeroy",
+                       fillcolor="rgba(212,238,94,0.45)", hoverinfo="skip")])
+        fig.add_annotation(x=t["month"].iloc[-1], y=t["cum_forecast"].iloc[-1], text="forecast", showarrow=False,
+                           xanchor="right", yshift=14, font=dict(color="#6b766d"))
+        fig.add_annotation(x=t["month"].iloc[-1], y=t["cum_actual"].iloc[-1], text=f"actual {money(tk['delivered'])}",
+                           showarrow=False, xanchor="right", yshift=-28, font=dict(color=INK), bgcolor="rgba(255,255,255,0.85)")
+        return dict(page="track", label="Step 5 · Track the value", q="After launch, is it delivering what was promised?",
+                    a=f"Monthly maintenance data flows from S3 through a Databricks pipeline. After {tk['months']} months "
+                      f"it delivered **{tk['pct']*100:.0f}% of the forecast**. The app splits the gap into causes and "
+                      + (f"flagged in {drift[0]} that the model had started missing failures." if drift
+                         else "watches for the model getting worse."),
+                    chips=["S3 → Databricks", "Bronze · silver · gold", "Drift and adoption alerts"],
+                    chart_title="Cumulative net savings since go-live (simulated rollout)", fig=mini_chart(fig))
+    pilot = load_pilot()["summary"]
+    if step == "GenAI pilot":
+        s1, s2 = pilot[1], pilot[2]
+        return dict(page="pilot", label="Step 6 · GenAI pilot", q="Does a GenAI assistant pay for itself?",
+                    a=f"A small language model on Amazon Bedrock drafts the repair work order for each alert. When it "
+                      f"also diagnosed the fault it named the right cause only {s1['correct_on_real_failures']:.0%} "
+                      f"of the time; with code doing the diagnosis, {s2['correct_on_real_failures']:.0%}. "
+                      f"The model costs about ${s2['cost_per_task']*1000:.2f} per 1,000 drafts: review time decides the ROI.",
+                    chips=["30 real alerts", "Amazon Nova Micro", "5 cost categories"],
+                    chart_title="Drafts with the right cause, 24 real failures",
+                    fig=mini_bars(["AI diagnoses", "Code diagnoses, AI writes"],
+                                  [s1["correct_on_real_failures"], s2["correct_on_real_failures"]],
+                                  [f"{s1['correct_on_real_failures']:.0%}", f"{s2['correct_on_real_failures']:.0%}"],
+                                  [False, True]))
+    sc = load_agents()["scores"]
+    caught = [sc[v]["redteam_caught"] for v in ("v1", "v2", "v3")]
+    return dict(page="agents", label="Step 7 · AI analyst agents", q="Can AI agents do the analyst's paperwork?",
+                a=f"Three agents turn a manager's paragraph into inputs, write the CFO memo and play the skeptical CFO. "
+                  f"Graded on cases with known answers, the red team went from {caught[0]} to {caught[2]} of "
+                  f"{sc['v3']['redteam_flaws']} planted flaws caught once code checked the numbers, for about "
+                  f"${sc['v3']['total_cost']:.3f} a run.",
+                chips=["Intake · Memo · Red team", "19 graded cases", "Amazon Nova Lite"],
+                chart_title=f"Planted flaws caught, out of {sc['v3']['redteam_flaws']}",
+                fig=mini_bars(["Version 1", "Version 2", "Version 3"], caught, [str(c) for c in caught],
+                              [False, False, True]))
 
 
 def page_home():
-    st.markdown('<div class="eyebrow">AI value engineering · portfolio project</div>', unsafe_allow_html=True)
-    st.title("Is this AI project worth it, and is it still paying off?")
-    st.markdown('<div class="intro">One AI project, predictive maintenance in a factory, followed from idea to a year '
-                'after launch. Each step answers one question a client would ask. Click a card to see the answer, '
-                'then open the analysis behind it.</div>', unsafe_allow_html=True)
+    val, tk = get_value(), default_tracking()
+    c = val["costs"]
+    lost = c.failures_per_year * c.cost_missed
+    with st.container(key="hero"):
+        left, right = st.columns([1.3, 1], gap="large")
+        left.markdown(
+            '<div class="eyebrow">AI value engineering · portfolio project</div>'
+            '<div class="hero-title">Should we fund this AI project, and is it still paying off?</div>'
+            '<div class="hero-text">Companies pour money into AI pilots that never prove their worth. This app is the '
+            'toolkit an AI business analyst uses to answer both questions with numbers, worked end to end on one '
+            'example:</div>'
+            + "".join(f'<span class="chip">{esc_html(x)}</span>' for x in
+                      ("🏭 A mid-size factory", f"{c.failures_per_year} surprise breakdowns a year",
+                       f"{money(c.cost_missed)} each", "AI that warns before a machine fails")),
+            unsafe_allow_html=True)
+        right.markdown(
+            f'<div class="impact"><div class="impact-label">Today</div><div class="impact-num">{esc_html(money(lost))}</div>'
+            '<div class="impact-note">lost a year to surprise breakdowns</div></div>'
+            f'<div class="impact"><div class="impact-label">With AI</div><div class="impact-num"><span class="lime">'
+            f'{esc_html(money(val["annual_net"]))}</span></div><div class="impact-note">saved a year after AI costs · '
+            f'pays back in {esc_html(months(val["payback_months"]))}</div></div>'
+            f'<div class="impact"><div class="impact-label">{tk["months"]} months after launch</div>'
+            f'<div class="impact-num">{tk["pct"]*100:.0f}%</div><div class="impact-note">of the promised savings '
+            'delivered, with the reasons for the gap</div></div>', unsafe_allow_html=True)
 
-    val, rd, tk = get_value(), get_readiness(), default_tracking()
-    scored = score(load_use_cases(), DEFAULT_VALUE_WEIGHTS, DEFAULT_FEAS_WEIGHTS)
-    n_wins = int((scored["quadrant"] == "Quick win").sum())
-    s1, s2 = load_pilot()["summary"][1], load_pilot()["summary"][2]
-    sc = load_agents()["scores"]["v3"]
+    st.markdown('<div class="row-label">Explore the journey · pick a step</div>', unsafe_allow_html=True)
+    step = st.segmented_control("Step", ["Choose", "Prove", "Get ready", "Keep it paying", "GenAI pilot", "AI agents"],
+                                default="Prove", key="tour", label_visibility="collapsed") or "Prove"
+    tc = tour_content(step)
+    with st.container(key="tour_panel"):
+        left, right = st.columns([1, 1.1], gap="large")
+        with left:
+            st.markdown(f'<div class="eyebrow">{esc_html(tc["label"])}</div>'
+                        f'<div class="tour-q">{esc_html(tc["q"])}</div>', unsafe_allow_html=True)
+            st.markdown(md(tc["a"]))
+            st.markdown("".join(f'<span class="chip soft">{esc_html(x)}</span>' for x in tc["chips"]),
+                        unsafe_allow_html=True)
+            st.page_link(PAGES[tc["page"]], label=f"Open {tc['label'].replace(' · ', ': ', 1).replace('Step', 'step')}",
+                         icon=":material/arrow_forward:")
+        with right:
+            st.markdown(f'<div class="chart-title">{esc_html(tc["chart_title"])}</div>', unsafe_allow_html=True)
+            st.plotly_chart(tc["fig"], width="stretch", config={"displayModeBar": False, "staticPlot": True})
 
-    st.markdown('<div class="row-label">The journey</div>', unsafe_allow_html=True)
-    c = st.columns(4)
-    with c[0]:
-        story_card("1", "pick", "1 · Choose", f"{n_wins} quick wins", f"out of {len(scored)} AI ideas, scored on value and feasibility")
-    with c[1]:
-        story_card("2", "value", "2 · Prove", f"{money(val['annual_net'])} a year",
-                   f"pays back in {months(val['payback_months'])}; alerts tuned for dollars, not accuracy")
-    with c[2]:
-        story_card("3", "ready", "3 · Get ready", rd["verdict"],
-                   f"the model is ready; {rd['weakest'][0][0].lower()} is not, yet")
-    with c[3]:
-        story_card("4", "track", "4 · Keep it paying", f"{tk['pct']*100:.0f}% delivered",
-                   f"of the forecast after {tk['months']} months; a drift alert says when to retrain")
+    st.markdown('<div class="row-label">What changes for the business</div>', unsafe_allow_html=True)
+    i1, i2, i3 = st.columns(3)
+    for col, (icon, head, body) in zip((i1, i2, i3), (
+            ("🎯", "Fund the right project", "Ideas are ranked on value and feasibility before anyone writes code."),
+            ("💵", "A number finance can sign", f"{money(val['annual_net'])} a year, with a pessimistic case and the "
+                                               "one assumption to check first."),
+            ("🔔", "Problems caught in months, not years", "Ignored alerts and a weakening model show up in the "
+                                                         "monthly data, with what to do about each."))):
+        col.markdown(f'<div class="why"><div class="why-icon">{icon}</div><b>{esc_html(head)}</b>'
+                     f'<div class="why-text">{esc_html(body)}</div></div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="row-label">Where generative AI fits</div>', unsafe_allow_html=True)
-    g = st.columns(2)
-    with g[0]:
-        story_card("g1", "pilot", "GenAI pilot · Amazon Bedrock",
-                   f"{s1['correct_on_real_failures']:.0%} → {s2['correct_on_real_failures']:.0%} right cause",
-                   "when code does the diagnosis and the AI only writes the work order")
-    with g[1]:
-        story_card("g2", "agents", "AI analyst agents · graded automatically",
-                   f"{sc['redteam_caught']} of {sc['redteam_flaws']} flaws caught",
-                   "planted in business cases, by a red-team agent that checks the numbers in code")
-
-    e1, e2 = st.columns(2)
-    with e1.expander("What is real and what is illustrative"):
+    e1, e2, e3 = st.columns(3)
+    with e1.expander("What is real, what is illustrative"):
         st.markdown("**Real:** the AI4I 2020 machine dataset and the model trained on it, the Amazon Bedrock pilot and "
-                    "agent runs, and the S3 → Databricks pipeline.  \n**Illustrative and editable:** plant costs, "
-                    "use-case scores and the 12-month rollout data. Independent concept project.")
+                    "agent runs, the S3 → Databricks pipeline.  \n**Illustrative, editable:** plant costs, use-case "
+                    "scores and the 12-month rollout data. Independent concept project.")
     with e2.expander("How it is built"):
-        st.markdown("Python and scikit-learn for the model and the dollar maths · Amazon Bedrock (Nova) for the GenAI "
-                    "pilot and agents · S3 and Databricks (bronze → silver → gold) for tracking · Streamlit for this app. "
-                    "Code on [GitHub](https://github.com/chaialishekar/AI-ROI-Navigator).")
+        st.markdown("Python and scikit-learn · Amazon Bedrock (Nova) · S3 and Databricks (bronze → silver → gold) · "
+                    "Streamlit. [Code on GitHub](https://github.com/chaialishekar/AI-ROI-Navigator).")
+    with e3.expander("What comes next"):
+        st.markdown("Blind tests for the agents, a monthly scheduled pipeline with alerts, and any AI use case (not just "
+                    "maintenance). [See the roadmap](https://github.com/chaialishekar/AI-ROI-Navigator/blob/main/docs/roadmap.md).")
     nav_footer("home")
 
 
@@ -1155,17 +1288,31 @@ st.markdown("""
 .kpi-value { font-size: 1.65rem; font-weight: 700; line-height: 1.25; margin: 0.15rem 0; }
 .kpi-note { font-size: 0.85rem; opacity: 0.7; }
 [class*="st-key-kpi_"] { height: 100%; }
-[class*="st-key-story_"] { position: relative; height: 100%; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-[class*="st-key-story_"]:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10); border-color: var(--teal); }
-[class*="st-key-story_"] [data-testid="stElementContainer"], [class*="st-key-story_"] [data-testid="stPageLink"],
-[class*="st-key-story_"] [data-testid="stPageLink"] * { position: static !important; }
-[class*="st-key-story_"] [data-testid="stPageLink"] a::after { content: ""; position: absolute; inset: 0; z-index: 2; }
-[class*="st-key-story_"] [data-testid="stPageLink"] a { border: none; padding: 0; color: var(--teal); }
-.story-num { font-size: 1.6rem; font-weight: 700; line-height: 1.2; margin: 0.3rem 0 0.25rem; }
-.story-line { font-size: 0.9rem; opacity: 0.75; min-height: 2.6rem; }
-.st-key-story_1::after, .st-key-story_2::after, .st-key-story_3::after {
-    content: "→"; position: absolute; right: -1.05rem; top: 42%; font-size: 1.1rem; color: var(--teal); z-index: 1; }
-@media (max-width: 640px) { .st-key-story_1::after, .st-key-story_2::after, .st-key-story_3::after { content: none; } }
+[class*="st-key-kpi_"] { background: #fff; border-color: transparent !important; border-radius: 20px;
+                         box-shadow: 0 4px 16px rgba(29, 37, 33, 0.06); }
+.st-key-hero { background: linear-gradient(135deg, #e3ebdd 0%, #f1f5ec 55%, #eef6cf 100%); border-radius: 32px;
+               padding: 2.2rem 2.4rem 1.8rem; }
+.hero-title { font-size: 2.55rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; color: #1d2521;
+              margin: 0.4rem 0 0.8rem; }
+.hero-text { font-size: 1.08rem; line-height: 1.55; color: #3d4741; margin-bottom: 0.9rem; }
+.chip { display: inline-block; background: #fff; border-radius: 999px; padding: 0.35rem 0.85rem; margin: 0 0.35rem 0.45rem 0;
+        font-size: 0.88rem; color: #1d2521; box-shadow: 0 1px 3px rgba(29, 37, 33, 0.08); }
+.chip.soft { background: #eef2ea; box-shadow: none; }
+.impact { background: rgba(255, 255, 255, 0.72); border-radius: 22px; padding: 0.8rem 1.2rem; margin-bottom: 0.6rem;
+          transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.impact:hover { transform: translateX(-4px); box-shadow: 0 8px 24px rgba(29, 37, 33, 0.08); }
+.impact-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700; color: #6b766d; }
+.impact-num { font-size: 2.5rem; font-weight: 300; letter-spacing: -0.03em; line-height: 1.15; color: #1d2521; }
+.impact-num .lime { background: #d4ee5e; border-radius: 14px; padding: 0 0.45rem; }
+.impact-note { font-size: 0.88rem; color: #4e5952; }
+.st-key-tour_panel { background: #fff; border-radius: 28px; padding: 1.6rem 1.9rem; box-shadow: 0 12px 36px rgba(29, 37, 33, 0.07); }
+.tour-q { font-size: 1.7rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; margin: 0.3rem 0 0.6rem; }
+.chart-title { font-size: 0.85rem; color: #6b766d; margin-bottom: 0.2rem; }
+[data-testid="stButtonGroup"] button { border-radius: 999px !important; padding: 0.35rem 1rem; }
+.why { background: #fff; border-radius: 22px; padding: 1.1rem 1.3rem; min-height: 9.5rem; margin-bottom: 0.4rem; box-shadow: 0 4px 16px rgba(29, 37, 33, 0.05); }
+.why-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+.why-text { font-size: 0.9rem; color: #4e5952; margin-top: 0.2rem; }
+@media (max-width: 640px) { .hero-title { font-size: 1.9rem; } .st-key-hero { padding: 1.4rem 1.2rem; border-radius: 24px; } }
 [data-testid="stExpander"] summary { font-weight: 600; }
 [data-testid="stPageLink"] a { border: 1px solid rgba(128, 128, 128, 0.3); border-radius: 8px; padding: 0.3rem 0.8rem;
                                transition: background 0.2s ease, border-color 0.2s ease; }
