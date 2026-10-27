@@ -1,0 +1,21 @@
+{
+ "refreshed_at": "2026-10-27T19:53:39+00:00",
+ "rows_loaded_this_run": 0,
+ "bronze_rows": 13,
+ "silver_rows": 12,
+ "quarantined": [
+  {
+   "month": "2027-01",
+   "file": "month=2027-01/actuals.csv",
+   "reason": "failures_prevented cannot exceed failures_flagged; alerts acted on cannot exceed alerts_raised"
+  }
+ ],
+ "parameters": {
+  "cost_missed": 25000.0,
+  "cost_caught": 4000.0,
+  "cost_false_alarm": 500.0,
+  "running_cost": 60000.0,
+  "annual_net": 660392.16,
+  "launch_recall": 0.862745
+ }
+}

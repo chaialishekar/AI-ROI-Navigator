@@ -454,6 +454,23 @@ GAP_ACTIONS = {
     "False alarms": "There were more false alarms than in testing. Review the alert threshold.",
 }
 
+@st.cache_data
+def load_pipeline() -> dict | None:
+    """Gold export from the S3 -> Databricks pipeline (pipeline/run.py), if it has been run."""
+    try:
+        gold = pd.read_csv("data/pipeline/tracked_value.csv")
+        with open("data/pipeline/run_log.json") as f:
+            log = json.load(f)
+    except FileNotFoundError:
+        return None
+    P = log["parameters"]
+    c = Costs(cost_missed=P["cost_missed"], cost_caught=P["cost_caught"], cost_false_alarm=P["cost_false_alarm"],
+              running_cost=P["running_cost"])
+    t = track(gold[COLUMNS], {"annual_net": P["annual_net"], "recall": P["launch_recall"]}, c)
+    matches = np.allclose(gold["cum_actual"], t["cum_actual"]) and (gold["drift_alert"] == t["drift_alert"]).all()
+    return {"gold": gold, "log": log, "matches": bool(matches)}
+
+
 with tab5:
     st.subheader("After go-live: is the AI delivering the value we promised?")
     st.write(
@@ -470,11 +487,28 @@ with tab5:
         upload = u1.file_uploader("Monthly actuals (CSV, one row per month)", type="csv", key="actuals_upload")
         u2.download_button("Download template (sample data)", sample.to_csv(index=False),
                            file_name="monthly_actuals_template.csv", key="dl_template")
-        actuals = pd.read_csv(upload) if upload is not None else sample
-        source = "uploaded file" if upload is not None else "simulated sample"
-        if upload is None:
+        pipe = load_pipeline()
+        use_pipe = upload is None and pipe is not None and st.radio(
+            "Data source", ["Pipeline: S3 → Databricks gold table", "Bundled sample file"], horizontal=True,
+            key="actuals_source").startswith("Pipeline")
+        if upload is not None:
+            actuals, source = pd.read_csv(upload), "uploaded file"
+        elif use_pipe:
+            actuals, source = pipe["gold"][COLUMNS], "S3 → Databricks pipeline"
+        else:
+            actuals, source = sample, "simulated sample"
+        if upload is None and not use_pipe:
             st.caption("Showing a **simulated** 12-month rollout, not real plant data: adoption is slow at first, "
                        "then the model starts to drift in month 9. Upload your own file to replace it.")
+        if use_pipe:
+            log = pipe["log"]
+            st.caption(md(
+                f"Loaded from the **pipeline** (the same simulated 12-month rollout, not real plant data): monthly files land in an encrypted S3 bucket (us-east-2), are synced to "
+                f"Databricks and flow through bronze → silver → gold tables. Last refresh {log['refreshed_at'][:16].replace('T', ' ')} UTC; "
+                f"{log['bronze_rows']} rows received, {log['silver_rows']} months passed the checks. "
+                + ("Gold matches this tab's formula ✅" if pipe["matches"] else "⚠️ Gold differs from this tab's formula")))
+            for q in log["quarantined"]:
+                st.warning(md(f"**Quarantined** `{q['file']}` ({q['month']}): {q['reason']}. Ask the plant to fix and resend it."))
         with st.expander("What goes in the file"):
             st.markdown(
                 "- `month`: e.g. 2026-01\n"

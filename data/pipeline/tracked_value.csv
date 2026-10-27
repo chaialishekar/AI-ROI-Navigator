@@ -1,0 +1,13 @@
+month,alerts_raised,failures_flagged,failures_prevented,failures_missed,false_alarms,failures,acted_on,recall,adoption,recall_3m,forecast,actual,cum_forecast,cum_actual,adoption_alert,drift_alert,source_file
+2026-01,3,3,2,1,0,3,2,1.0,0.6666666666666666,,55032.680000,37000.000000,55032.680000,37000.000000,True,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-01/actuals.csv
+2026-02,2,2,1,1,0,2,1,1.0,0.5,,55032.680000,16000.000000,110065.360000,53000.000000,True,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-02/actuals.csv
+2026-03,2,2,1,1,0,2,1,1.0,0.5,1.0,55032.680000,16000.000000,165098.040000,69000.000000,True,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-03/actuals.csv
+2026-04,1,1,1,0,0,1,1,1.0,1.0,1.0,55032.680000,16000.000000,220130.720000,85000.000000,False,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-04/actuals.csv
+2026-05,5,3,3,1,2,4,5,0.75,1.0,0.8571428571428571,55032.680000,57000.000000,275163.400000,142000.000000,False,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-05/actuals.csv
+2026-06,3,3,3,1,0,4,3,0.75,1.0,0.7777777777777778,55032.680000,58000.000000,330196.080000,200000.000000,False,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-06/actuals.csv
+2026-07,1,1,1,0,0,1,1,1.0,1.0,0.7777777777777778,55032.680000,16000.000000,385228.760000,216000.000000,False,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-07/actuals.csv
+2026-08,4,4,4,1,0,5,4,0.8,1.0,0.8,55032.680000,79000.000000,440261.440000,295000.000000,False,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-08/actuals.csv
+2026-09,1,1,1,0,0,1,1,1.0,1.0,0.8571428571428571,55032.680000,16000.000000,495294.120000,311000.000000,False,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-09/actuals.csv
+2026-10,4,4,4,1,0,5,4,0.8,1.0,0.8181818181818182,55032.680000,79000.000000,550326.800000,390000.000000,False,False,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-10/actuals.csv
+2026-11,4,4,4,2,0,6,4,0.6666666666666666,1.0,0.75,55032.680000,79000.000000,605359.480000,469000.000000,False,True,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-11/actuals.csv
+2026-12,1,0,0,1,1,1,1,0.0,1.0,0.6666666666666666,55032.680000,-5500.000000,660392.160000,463500.000000,False,True,dbfs:/Volumes/workspace/ai_roi/landing/actuals/month=2026-12/actuals.csv

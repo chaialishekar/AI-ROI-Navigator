@@ -145,6 +145,14 @@ Lenovo publicly describes Hybrid AI Advantage as covering the full AI lifecycle:
 | US-8.4 | As an AI business analyst, I want every agent graded automatically on cases with known answers, so that prompt changes are measured, not judged by eye. | `python -m agents.grade` prints a v1 / v2 / v3 scorecard from saved runs; graders covered by unit tests. | Must ✅ |
 | US-8.5 | As the app owner, I want the public demo to show saved results and run live only where AWS credentials exist, so that visitors can't spend my credits. | Live intake only when an AWS profile is available; otherwise saved results with an explanation. | Should ✅ |
 
+#### Epic 9 · Data pipeline (Implementation → Managed services)
+| ID | User story | Acceptance criteria | Priority |
+|---|---|---|---|
+| US-9.1 | As a plant IT lead, I want to drop each month's actuals file in one secure place, so that nobody emails spreadsheets around. | Private S3 bucket in us-east-2: public access blocked, encrypted, versioned, HTTPS only, access logged to CloudWatch. | Must ✅ |
+| US-9.2 | As an AI business analyst, I want bad files stopped before they reach the numbers, so that finance never sees impossible savings. | Silver layer applies the Track value checks; failing rows go to a quarantine table with the reason; a planted bad file is quarantined. | Must ✅ |
+| US-9.3 | As a finance partner, I want the pipeline's numbers to match the app exactly, so that there is one version of the truth. | Gold table (Databricks SQL) equals `src/tracking.py` (pandas) for every month, to the cent, including alert flags; checked by a unit test and shown in the app. | Must ✅ |
+| US-9.4 | As a data engineer, I want re-runs to be safe, so that a retry never double-counts a month. | `COPY INTO` skips files already loaded (second run loads 0 rows); a resent file for a month replaces the earlier one in silver. | Should ✅ |
+
 ### 3.3 Non-functional requirements
 | Category | Requirement |
 |---|---|
@@ -169,6 +177,20 @@ Streamlit web app ──► Tab 1 Prioritize ──► use_cases.csv + scoring e
 Hosted on Streamlit Community Cloud (public link)
 ```
 
+Value-tracking data pipeline (Epic 9):
+```
+Plant maintenance system
+   │ monthly actuals CSV
+   ▼
+S3 landing zone  s3://ai-roi-data-…-us-east-2-an/landing/actuals/month=YYYY-MM/   (private, encrypted, versioned, logged)
+   │ pipeline/run.py sync  (Free Edition cannot mount S3; paid tier: Unity Catalog external location)
+   ▼
+Databricks volume workspace.ai_roi.landing
+   ▼  job "ai-roi-value-pipeline" (serverless, monthly schedule ready)
+bronze_actuals ──► silver_actuals ──► gold_tracked_value ──► export ──► app Tab 5  +  S3 curated/
+               └─► quarantine_actuals (row + reason)
+```
+
 ---
 
 ## 5. Component Model
@@ -182,6 +204,7 @@ Hosted on Streamlit Community Cloud (public link)
 | GenAI cost engine | Time saved minus five cost categories; cash vs capacity; break-even review time | `src/genai.py` |
 | Work-order pilot | Picks 30 alerts, builds prompts, rule-check diagnosis, grades drafts; runs on Amazon Bedrock (Nova Micro, us-east-2) | `src/workorder.py`, `pilot/` |
 | Analyst agents | Intake, memo and red-team prompts (v1-v3), code post-processing, plausibility checklist, graders; Amazon Nova Lite on Bedrock | `src/agents.py`, `agents/` |
+| Data pipeline | S3 landing, sync to Databricks, bronze/silver/gold notebook, job, export back to the app and S3 | `pipeline/run.py`, `pipeline/notebook.py`, `data/pipeline/` |
 | Value tracking | Forecast vs actual savings, adoption and drift alerts, gap breakdown, simulated sample rollout | `src/tracking.py`, `data/sample_actuals.csv` |
 | User interface | Tabs, inputs, charts, summary | `app.py` |
 
@@ -204,7 +227,9 @@ How a typical 30-minute session runs:
 - **Hosting:** Streamlit Community Cloud for a free public demo link.
 - **Data:** public AI4I 2020 dataset only; no customer data is stored.
 - **Customer use:** for real customer data, run the app locally or inside the customer's own environment so data stays on-premises.
-- **Dependencies:** listed in `requirements.txt` (Streamlit, pandas, Plotly, scikit-learn).
+- **Dependencies:** listed in `requirements.txt` (Streamlit, pandas, Plotly, scikit-learn). The pipeline and live agents also need `boto3[crt]` and `databricks-sdk`; the public app does not.
+- **Pipeline:** S3 bucket in us-east-2 only (project Region). The public app reads the exported gold table in `data/pipeline/`, so it needs no AWS or Databricks credentials. The job's monthly schedule is created paused; turn it on when real files arrive.
+- **Cost:** S3 storage, requests and CloudWatch log delivery for these files are fractions of a cent a month; Databricks Free Edition serverless compute is free within its daily quota.
 
 ---
 
@@ -234,6 +259,10 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Agents v3 red team (code checklist judges, model explains) | US-8.3 | 9 calls | ✅ 6 of 6 planted flaws caught and listed first; 0 false alarms on the sound case; model explained 8 of 9 flags. Held-out flaws 2 of 2, but known when the checklist was written, so not a blind test |
 | Unit conversion, quote check, placeholder fill-in, checklist verdict | US-8.1–8.4 | Unit tests | ✅ Passed |
 | Live mode hidden without AWS credentials | US-8.5 | Manual test with credentials removed | ✅ Passed |
+| Bucket controls in place | US-9.1 | Read back every setting after creation | ✅ Passed: public access blocked, ACLs disabled, versioning on, SSE-S3 with SSE-C blocked, HTTPS-only policy, logs to CloudWatch, us-east-2 |
+| Planted bad file is quarantined | US-9.2 | 13 files landed, one with prevented > flagged | ✅ Passed: 12 months in silver, `month=2027-01/actuals.csv` quarantined with both reasons |
+| Gold table equals the app's formula | US-9.3 | Unit test on the exported gold table | ✅ Passed: identical savings, adoption, recall and flags; $463,500 delivered vs $660,392 forecast |
+| Re-run does not double-count | US-9.4 | Run the job twice | ✅ Passed: second run loaded 0 rows |
 
 ---
 

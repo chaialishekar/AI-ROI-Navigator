@@ -10,7 +10,7 @@ Most AI projects stall between pilot and production: companies pick projects on 
 | **2 · Prove value** | What is it worth, and how sure are we? Tunes a real predictive-maintenance model for **dollars saved, not accuracy**, with uncertainty ranges and low / base / high cases. |
 | **3 · Readiness** | Are we ready to go live? 10-question scorecard with a Go / Fix first / Not ready verdict. |
 | **4 · Business case** | One-page summary to share with finance (downloadable). |
-| **5 · Track value** | Is it delivering what we promised? Compares actual savings with the forecast month by month, warns when the crew stops acting on alerts or the model drifts, and explains the gap. |
+| **5 · Track value** | Is it delivering what we promised? Compares actual savings with the forecast month by month, warns when the crew stops acting on alerts or the model drifts, and explains the gap. Data arrives through an **S3 → Databricks** pipeline (bronze, silver, gold). |
 | **6 · GenAI pilot** | Does a GenAI assistant pay for itself? A measured Amazon Bedrock pilot of an AI that drafts work orders, with ROI across five cost categories. |
 | **7 · Analyst agents** | Can AI agents do the analyst's paperwork? Intake, CFO-memo and red-team agents on Amazon Bedrock, each graded automatically on cases with known answers. |
 
@@ -32,7 +32,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 | **Readiness** | **Business case** |
 | ![](docs/tab3_readiness.png) | ![](docs/tab4_business_case.png) |
 
-**Track value** (simulated 12-month rollout)
+**Track value** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
 
 ![](docs/tab5_track_value.png)
 
@@ -51,10 +51,11 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 - **Uncertainty:** *model uncertainty* comes from a bootstrap of the test set (1,000 resamples, 90% range). *Assumption uncertainty* comes from a tornado chart that moves each cost input between an editable low and high value one at a time, plus low / base / high cases that set every input to its unfavorable or favorable end.
 - **Value tracking:** monthly counts (alerts, failures flagged, prevented, missed, false alarms) are turned into dollars with the same formula as the forecast. Adoption = share of alerts acted on (alert below 70%). Drift = 3-month rolling recall 10+ points below launch. The gap is split by swapping each forecast assumption (failure volume, recall, share of flagged failures acted on, false alarms) for its actual value one at a time, so the parts add up exactly. The bundled 12-month rollout is simulated, not real plant data.
 - **GenAI pilot:** 30 alerts from the test set (real failures of each type plus false alarms) are sent to Amazon Nova Micro on Bedrock (us-east-2, US inference profile, temperature 0, 500-token cap). Each draft must name one cause from a fixed list, graded against the true cause in the data. ROI counts the five cost categories from the Forbes article (usage, setup, review, training, errors) and splits time saved into cash and capacity. Re-run with `python -m pilot.run_pilot --profile <aws-profile> --version 2`.
+- **Data pipeline:** monthly actuals files land in a private, encrypted, versioned S3 bucket (us-east-2, access logged to CloudWatch). `pipeline/run.py` syncs them into a Databricks Free Edition volume (Free Edition cannot mount your own S3; with paid Databricks this becomes a Unity Catalog external location) and runs `pipeline/notebook.py` as a serverless job: **bronze** loads files once with `COPY INTO`, **silver** applies the Track value checks and sends failing rows to **quarantine** with the reason, **gold** computes savings, adoption and drift in SQL. A unit test confirms gold matches the app's Python formula to the cent; a planted bad file is quarantined. Run with `python -m pipeline.run land sync run fetch --aws-profile <profile>`.
 - **Analyst agents:** Amazon Nova Lite on Bedrock (us-east-2, temperature 0). 8 intake descriptions, 2 memos and 9 red-team cases (a sound case plus 8 with one planted flaw) live in `agents/eval_cases.json`; `python -m agents.grade` scores saved runs. The public app shows saved results; live intake runs only where AWS credentials exist.
 - **Readiness:** 5 dimensions (data, workflow fit, ROI clarity, user trust, governance). Go = average ≥ 3.5 and no dimension below 2.5.
 
-Business analysis docs (personas, use cases, 32 user stories with acceptance criteria, validation) are in [`docs/solution_design.md`](docs/solution_design.md).
+Business analysis docs (personas, use cases, 36 user stories with acceptance criteria, validation) are in [`docs/solution_design.md`](docs/solution_design.md).
 
 ## Run locally
 ```bash

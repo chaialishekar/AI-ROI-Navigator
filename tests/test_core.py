@@ -231,3 +231,19 @@ def test_redteam_checklist_and_code_owned_verdict():
     out = json.loads(finalize_redteam_v3(reply, cases["RT-share_redeployed"]))
     assert out["verdict"] == "send back" and out["explained"] == 1 and out["dropped"] == 1
     assert json.loads(finalize_redteam_v3('{"objections": []}', cases["RT-CLEAN"]))["verdict"] == "approve"
+
+
+def test_pipeline_gold_matches_app_formula():
+    """The Databricks gold table (SQL) must give the same dollars and flags as src.tracking (pandas)."""
+    import json
+    from src.tracking import COLUMNS, track
+    gold = pd.read_csv("data/pipeline/tracked_value.csv")
+    log = json.load(open("data/pipeline/run_log.json"))
+    P = log["parameters"]
+    c = Costs(cost_missed=P["cost_missed"], cost_caught=P["cost_caught"], cost_false_alarm=P["cost_false_alarm"],
+              running_cost=P["running_cost"])
+    t = track(gold[COLUMNS], {"annual_net": P["annual_net"], "recall": P["launch_recall"]}, c)
+    for col in ["actual", "cum_actual", "forecast", "adoption", "recall", "recall_3m"]:
+        assert np.allclose(gold[col].astype(float), t[col].astype(float), equal_nan=True), col
+    assert (gold["adoption_alert"] == t["adoption_alert"]).all() and (gold["drift_alert"] == t["drift_alert"]).all()
+    assert [q["month"] for q in log["quarantined"]] == ["2027-01"]          # the planted bad file
