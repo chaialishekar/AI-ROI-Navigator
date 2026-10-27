@@ -2,11 +2,11 @@
 
 > Most teams judge AI models by accuracy. This tool judges them by dollars.
 
-Most AI projects stall between pilot and production: companies pick projects on hype, judge models by accuracy instead of business value, and launch before they're ready. The ROI Navigator follows one project through 7 steps in three stages. It opens on an overview that states the problem and the money at stake, with an interactive tour of the steps. Every page then follows one template: **the client view first** (the question, the answer, three numbers, one chart and what to do next), and **the analysis on demand** under *See the analysis* (assumptions, method and data), then a link to the next step:
+An AI provider has a library of solutions; every client needs to know which one fits them, what it is worth, whether they are ready, and, after launch, whether it is delivering. Most AI projects stall between pilot and production: solutions are sold on hype, judged by accuracy instead of business value, and launched before the client is ready. The ROI Navigator answers those questions in 7 steps, worked end to end for one client (a mid-size factory). It opens on an overview that states the problem and the money at stake, with an interactive tour of the steps. Every page then follows one template: **the client view first** (the question, the answer, three numbers, one chart and what to do next), and **the analysis on demand** under *See the analysis* (assumptions, method and data), then a link to the next step:
 
 | Step | Question it answers |
 |---|---|
-| **Plan · 1 · Pick a use case** | Which AI use case should we do first? Scores 12 use cases on value vs feasibility. |
+| **Plan · 1 · Match AI to client** | Which AI from the library fits this client? Matches 12 solutions to the client's main problem, data maturity, risk appetite and urgency, with the reasons. Three example clients (factory, hospital network, online retailer) get three different answers, or describe your own. |
 | **Plan · 2 · Prove the value** | What is it worth, and how sure are we? Tunes a real predictive-maintenance model for **dollars saved, not accuracy**, with uncertainty ranges and low / base / high cases. |
 | **Plan · 3 · Check readiness** | Are we ready to go live? 10-question scorecard with a Go / Fix first / Not ready verdict. |
 | **Plan · 4 · Business case** | One-page summary to share with finance (downloadable). |
@@ -14,7 +14,7 @@ Most AI projects stall between pilot and production: companies pick projects on 
 | **GenAI · 6 · GenAI pilot** | Does a GenAI assistant pay for itself? A measured Amazon Bedrock pilot of an AI that drafts work orders, with ROI across five cost categories. |
 | **GenAI · 7 · AI analyst agents** | Can AI agents do the analyst's paperwork? Intake, CFO-memo and red-team agents on Amazon Bedrock, each graded automatically on cases with known answers. |
 
-*Independent concept project. Use-case scores and plant costs are illustrative assumptions and can be edited in the app.*
+*Independent concept project. Solution scores, example clients and plant costs are illustrative assumptions and can be edited in the app.*
 
 ## Key result (default assumptions)
 On 3,000 machine records the model never saw during training, a gradient-boosting model:
@@ -30,7 +30,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 
 ![](docs/overview.png)
 
-| Pick a use case | Prove the value |
+| Match AI to client | Prove the value |
 |---|---|
 | ![](docs/tab1_prioritize.png) | ![](docs/tab2_prove_value.png) |
 | **Check readiness** | **Business case** |
@@ -77,3 +77,12 @@ Chaitali Shekar · MS Engineering Management, NC State University
 ## Roadmap
 
 What comes next, prioritised with the same value × feasibility scoring the app uses: [docs/roadmap.md](docs/roadmap.md).
+
+## Why I built this
+
+In *AI's Hidden Problem: Nobody Revisits the Original Decision* (Substack, August 2026) I argued that most AI waste comes from decisions that were right when they were made and never revisited once the facts changed. Step 5 of this app is that revisit: it goes back to the business case every month and asks whether its assumptions still hold.
+
+## How it was managed
+
+User stories with acceptance criteria and MoSCoW priorities, a fishbone of why value falls short, a RACI for who owns what after launch, and a log of the delivery increments: [docs/solution_design.md](docs/solution_design.md) and [docs/delivery.md](docs/delivery.md).
+

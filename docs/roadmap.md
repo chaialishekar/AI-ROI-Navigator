@@ -4,7 +4,7 @@
 
 ## Vision
 
-Help a company **fund the right AI projects and prove they keep paying**, from the first idea to a year after launch,
+Help an AI provider **match the right AI to each client and prove it keeps paying**, from the first conversation to a year after launch,
 with numbers a CFO will sign and a person in charge of every decision.
 
 **Who it is for:** the AI business analyst or value engineer who builds the case; the sponsor (ops director, CFO) who
@@ -21,7 +21,7 @@ funds it; the plant or business team who live with it after launch.
 
 ## Status overview
 
-7 steps shipped (v1). 4 items planned Next, 5 Later. Nothing blocked. One known risk: the agent tests are not blind (see N1).
+7 steps shipped (v1), including client matching. 5 items planned Next, 5 Later. Nothing blocked. One known risk: the agent tests are not blind (see N1).
 
 ## How items were prioritised
 
@@ -31,7 +31,8 @@ The same value × feasibility scoring the app uses on step 1, each scored 1–5:
 |---|---|---|---|---|
 | N1 Blind test set for the agents | 4 | 5 | 20 | Quick win |
 | N2 Scheduled pipeline with alerts | 4 | 4 | 16 | Quick win |
-| N3 Any use case, not just maintenance | 5 | 3 | 15 | Big bet, start small |
+| N3 Value models for every solution | 5 | 3 | 15 | Big bet, start small |
+| N5 Track AI running costs, not just savings | 4 | 4 | 16 | Quick win |
 | N4 Usage analytics on the live app | 3 | 5 | 15 | Quick win |
 | L1 Portfolio view across many AI projects | 5 | 2 | 10 | Big bet |
 | L2 Governance pack | 4 | 3 | 12 | Big bet |
@@ -43,7 +44,7 @@ The same value × feasibility scoring the app uses on step 1, each scored 1–5:
 
 | Item | What it does | Status |
 |---|---|---|
-| Pick a use case | 12 ideas scored on value and feasibility; quick wins first | **Done** |
+| Match AI to client | A library of 12 solutions matched to the client's problem, data, risk appetite and urgency, with reasons | **Done** |
 | Prove the value | Real model on the AI4I 2020 dataset, tuned for dollars; low / base / high case and the biggest risk | **Done** |
 | Check readiness | 10 questions, 5 areas, Go / Fix first / Not ready with actions | **Done** |
 | Business case | One-page summary for finance, downloadable | **Done** |
@@ -58,7 +59,8 @@ The same value × feasibility scoring the app uses on step 1, each scored 1–5:
 |---|---|---|---|---|
 | N1 | **Blind test set for the agents** | The red-team checklist was written knowing the planted flaws, so 6 of 6 overstates it | 10 new cases written by someone else, scored once, result published even if worse | A second person to write cases |
 | N2 | **Scheduled pipeline with alerts** | Tracking only matters if it runs without anyone remembering | Monthly Databricks job unpaused; drift or low adoption sends an email (SNS); a run log page in the app | Databricks job (exists, paused) |
-| N3 | **Any use case, not just maintenance** | Most buyers are not factories; the intake agent already turns a paragraph into calculator inputs | Pick any of the 12 ideas, get a business case from the generic time-saved / error-avoided calculator; predictive maintenance stays the worked example | N1, so intake is trusted |
+| N3 | **Value models for every solution** | Step 1 now recommends the right AI for any client, but only predictive maintenance has a full dollar model behind it | The hospital's and retailer's matches get a business case from the generic time-saved / error-avoided calculator; the intake agent fills it from the client's own description | N1, so intake is trusted |
+| N5 | **Track AI running costs, not just savings** | Running cost is a fixed $60k assumption today. Model fees, managed-platform premiums and idle compute drift after launch, and nobody revisits them | Monthly actual running cost from the AWS cost data next to the business-case assumption, with an alert when it drifts 20%+ | AWS Cost Explorer access |
 | N4 | **Usage analytics on the live app** | Learn which steps people open and where they stop | Page views and "See the analysis" opens counted, no personal data | Public URL confirmed |
 
 ## Later: 3–6+ months (directional)

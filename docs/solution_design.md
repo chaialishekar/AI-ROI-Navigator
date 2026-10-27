@@ -73,20 +73,22 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 
 | Lifecycle stage | Customer question | Epics | Built in v1 |
 |---|---|---|---|
-| **Advisory** | Which AI should we do, and is it worth it? | Epic 1 Prioritize, Epic 2 Prove value | Done |
+| **Advisory** | Which AI fits this client, and is it worth it? | Epic 1 Match AI to the client, Epic 2 Prove value | Done |
 | **Implementation** | Are we ready, and how do we deploy safely? | Epic 3 Readiness, Epic 5 Responsible AI & deployment | Partly |
 | **Adoption** | Will people use it, and can we prove it to finance? | Epic 4 Share, Epic 6 Adoption & value tracking | Done |
 | **Managed services** | Is it still delivering value after launch? | Epic 6 Adoption & value tracking | Partly |
 
 ### 3.2 Functional requirements (user stories and acceptance criteria)
 
-#### Epic 1 · Prioritize (UC-1)
+#### Epic 1 · Match AI to the client (UC-1)
 | ID | User story | Acceptance criteria |
 |---|---|---|
 | US-1.1 | As an ops director, I want AI use cases ranked by value and feasibility, so that I know which to start with. | 12 use cases across 3 industries; each scored 1–5 on 7 criteria; each placed in a quadrant; chart numbers match the ranked list. |
 | US-1.2 | As an ops director, I want to filter by industry, so that I see only relevant ideas. | Chart and list update immediately. |
 | US-1.3 | As an AI BA, I want to adjust weights and scores, so that the ranking fits this customer. | Weight sliders for every criterion; scores accept whole numbers 1–5; ranking updates in under 1 second. |
 | US-1.4 | As an ops director, I want a recommended next step per use case, so that I know what to do with it. | Each row shows a next step based on its quadrant. |
+| US-1.5 | As a value engineer at an AI provider, I want the solution library matched to one client's main problem, data maturity, risk appetite and urgency, so that each client gets the AI that fits them, not our favourite product. | Only solutions that serve the client's industry; solving the main problem raises value; data maturity shifts feasibility; risk and urgency set the weights; three example clients get three different recommendations (unit test). | Must (done) |
+| US-1.6 | As a client sponsor, I want to see why a solution was recommended, so that I can challenge it. | The recommendation lists its reasons (problem fit, data, risk, speed) and, for a big bet, names the blocker and how to fix it. | Must (done) |
 
 #### Epic 2 · Prove value (UC-2)
 | ID | User story | Acceptance criteria |
@@ -173,7 +175,7 @@ User (browser)
    │
    ▼
 Streamlit web app ──► Overview: client and impact up front + interactive tour of the steps
-   │  Plan the project ├► 1 Pick a use case   ──► use_cases.csv + scoring engine
+   │  Plan the project ├► 1 Match AI to client ──► use_cases.csv + matching.py + scoring
    │                   ├► 2 Prove the value   ──► trained model + test predictions + cost engine
    │                   ├► 3 Check readiness   ──► checklist + verdict rules
    │                   └► 4 Business case     ──► one-page business case (download)
@@ -222,11 +224,60 @@ How a typical 30-minute session runs:
 
 | Step | Who | Activity | Output |
 |---|---|---|---|
-| 1. Discover | AI BA with Dana | Agree on business goals; adjust weights | Customer-specific weights |
-| 2. Prioritize | Dana | Review the 2×2 grid and ranked list | Shortlist of quick wins |
+| 1. Discover | AI BA with Dana | Agree the client's main problem, data maturity, risk appetite and urgency | Client profile |
+| 2. Match | AI BA with Dana | Review the recommended solution, its reasons and the ranked library | Recommended AI and the blocker to fix, if any |
 | 3. Prove value | AI BA with Dana | Enter plant costs; tune the threshold | Dollar business case |
 | 4. Check readiness | Dana | Complete the checklist | Verdict and top 3 actions |
 | 5. Share | Dana | Download the one-page summary | CFO-ready business case |
+
+### 6.1 Why value falls short: fishbone
+
+After launch the plant banked 70% of the forecast. Before measuring anything, these are all the causes that could explain a shortfall, grouped the usual six ways. The right column says which ones the app measures today.
+
+```
+  PEOPLE                     PROCESS                    MODEL
+  crew ignores alerts        alert not in the           recall drifts as
+  no trust in the AI         work-order system          machines and tools age
+  planner turnover           no owner for retraining    threshold set once, never tuned
+          \                          |                          /
+           \                         |                         /
+            >───────────────── VALUE BELOW FORECAST (70%) ◄────
+           /                         |                         \
+          /                          |                          \
+  DATA                       ENVIRONMENT                MEASUREMENT
+  late or wrong monthly      fewer breakdowns than      cost per failure never
+  files from the plant       assumed (good news)        checked against invoices
+  sensor outages             production volume drops    running cost assumed, not tracked
+```
+
+| Category | Cause | Measured in the app? | Effect in the simulated year |
+|---|---|---|---|
+| People | Crew ignores correct alerts | Yes: adoption alert below 70% | −$63k |
+| Model | Recall drifts below launch | Yes: drift alert, 10+ points below launch | −$46k |
+| Environment | Fewer breakdowns than assumed | Yes: volume effect in the gap breakdown | −$91k |
+| Data | Bad or late monthly file | Yes: pipeline quarantine with the reason | 1 file quarantined |
+| Process | No owner for retraining or threshold | Partly: readiness check asks; RACI below assigns | n/a |
+| Measurement | Cost per failure unverified | No: counts cannot check dollars; flagged as the top assumption to agree with finance | n/a |
+| Measurement | AI running cost drifts from the $60k assumption | No: on the roadmap (N5) | n/a |
+
+### 6.2 Who owns what after launch: RACI
+
+R = does the work, A = accountable (one per row), C = consulted, I = informed.
+
+| Activity | Value engineer (provider) | Client ops director | Maintenance manager | Data / IT lead | Finance partner |
+|---|---|---|---|---|---|
+| Match the AI to the client | R | A | C | C | I |
+| Agree the cost assumptions | R | C | C | I | A |
+| Readiness actions before launch | C | A | R | R | I |
+| Send monthly actuals file | I | I | C | A, R | I |
+| Fix quarantined files | I | I | R | A | I |
+| Review value vs forecast each month | R | A | C | I | C |
+| Act on adoption alerts (crew workflow) | C | A | R | I | I |
+| Retrain on drift alert | C | I | C | A, R | I |
+| Revisit the business case each quarter | R | A | C | C | C |
+| Approve renewal or expansion | C | A | I | I | C |
+
+The last row is the point of the whole design: someone is accountable for going back to the original decision.
 
 ---
 

@@ -247,3 +247,27 @@ def test_pipeline_gold_matches_app_formula():
         assert np.allclose(gold[col].astype(float), t[col].astype(float), equal_nan=True), col
     assert (gold["adoption_alert"] == t["adoption_alert"]).all() and (gold["drift_alert"] == t["drift_alert"]).all()
     assert [q["month"] for q in log["quarantined"]] == ["2027-01"]          # the planted bad file
+
+
+def test_matching_recommends_by_client():
+    from src.matching import EXAMPLE_CLIENTS, Client, match
+    lib = pd.read_csv("data/use_cases.csv")
+    tops = {name: match(lib, c).iloc[0]["use_case"] for name, c in EXAMPLE_CLIENTS.items()}
+    assert tops == {"Mid-size factory": "Predictive maintenance",
+                    "Regional hospital network": "Clinical note summarization",
+                    "Online retailer": "Customer service agent"}
+    # only solutions that serve the client's industry, and every one gets reasons
+    m = match(lib, EXAMPLE_CLIENTS["Online retailer"])
+    assert m["serves"].str.contains("Retail").all() and m["why"].map(len).min() >= 2
+    # same industry, different problem -> different recommendation
+    quality = Client("Factory B", "Manufacturing", "Quality defects", 4, "Medium", "Within a year")
+    assert match(lib, quality).iloc[0]["use_case"] == "Visual quality inspection"
+
+
+def test_matching_data_maturity_lowers_feasibility():
+    from src.matching import Client, match
+    lib = pd.read_csv("data/use_cases.csv")
+    rich = Client("A", "Manufacturing", "Unplanned downtime", 5, "Medium", "Within a year")
+    poor = Client("B", "Manufacturing", "Unplanned downtime", 1, "Medium", "Within a year")
+    f = lambda c: match(lib, c).set_index("use_case").loc["Predictive maintenance", "feasibility"]
+    assert f(poor) < f(rich)

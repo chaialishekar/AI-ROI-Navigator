@@ -5,7 +5,7 @@ prove its value in dollars, and check whether it is ready for production.
 
 Overview          - what the project shows, headline results, and the steps to click into
 Plan the project
-  1 Pick a use case   - score use cases on value vs feasibility
+  1 Match AI to client - match a provider's library of 12 AI solutions to one client's problem, data and risk
   2 Prove the value   - tune a real predictive maintenance model for dollars, not accuracy
   3 Check readiness   - pilot-to-production readiness check
   4 Business case     - one-page summary to share with finance
@@ -34,11 +34,13 @@ from src.scoring import (
     DEFAULT_FEAS_WEIGHTS,
     DEFAULT_VALUE_WEIGHTS,
     FEASIBILITY_CRITERIA,
+    NEXT_STEP,
     THRESHOLD,
     VALUE_CRITERIA,
     score,
 )
 from src.model import train_and_score
+from src.matching import EXAMPLE_CLIENTS, INDUSTRIES, RISK_WEIGHT, URGENCY_WEIGHT, Client, match, problems, weights
 from src.readiness import ACTIONS, DIMENSIONS, verdict
 from src.genai import COST_LABELS, GenAIInputs
 from src.genai import evaluate as genai_evaluate
@@ -111,87 +113,125 @@ def bar_layout(fig, height=300, money_axis=None):
 
 
 # ---------------------------------------------------------------- Page 1
+BLOCKER_FIX = {"data_readiness": "clean and connect the data before building",
+               "ease_of_build": "start from a ready-made product rather than a custom build",
+               "low_risk": "keep a person reviewing every output and start with one team",
+               "speed_to_value": "agree an early milestone the client can see"}
+
+
+def pick_client() -> Client:
+    """Client chooser shown at the top of step 1: three example clients or your own."""
+    options = list(EXAMPLE_CLIENTS) + ["Your own client"]
+    name = st.segmented_control("Client", options, default=options[0], key="client_pick") or options[0]
+    if name != "Your own client":
+        c = EXAMPLE_CLIENTS[name]
+        st.markdown(f'<div class="intro">{esc_html(c.blurb)}. Main problem: <b>{esc_html(c.problem.lower())}</b> · '
+                    f'data maturity {c.data_maturity}/5 · {esc_html(c.risk_appetite.lower())} risk appetite · '
+                    f'needs results {esc_html(c.urgency.lower())}.</div>', unsafe_allow_html=True)
+        return c
+    lib = load_use_cases()
+    a, b, c3, d, e = st.columns([1.1, 1.5, 1, 1, 1.2])
+    industry = a.selectbox("Industry", INDUSTRIES, key="cl_industry")
+    problem = b.selectbox("Main problem", problems(lib, industry), key=f"cl_problem_{industry}")
+    maturity = c3.slider("Data maturity", 1, 5, 3, key="cl_data", help="1 = scattered spreadsheets, 5 = clean, connected data")
+    risk = d.selectbox("Risk appetite", list(RISK_WEIGHT), index=1, key="cl_risk")
+    urgency = e.selectbox("Needs results", list(URGENCY_WEIGHT), key="cl_urgency")
+    return Client("Your client", industry, problem, maturity, risk, urgency)
+
+
 def page_pick():
-    answer, client, detail = page_header(1, "Which AI project first?",
-                                         "12 ideas scored 1–5 on value and feasibility. High on both = quick win.")
-    industries = sorted(load_use_cases()["industry"].unique())
-    t_weights, t_scores, t_list = detail.tabs(["Weights", "Edit scores", "Ranked list"])
-    with t_weights:
-        picked = st.multiselect("Industries", industries, default=industries, key="industries")
-        w1, w2 = st.columns(2)
-        w1.markdown("**What counts as value**")
-        value_w = {k: w1.slider(lbl, 0.0, 1.0, DEFAULT_VALUE_WEIGHTS[k], 0.05, key=f"vw_{k}")
-                   for k, lbl in VALUE_CRITERIA.items()}
-        w2.markdown("**What counts as feasible**")
-        feas_w = {k: w2.slider(lbl, 0.0, 1.0, DEFAULT_FEAS_WEIGHTS[k], 0.05, key=f"fw_{k}")
-                  for k, lbl in FEASIBILITY_CRITERIA.items()}
-        st.caption("Weights in each group are normalized. Priority = value × feasibility.")
-
-    base = load_use_cases()
-    base = base[base["industry"].isin(picked)]
-    with t_scores:
-        edited = st.data_editor(
-            base, hide_index=True, width="stretch", disabled=["use_case", "industry", "description"],
-            column_config={c: st.column_config.NumberColumn(lbl, min_value=1, max_value=5, step=1)
-                           for c, lbl in {**VALUE_CRITERIA, **FEASIBILITY_CRITERIA}.items()},
+    answer, client, detail = page_header(1, "Which AI fits this client?",
+                                         "An AI provider's library of 12 solutions, matched to one client by their main "
+                                         "problem, data, risk appetite and urgency. Pick a client.")
+    with client:
+        cl = pick_client()
+    t_map, t_ranked, t_lib, t_how = detail.tabs(["Value vs feasibility map", "Ranked for this client",
+                                                 "The whole library", "How matching works"])
+    with t_lib:
+        st.caption("The provider's library, scored 1–5 in general (5 is always better; for risk, 5 means low risk). "
+                   "Edit any score; the match updates. Scores are illustrative.")
+        library = st.data_editor(
+            load_use_cases(), hide_index=True, width="stretch", key="library_edit",
+            disabled=["use_case", "industry", "description", "serves", "solves"],
+            column_config={col: st.column_config.NumberColumn(lbl, min_value=1, max_value=5, step=1)
+                           for col, lbl in {**VALUE_CRITERIA, **FEASIBILITY_CRITERIA}.items()},
         )
-        st.caption("1–5, where 5 is always better (for risk, 5 means low risk). Scores are illustrative.")
-
-    if edited.empty:
-        st.info("Pick at least one industry.")
-        scored = score(load_use_cases(), value_w, feas_w)
-    else:
-        scored = score(edited, value_w, feas_w)
-    scored.insert(0, "rank", range(1, len(scored) + 1))
-    with t_list:
-        st.dataframe(scored[["rank", "use_case", "industry", "value", "feasibility", "priority", "quadrant", "next_step"]],
-                     hide_index=True, width="stretch")
-
-    st.session_state["top_use_case"] = scored.iloc[0]["use_case"]
-    st.session_state["top_quadrant"] = scored.iloc[0]["quadrant"]
-    top = scored.iloc[0]
-    wins = scored[scored["quadrant"] == "Quick win"]
-    pdm = scored[scored["use_case"] == "Predictive maintenance"]
+    m = match(library, cl)
+    m.insert(0, "rank", range(1, len(m) + 1))
+    top = m.iloc[0]
+    st.session_state["client"] = cl
+    st.session_state["top_use_case"], st.session_state["top_quadrant"] = top["use_case"], top["quadrant"]
+    fits = int(m["solves_problem"].sum())
+    who = "this client" if cl.name == "Your client" else f"the {cl.name.lower()}"
+    blocker = min(FEASIBILITY_CRITERIA, key=lambda k: top[k])
+    next_txt = (f"Fix the blocker first: {FEASIBILITY_CRITERIA[blocker].lower()} is {top[blocker]:.0f}/5, so "
+                f"{BLOCKER_FIX[blocker]}." if top["quadrant"] == "Big bet" else NEXT_STEP[top["quadrant"]])
     answer.markdown(md(
-        f"Start with **{top['use_case']}**: it scores highest on value × feasibility. "
-        + (f"This app follows **predictive maintenance** (#{int(pdm['rank'].iloc[0])}) because a public machine "
-           "dataset lets us prove its value with a real model." if not pdm.empty else "")))
+        f"**{top['use_case']}** for {who}. {top['description']}. "
+        + ("It solves their main problem and is a quick win." if top["quadrant"] == "Quick win" and top["solves_problem"]
+           else f"It solves their main problem but is a {top['quadrant'].lower()}." if top["solves_problem"]
+           else f"Nothing in the library targets {cl.problem.lower()} directly; this is the best fit.")))
 
-    # Nudge tied points apart so every marker stays visible (display only)
-    plot_df = scored.copy()
-    dup = plot_df.groupby(["feasibility", "value"]).cumcount()
-    plot_df["x_plot"] = plot_df["feasibility"] + dup * 0.07
-    plot_df["y_plot"] = plot_df["value"] - dup * 0.07
-    fig = px.scatter(
-        plot_df, x="x_plot", y="y_plot", color="quadrant", color_discrete_map=QUADRANT_COLORS, text="rank",
-        hover_name="use_case",
-        hover_data={"x_plot": False, "y_plot": False, "rank": False, "industry": True,
-                    "value": True, "feasibility": True, "priority": True},
-        range_x=[1, 5.2], range_y=[1, 5.2], labels={"x_plot": "Feasibility →", "y_plot": "Value →"}, height=440,
-    )
-    fig.add_vline(x=THRESHOLD, line_dash="dot", line_color="#8a979c")
-    fig.add_hline(y=THRESHOLD, line_dash="dot", line_color="#8a979c")
-    for x, y, label in [(4.6, 5.1, "QUICK WINS"), (2.2, 5.1, "BIG BETS"), (4.6, 1.15, "FILL-INS"), (2.2, 1.15, "DEPRIORITIZE")]:
-        fig.add_annotation(x=x, y=y, text=label, showarrow=False, font=dict(size=11, color="#8a979c"))
-    fig.update_traces(textposition="middle center", marker=dict(size=24), textfont=dict(color="white", size=11))
-    fig.update_layout(legend_title_text="", margin=dict(l=10, r=10, t=10, b=10), legend=dict(orientation="h", y=-0.15))
+    with t_ranked:
+        st.dataframe(m[["rank", "use_case", "solves", "value", "feasibility", "priority", "quadrant", "next_step"]],
+                     hide_index=True, width="stretch")
+    with t_map:
+        plot_df = m.copy()
+        dup = plot_df.groupby(["feasibility", "value"]).cumcount()
+        plot_df["x_plot"] = plot_df["feasibility"] + dup * 0.07
+        plot_df["y_plot"] = plot_df["value"] - dup * 0.07
+        fig = px.scatter(
+            plot_df, x="x_plot", y="y_plot", color="quadrant", color_discrete_map=QUADRANT_COLORS, text="rank",
+            hover_name="use_case", hover_data={"x_plot": False, "y_plot": False, "rank": False, "solves": True,
+                                               "value": True, "feasibility": True},
+            range_x=[1, 5.2], range_y=[1, 5.2], labels={"x_plot": "Feasibility for this client →", "y_plot": "Value to this client →"},
+            height=420,
+        )
+        fig.add_vline(x=THRESHOLD, line_dash="dot", line_color="#8a979c")
+        fig.add_hline(y=THRESHOLD, line_dash="dot", line_color="#8a979c")
+        for x, y, label in [(4.6, 5.1, "QUICK WINS"), (2.2, 5.1, "BIG BETS"), (4.6, 1.15, "FILL-INS"), (2.2, 1.15, "DEPRIORITIZE")]:
+            fig.add_annotation(x=x, y=y, text=label, showarrow=False, font=dict(size=11, color="#8a979c"))
+        fig.update_traces(textposition="middle center", marker=dict(size=24), textfont=dict(color="white", size=11))
+        fig.update_layout(legend_title_text="", margin=dict(l=10, r=10, t=10, b=10), legend=dict(orientation="h", y=-0.15))
+        st.plotly_chart(fig, width="stretch")
+        st.caption("Numbers on the dots are the rank for this client.")
+    with t_how:
+        vw, fw = weights(cl)
+        st.markdown(
+            "1. **Industry:** only solutions that serve the client's industry are considered.\n"
+            "2. **Main problem:** a solution that solves it gets full strategic fit and +1 financial impact; one that "
+            "doesn't loses 2 points of strategic fit and 1 of financial impact.\n"
+            "3. **Data maturity** shifts data readiness: 5/5 makes data work easier, 1/5 harder.\n"
+            f"4. **Risk appetite** ({cl.risk_appetite.lower()}) sets the weight on 'low risk if the AI is wrong' to "
+            f"{fw['low_risk']:.0%} of feasibility.\n"
+            f"5. **Urgency** ({cl.urgency.lower()}) sets the weight on speed to value to {fw['speed_to_value']:.0%}.\n\n"
+            "Then value × feasibility (each 1–5, so 1–25) ranks the rest. Quick win = both 3.5 or more. "
+            "Code: `src/matching.py`.")
+
+    colors = [QUADRANT_COLORS[q] for q in m["quadrant"]]
+    figb = go.Figure(go.Bar(y=m["use_case"], x=m["priority"], orientation="h", marker=dict(color=colors, cornerradius=6),
+                            text=[f"{p:.1f}" + ("  · solves their problem" if s else "") for p, s in zip(m["priority"], m["solves_problem"])],
+                            textposition="outside", cliponaxis=False, hovertemplate="%{y}: %{x:.1f} / 25<extra></extra>"))
+    figb.update_layout(height=60 + 42 * len(m), margin=dict(l=10, r=10, t=10, b=10),
+                       xaxis=dict(range=[0, 30], title="Fit for this client (value × feasibility, out of 25)"),
+                       yaxis=dict(autorange="reversed", title=""))
 
     with client:
-        kpis([("Ideas scored", f"{len(scored)}", f"across {scored['industry'].nunique()} industries"),
-              ("Quick wins", f"{len(wins)}", "high value and easy to deliver"),
-              ("Top pick", top["use_case"], f"{top['industry']} · priority {top['priority']:.1f}")])
-        st.plotly_chart(fig, width="stretch")
-        st.caption("Numbers on the dots are the rank. Hover a dot for its scores.")
-        others = [w for w in wins["use_case"].head(3) if w != top["use_case"]][:2]
-        next_steps([f"**Pilot {top['use_case'].lower()} first**: highest value × feasibility."]
-                   + ([f"**Line up {' and '.join(o.lower() for o in others)}** next: also quick wins."] if others else [])
-                   + ["**Agree the scores with the business owners.** They are estimates; edit them under the analysis."])
+        kpis([("Solutions that serve them", f"{len(m)} of {len(library)}", f"in {cl.industry.lower()}"),
+              ("Solve their main problem", f"{fits}", cl.problem.lower()),
+              ("Recommended", top["use_case"], f"{top['quadrant'].lower()} · fit {top['priority']:.1f} / 25")])
+        st.markdown(f"**How each solution fits {who}** &nbsp; " + " &nbsp; ".join(
+            f'<span style="color:{c}">●</span> {q.lower()}' for q, c in QUADRANT_COLORS.items()), unsafe_allow_html=True)
+        st.plotly_chart(figb, width="stretch")
+        next_steps([f"**{w}**" if i == 0 else w for i, w in enumerate(top["why"])]
+                   + [f"**Next:** {next_txt}"], label="Why it fits")
     nav_footer("pick")
 
 
 # ---------------------------------------------------------------- Page 2
 def page_value():
     answer, client, detail = page_header(2, "Is it worth it?",
+                                         "Worked example: the factory client and its match, predictive maintenance. "
                                          "A model trained on 10,000 machine records warns before a breakdown. "
                                          "Its catches, misses and false alarms are turned into dollars.")
     res = get_model_results()
@@ -442,7 +482,8 @@ def page_case():
         )
     summary = f"""# AI Business Case: Predictive Maintenance
 
-**Use case:** Predictive maintenance (manufacturing). Top-ranked use case on the Pick a use case page: {st.session_state.get('top_use_case', 'n/a')} ({st.session_state.get('top_quadrant', 'n/a')}).
+**Client:** Mid-size factory (manufacturing). Main problem: unplanned downtime.
+**Recommended solution:** Predictive maintenance, the best fit from a library of 12 AI solutions (step 1). Last client matched on step 1: {st.session_state['client'].name if 'client' in st.session_state else 'n/a'} → {st.session_state.get('top_use_case', 'n/a')} ({st.session_state.get('top_quadrant', 'n/a')}).
 
 ## Value
 - Annual net savings: {money(val['annual_net'])} (90% range from model uncertainty: {money_range(val['band']['annual_net'])})
@@ -1076,6 +1117,7 @@ def nav_footer(name: str):
 
 # ---------------------------------------------------------------- Overview
 SAGE, LIME, INK = "#c8d2c3", "#d4ee5e", "#1d2521"
+WHY_URL = ""   # link to the Substack post; the overview shows the title without a link until this is set
 
 
 @st.cache_data
@@ -1119,15 +1161,17 @@ def tour_content(step: str) -> dict:
     """Question, plain answer, chips and a small chart for one step of the overview tour."""
     val, rd = get_value(), get_readiness()
     if step == "Choose":
-        scored = score(load_use_cases(), DEFAULT_VALUE_WEIGHTS, DEFAULT_FEAS_WEIGHTS).head(7)
-        wins = scored[scored["quadrant"] == "Quick win"]
-        return dict(page="pick", label="Step 1 · Pick a use case", q="Which AI idea should a company fund first?",
-                    a=f"12 AI ideas from manufacturing, retail and healthcare, each scored on value (money, strategy, "
-                      f"scale) and feasibility (data, effort, risk, speed). {len(wins)} are quick wins: worth a lot "
-                      "and realistic to build.",
-                    chips=list(wins["use_case"]), chart_title="Priority = value × feasibility, out of 25 (lime = quick win)",
-                    fig=mini_bars(scored["use_case"], scored["priority"], [f"{p:.1f}" for p in scored["priority"]],
-                                  scored["quadrant"] == "Quick win", horizontal=True))
+        lib = load_use_cases()
+        tops = {name: match(lib, c).iloc[0] for name, c in EXAMPLE_CLIENTS.items()}
+        m = match(lib, EXAMPLE_CLIENTS["Mid-size factory"])
+        return dict(page="pick", label="Step 1 · Match AI to client", q="Which AI from the library fits this client?",
+                    a="A provider's library of 12 AI solutions across manufacturing, retail and healthcare. Each client is "
+                      "matched by their main problem, how good their data is, how much risk they accept and how fast "
+                      "they need results. Same library, different clients, different answers:",
+                    chips=[f"{name} → {r['use_case']}" for name, r in tops.items()],
+                    chart_title="Fit for the factory client, out of 25 (lime = solves their main problem)",
+                    fig=mini_bars(m["use_case"], m["priority"], [f"{p:.1f}" for p in m["priority"]],
+                                  m["solves_problem"], horizontal=True))
     if step == "Prove":
         ap = accuracy_vs_profit()
         return dict(page="value", label="Step 2 · Prove the value", q="What is predictive maintenance worth in dollars?",
@@ -1198,10 +1242,11 @@ def page_home():
         left, right = st.columns([1.3, 1], gap="large")
         left.markdown(
             '<div class="eyebrow">AI value engineering · portfolio project</div>'
-            '<div class="hero-title">Should we fund this AI project, and is it still paying off?</div>'
-            '<div class="hero-text">Companies pour money into AI pilots that never prove their worth. This app is the '
-            'toolkit an AI business analyst uses to answer both questions with numbers, worked end to end on one '
-            'example:</div>'
+            '<div class="hero-title">Which AI fits this client, and is it still paying off?</div>'
+            '<div class="hero-text">An AI provider has a library of 12 solutions. For every client, a value engineer has '
+            'to say which one fits, what it is worth to them, whether they are ready, and, after launch, whether it '
+            'delivers. Most AI pilots never prove their worth; this app answers each question with numbers, worked '
+            'end to end for one client:</div>'
             + "".join(f'<span class="chip">{esc_html(x)}</span>' for x in
                       ("A mid-size factory", f"{c.failures_per_year} surprise breakdowns a year",
                        f"{money(c.cost_missed)} each", "AI that warns before a machine fails")),
@@ -1237,13 +1282,20 @@ def page_home():
     st.markdown('<div class="row-label">What changes for the business</div>', unsafe_allow_html=True)
     i1, i2, i3 = st.columns(3)
     for col, (icon, head, body) in zip((i1, i2, i3), (
-            ("01", "Fund the right project", "Ideas are ranked on value and feasibility before anyone writes code."),
+            ("01", "The right AI for each client", "Matched to the client's problem, data and risk appetite, not the "
+                                                   "provider's favourite product."),
             ("02", "A number finance can sign", f"{money(val['annual_net'])} a year, with a pessimistic case and the "
                                                "one assumption to check first."),
             ("03", "Problems caught in months, not years", "Ignored alerts and a weakening model show up in the "
                                                          "monthly data, with what to do about each."))):
         col.markdown(f'<div class="why"><div class="why-icon">{icon}</div><b>{esc_html(head)}</b>'
                      f'<div class="why-text">{esc_html(body)}</div></div>', unsafe_allow_html=True)
+
+    post = "AI's Hidden Problem: Nobody Revisits the Original Decision"
+    st.markdown(f'<div class="why-built"><b>Why I built this.</b> In <i>{"<a href=" + chr(34) + WHY_URL + chr(34) + ">" + post + "</a>" if WHY_URL else post}</i> '
+                "I argued that most AI waste comes from decisions that were right when they were made and never revisited "
+                "once the facts changed. Step 5 is that revisit: it goes back to the business case every month.</div>",
+                unsafe_allow_html=True)
 
     e1, e2, e3 = st.columns(3)
     with e1.expander("What is real, what is illustrative"):
@@ -1308,7 +1360,9 @@ st.markdown("""
 .chart-title { font-size: 0.85rem; color: #6b766d; margin-bottom: 0.2rem; }
 [data-testid="stButtonGroup"] button { border-radius: 999px !important; padding: 0.35rem 1rem; }
 .why { background: #fff; border-radius: 22px; padding: 1.1rem 1.3rem; min-height: 9.5rem; margin-bottom: 0.4rem; box-shadow: 0 4px 16px rgba(29, 37, 33, 0.05); }
-.why-icon { display: inline-block; font-size: 0.78rem; font-weight: 700; background: #d4ee5e; border-radius: 999px; padding: 0.15rem 0.6rem; margin-bottom: 0.5rem; }
+.why-icon { display: table; font-size: 0.78rem; font-weight: 700; background: #d4ee5e; border-radius: 999px; padding: 0.15rem 0.6rem; margin-bottom: 0.5rem; }
+.why-built { margin: 0.9rem 0 0.4rem; padding: 0.9rem 1.2rem; border-radius: 18px; background: #eef4d6; font-size: 0.95rem; }
+.why-built a { color: #1d2521; }
 .why-text { font-size: 0.9rem; color: #4e5952; margin-top: 0.2rem; }
 @media (max-width: 640px) { .hero-title { font-size: 1.9rem; } .st-key-hero { padding: 1.4rem 1.2rem; border-radius: 24px; } }
 [data-testid="stExpander"] summary { font-weight: 600; }
@@ -1321,7 +1375,7 @@ st.markdown("""
 
 PAGES = {
     "home": st.Page(page_home, title="Overview", icon=":material/home:", default=True),
-    "pick": st.Page(page_pick, title="1 · Pick a use case", url_path="pick"),
+    "pick": st.Page(page_pick, title="1 · Match AI to client", url_path="match"),
     "value": st.Page(page_value, title="2 · Prove the value", url_path="value"),
     "ready": st.Page(page_ready, title="3 · Check readiness", url_path="readiness"),
     "case": st.Page(page_case, title="4 · Business case", url_path="business-case"),
