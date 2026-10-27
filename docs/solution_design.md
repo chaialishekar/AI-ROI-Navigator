@@ -161,7 +161,7 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 | Transparency | Every assumption is labeled and editable |
 | Trust | Model metrics reported on held-out test data only |
 | Branding | Independent project; no company branding |
-| Clarity | A first-time visitor understands the point in under a minute: an overview page with the headline results, and every page opens with its question and the answer before any detail |
+| Clarity | A first-time visitor understands the point in under a minute: an overview that tells the story in four clickable cards, and every page shows the client view first (question, answer, three numbers, one chart, next steps) with the analysis (assumptions, method, data) one click away |
 | Navigation | Pages grouped by stage (Plan the project, After launch, Generative AI) with their own links, Back / Next buttons on every page, and every page works on its own with default inputs |
 | Motion | Short fade-in when a page opens; switched off for visitors who ask their system for reduced motion |
 
@@ -172,7 +172,7 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 User (browser)
    │
    ▼
-Streamlit web app ──► Overview: headline results + tour of the steps
+Streamlit web app ──► Overview: the journey in 4 clickable cards + where GenAI fits
    │  Plan the project ├► 1 Pick a use case   ──► use_cases.csv + scoring engine
    │                   ├► 2 Prove the value   ──► trained model + test predictions + cost engine
    │                   ├► 3 Check readiness   ──► checklist + verdict rules
@@ -213,7 +213,7 @@ bronze_actuals ──► silver_actuals ──► gold_tracked_value ──► e
 | Analyst agents | Intake, memo and red-team prompts (v1-v3), code post-processing, plausibility checklist, graders; Amazon Nova Lite on Bedrock | `src/agents.py`, `agents/` |
 | Data pipeline | S3 landing, sync to Databricks, bronze/silver/gold notebook, job, export back to the app and S3 | `pipeline/run.py`, `pipeline/notebook.py`, `data/pipeline/` |
 | Value tracking | Forecast vs actual savings, adoption and drift alerts, gap breakdown, simulated sample rollout | `src/tracking.py`, `data/sample_actuals.csv` |
-| User interface | Overview, 7 pages in 3 sections, answer-first page headers, Back / Next links, inputs, charts, summary | `app.py`, `.streamlit/config.toml` |
+| User interface | Overview, 7 pages in 3 sections, one page template (client view first, analysis on demand), Back / Next links, inputs, charts, summary | `app.py`, `.streamlit/config.toml` |
 
 ---
 
