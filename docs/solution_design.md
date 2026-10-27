@@ -122,7 +122,7 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 #### Epic 6 · Adoption & value tracking (Adoption → Managed services)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should ✅ (Track value tab; gap split into volume, recall, adoption and false alarms) |
+| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should ✅ (Track the value page; gap split into volume, recall, adoption and false alarms) |
 | US-6.2 | As an AI business analyst, I want to track adoption (share of alerts acted on), so that I can spot when users stop trusting the AI. | Adoption rate shown monthly; alert if it drops below 70%. | Should ✅ |
 | US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could ✅ (3-month rolling recall, since ~3 failures a month is too few to judge one month alone) |
 | US-6.4 | As an ops director, I want the tool to suggest the next AI use case once the first is live, so that we expand value step by step. | After a "Go" verdict, the summary lists the next 2 quick wins from Epic 1. | Could (v2) |
@@ -161,6 +161,9 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 | Transparency | Every assumption is labeled and editable |
 | Trust | Model metrics reported on held-out test data only |
 | Branding | Independent project; no company branding |
+| Clarity | A first-time visitor understands the point in under a minute: an overview page with the headline results, and every page opens with its question and the answer before any detail |
+| Navigation | Pages grouped by stage (Plan the project, After launch, Generative AI) with their own links, Back / Next buttons on every page, and every page works on its own with default inputs |
+| Motion | Short fade-in when a page opens; switched off for visitors who ask their system for reduced motion |
 
 ---
 
@@ -169,10 +172,14 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 User (browser)
    │
    ▼
-Streamlit web app ──► Tab 1 Prioritize ──► use_cases.csv + scoring engine
-   │                ├► Tab 2 Prove value ──► trained model + test predictions + cost engine
-   │                ├► Tab 3 Readiness  ──► checklist + verdict rules
-   │                └► Summary          ──► one-page business case (download)
+Streamlit web app ──► Overview: headline results + tour of the steps
+   │  Plan the project ├► 1 Pick a use case   ──► use_cases.csv + scoring engine
+   │                   ├► 2 Prove the value   ──► trained model + test predictions + cost engine
+   │                   ├► 3 Check readiness   ──► checklist + verdict rules
+   │                   └► 4 Business case     ──► one-page business case (download)
+   │  After launch     └► 5 Track the value   ──► tracking engine + S3 → Databricks gold export
+   │  Generative AI    ├► 6 GenAI pilot       ──► saved Bedrock pilot runs + GenAI cost engine
+   │                   └► 7 AI analyst agents ──► saved Bedrock agent runs + graders (live only with AWS credentials)
    ▼
 Hosted on Streamlit Community Cloud (public link)
 ```
@@ -187,7 +194,7 @@ S3 landing zone  s3://ai-roi-data-…-us-east-2-an/landing/actuals/month=YYYY-MM
    ▼
 Databricks volume workspace.ai_roi.landing
    ▼  job "ai-roi-value-pipeline" (serverless, monthly schedule ready)
-bronze_actuals ──► silver_actuals ──► gold_tracked_value ──► export ──► app Tab 5  +  S3 curated/
+bronze_actuals ──► silver_actuals ──► gold_tracked_value ──► export ──► app page 5  +  S3 curated/
                └─► quarantine_actuals (row + reason)
 ```
 
@@ -206,7 +213,7 @@ bronze_actuals ──► silver_actuals ──► gold_tracked_value ──► e
 | Analyst agents | Intake, memo and red-team prompts (v1-v3), code post-processing, plausibility checklist, graders; Amazon Nova Lite on Bedrock | `src/agents.py`, `agents/` |
 | Data pipeline | S3 landing, sync to Databricks, bronze/silver/gold notebook, job, export back to the app and S3 | `pipeline/run.py`, `pipeline/notebook.py`, `data/pipeline/` |
 | Value tracking | Forecast vs actual savings, adoption and drift alerts, gap breakdown, simulated sample rollout | `src/tracking.py`, `data/sample_actuals.csv` |
-| User interface | Tabs, inputs, charts, summary | `app.py` |
+| User interface | Overview, 7 pages in 3 sections, answer-first page headers, Back / Next links, inputs, charts, summary | `app.py`, `.streamlit/config.toml` |
 
 ---
 

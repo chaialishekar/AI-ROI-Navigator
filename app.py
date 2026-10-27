@@ -3,13 +3,19 @@
 An independent concept project: helps a company decide which AI use case to deploy,
 prove its value in dollars, and check whether it is ready for production.
 
-Tab 1  Prioritize   - score use cases on value vs feasibility
-Tab 2  Prove value  - tune a real predictive maintenance model for dollars, not accuracy
-Tab 3  Readiness    - pilot-to-production readiness check
-Tab 4  Business case - one-page summary to share with finance
-Tab 5  Track value  - after go-live: forecast vs actual savings, adoption and drift
-Tab 6  GenAI pilot  - measured Bedrock pilot of an AI work-order writer, and its ROI across five cost categories
-Tab 7  Analyst agents - intake, memo and red-team agents on Bedrock, graded automatically (v1 vs v2 vs v3)
+Overview          - what the project shows, headline results, and the steps to click into
+Plan the project
+  1 Pick a use case   - score use cases on value vs feasibility
+  2 Prove the value   - tune a real predictive maintenance model for dollars, not accuracy
+  3 Check readiness   - pilot-to-production readiness check
+  4 Business case     - one-page summary to share with finance
+After launch
+  5 Track the value   - forecast vs actual savings, adoption and drift (fed by the S3 -> Databricks pipeline)
+Generative AI
+  6 GenAI pilot       - measured Bedrock pilot of an AI work-order writer, and its ROI across five cost categories
+  7 AI analyst agents - intake, memo and red-team agents on Bedrock, graded automatically (v1 vs v2 vs v3)
+
+Every page opens with its question and the answer, then the detail, then Back / Next links.
 """
 
 import json
@@ -50,7 +56,7 @@ from src.value import (
     sweep,
 )
 
-st.set_page_config(page_title="AI Use-Case ROI Navigator", layout="wide")
+st.set_page_config(page_title="AI Use-Case ROI Navigator", page_icon="📈", layout="wide")
 
 QUADRANT_COLORS = {
     "Quick win": "#1d7a45",
@@ -64,18 +70,6 @@ QUADRANT_COLORS = {
 def load_use_cases() -> pd.DataFrame:
     return pd.read_csv("data/use_cases.csv")
 
-
-st.title("AI Use-Case ROI Navigator")
-st.caption(
-    "Most AI projects stall between pilot and production. This tool helps pick the right use case, "
-    "prove its value in dollars, and check readiness to go live. Independent concept project; "
-    "scores are analyst assumptions you can edit."
-)
-
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
-    ["1 · Prioritize", "2 · Prove value", "3 · Readiness", "4 · Business case", "5 · Track value", "6 · GenAI pilot",
-     "7 · Analyst agents"]
-)
 
 
 @st.cache_resource
@@ -104,26 +98,23 @@ def money_range(lo_hi: tuple) -> str:
     return f"{money(lo_hi[0])} – {money(lo_hi[1])}"
 
 
-# ---------------------------------------------------------------- Tab 1
-with tab1:
-    st.subheader("Which AI use case should we do first?")
-    st.write(
-        "Each use case is scored 1–5 on **value** and **feasibility**. "
-        "High on both = **quick win**. Edit any score or weight to test your own assumptions."
-    )
-
-    with st.sidebar:
-        st.header("Prioritize weights")
-        st.caption("How much each criterion counts. Weights in each group are normalized.")
-        st.markdown("**Value**")
-        value_w = {k: st.slider(lbl, 0.0, 1.0, DEFAULT_VALUE_WEIGHTS[k], 0.05, key=f"vw_{k}")
-                   for k, lbl in VALUE_CRITERIA.items()}
-        st.markdown("**Feasibility**")
-        feas_w = {k: st.slider(lbl, 0.0, 1.0, DEFAULT_FEAS_WEIGHTS[k], 0.05, key=f"fw_{k}")
-                  for k, lbl in FEASIBILITY_CRITERIA.items()}
+# ---------------------------------------------------------------- Page 1
+def page_pick():
+    answer = page_header(1, "Which AI project should we do first?",
+                         "12 ideas, each scored 1–5 on **value** (money, strategy, scale) and **feasibility** "
+                         "(data, effort, risk, speed). High on both = **quick win**.")
 
     industries = sorted(load_use_cases()["industry"].unique())
-    picked = st.multiselect("Industries", industries, default=industries)
+    with st.expander("Change the weights or industries"):
+        picked = st.multiselect("Industries", industries, default=industries, key="industries")
+        w1, w2 = st.columns(2)
+        w1.markdown("**What counts as value**")
+        value_w = {k: w1.slider(lbl, 0.0, 1.0, DEFAULT_VALUE_WEIGHTS[k], 0.05, key=f"vw_{k}")
+                   for k, lbl in VALUE_CRITERIA.items()}
+        w2.markdown("**What counts as feasible**")
+        feas_w = {k: w2.slider(lbl, 0.0, 1.0, DEFAULT_FEAS_WEIGHTS[k], 0.05, key=f"fw_{k}")
+                  for k, lbl in FEASIBILITY_CRITERIA.items()}
+        st.caption("Weights in each group are normalized.")
 
     base = load_use_cases()
     base = base[base["industry"].isin(picked)]
@@ -155,6 +146,15 @@ with tab1:
 
     st.session_state["top_use_case"] = scored.iloc[0]["use_case"]
     st.session_state["top_quadrant"] = scored.iloc[0]["quadrant"]
+    top = scored.iloc[0]
+    n_wins = int((scored["quadrant"] == "Quick win").sum())
+    pdm = scored[scored["use_case"] == "Predictive maintenance"]
+    answer.markdown(md(
+        f"Start with **{top['use_case']}** ({top['industry']}): it scores highest on value × feasibility. "
+        f"{n_wins} of {len(scored)} ideas are quick wins."
+        + (f" The rest of this app follows **predictive maintenance** (ranked #{int(pdm['rank'].iloc[0])}, "
+           f"{pdm['quadrant'].iloc[0].lower()}), because a public machine dataset lets us prove its value with a real model."
+           if not pdm.empty else "")))
 
     # Headline: top 3 quick wins
     wins = scored[scored["quadrant"] == "Quick win"].head(3)
@@ -187,26 +187,24 @@ with tab1:
     st.plotly_chart(fig, width="stretch")
 
     st.caption("Numbers on the chart match the rank in the list below. Hover a point for details.")
-    st.markdown("**Ranked list**")
-    st.dataframe(
-        scored[["rank", "use_case", "industry", "value", "feasibility", "priority", "quadrant", "next_step"]],
-        hide_index=True,
-        width="stretch",
-    )
+    with st.expander("Ranked list with next steps"):
+        st.dataframe(
+            scored[["rank", "use_case", "industry", "value", "feasibility", "priority", "quadrant", "next_step"]],
+            hide_index=True,
+            width="stretch",
+        )
+    nav_footer("pick")
 
-# ---------------------------------------------------------------- Tab 2
-with tab2:
-    st.subheader("What is predictive maintenance worth to this plant?")
-    st.write(
-        "A model trained on 10,000 real-style machine records predicts which machines are about to fail. "
-        "Enter your plant's costs, then move the **alert threshold** to see how dollars change. "
-        "The most accurate setting is not always the most profitable one."
-    )
+# ---------------------------------------------------------------- Page 2
+def page_value():
+    answer = page_header(2, "What is it worth in dollars?",
+                         "A model trained on 10,000 machine records warns before a machine fails. We turn its catches, "
+                         "misses and false alarms into dollars for a plant with 40 breakdowns a year.")
 
     res = get_model_results()
     y_test = res["y_test"]
 
-    with st.expander("Your plant's costs (edit to match your operation)", expanded=True):
+    with st.expander("Your plant's costs (edit to match your operation)"):
         c1, c2, c3 = st.columns(3)
         costs = Costs(
             failures_per_year=c1.number_input("Unplanned failures per year today", 1, 10_000, 40, 1, key="c_fail"),
@@ -243,17 +241,18 @@ with tab2:
     m3.metric("3-year ROI", f"{r['roi_3y']*100:,.0f}%", help=band_help)
     m3.caption(f"90% range: {band['roi_3y'][0]*100:,.0f}% – {band['roi_3y'][1]*100:,.0f}%")
     m4.metric("First-year value", money(r["first_year"]), help="Savings while live in year one, minus deployment cost")
-    st.info(f"**In plain language:** {plain_language(r)}")
+    st.caption(plain_language(r))
 
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Failures caught / year", f"{r['caught']:.0f}")
-    k1.caption(f"90% range: {band['caught'][0]:.0f} – {band['caught'][1]:.0f}")
-    k2.metric("Failures missed / year", f"{r['missed']:.0f}")
-    k2.caption(f"90% range: {band['missed'][0]:.0f} – {band['missed'][1]:.0f}")
-    k3.metric("False alarms / year", f"{r['false_alarms']:.0f}")
-    k3.caption(f"90% range: {band['false_alarms'][0]:.0f} – {band['false_alarms'][1]:.0f}")
-    k4.metric("Accuracy", f"{r['accuracy']*100:.1f}%", help="Share of all test readings classified correctly")
-    st.caption(
+    with st.expander("Failures caught, missed and false alarms per year"):
+      k1, k2, k3, k4 = st.columns(4)
+      k1.metric("Failures caught / year", f"{r['caught']:.0f}")
+      k1.caption(f"90% range: {band['caught'][0]:.0f} – {band['caught'][1]:.0f}")
+      k2.metric("Failures missed / year", f"{r['missed']:.0f}")
+      k2.caption(f"90% range: {band['missed'][0]:.0f} – {band['missed'][1]:.0f}")
+      k3.metric("False alarms / year", f"{r['false_alarms']:.0f}")
+      k3.caption(f"90% range: {band['false_alarms'][0]:.0f} – {band['false_alarms'][1]:.0f}")
+      k4.metric("Accuracy", f"{r['accuracy']*100:.1f}%", help="Share of all test readings classified correctly")
+      st.caption(
         f"Ranges reflect **model uncertainty**: the test set has only {int(y_test.sum())} real failures, "
         "so catch and false-alarm rates are estimates. For uncertainty in your cost inputs, see "
         "*How sure are we?* below."
@@ -287,15 +286,15 @@ with tab2:
     )
     st.plotly_chart(fig2, width="stretch")
 
-    st.markdown("**Model comparison** (each at its most profitable threshold)")
-    rows = []
-    for name, m in res["models"].items():
-        cv = sweep(y_test, m["proba"], costs)
-        b = cv.loc[cv["annual_net"].idxmax()]
-        rows.append({"Model": name, "AUC": round(m["auc"], 3), "Best threshold": round(b["threshold"], 2),
-                     "Recall": f"{b['recall']*100:.0f}%", "Precision": f"{b['precision']*100:.0f}%",
-                     "Annual net savings": money(b["annual_net"]), "Payback (months)": round(b["payback_months"], 1)})
-    st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+    with st.expander("Model comparison (each at its most profitable threshold)"):
+        rows = []
+        for name, m in res["models"].items():
+            cv = sweep(y_test, m["proba"], costs)
+            b = cv.loc[cv["annual_net"].idxmax()]
+            rows.append({"Model": name, "AUC": round(m["auc"], 3), "Best threshold": round(b["threshold"], 2),
+                         "Recall": f"{b['recall']*100:.0f}%", "Precision": f"{b['precision']*100:.0f}%",
+                         "Annual net savings": money(b["annual_net"]), "Payback (months)": round(b["payback_months"], 1)})
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
 
     with st.expander("Custom build vs ready-made solution"):
         cc1, cc2 = st.columns(2)
@@ -310,7 +309,7 @@ with tab2:
         st.caption(md(f"Going live {custom_m - ready_m} months sooner is worth {money(fy(ready_m) - fy(custom_m))} in year one."))
 
     # ---------------------------------------------------------------- Sensitivity
-    st.markdown("#### How sure are we? Low / base / high cases")
+    st.markdown("#### How sure are we?")
     st.write(
         "Your cost inputs are estimates. Set a realistic low and high value for each one "
         "to see the range of outcomes and which assumption matters most."
@@ -403,14 +402,21 @@ with tab2:
     )
     st.session_state["value"] = {**r, "model": model_name, "band": band, "cases": cases, "costs": costs,
                                  "top_driver": top["assumption"].replace(" ($)", ""), "top_swing": top["swing"]}
+    answer.markdown(md(
+        f"**{money(r['annual_net'])} a year**, paying back in **{months(r['payback_months'])}**. "
+        f"Even with every cost assumption at its pessimistic end it saves {money(low['annual_net'])} a year. "
+        + (f"Setting alerts for dollars instead of accuracy is worth **{money(gap)} more a year**." if gap > 1 else "")))
+    nav_footer("value")
 
-# ---------------------------------------------------------------- Tab 3
-with tab3:
-    st.subheader("Are we ready to go live, or will this stall as a pilot?")
-    st.write("Rate each statement from 1 (not at all) to 5 (fully true). "
-             "Pre-filled with an example pilot plant; change any answer.")
-    EXAMPLE_PILOT = {"Data": [4, 4], "Workflow fit": [2, 2], "ROI clarity": [4, 3],
-                     "User trust": [3, 2], "Governance & risk": [3, 3]}
+# ---------------------------------------------------------------- Page 3
+EXAMPLE_PILOT = {"Data": [4, 4], "Workflow fit": [2, 2], "ROI clarity": [4, 3],
+                 "User trust": [3, 2], "Governance & risk": [3, 3]}
+
+
+def page_ready():
+    answer = page_header(3, "Are we ready to go live?",
+                         "Most AI pilots stall because of people and process, not the model. Rate 10 statements "
+                         "from 1 (not at all) to 5 (fully true); it's pre-filled with an example plant.")
 
     dim_scores = {}
     cols3 = st.columns(2)
@@ -422,8 +428,10 @@ with tab3:
 
     v, weakest = verdict(dim_scores)
     avg = sum(dim_scores.values()) / len(dim_scores)
-    msg = f"**Verdict: {v}** · average readiness {avg:.1f} / 5"
-    {"Go": st.success, "Fix first": st.warning, "Not ready": st.error}[v](msg)
+    weak = ", ".join(f"**{d.lower()}**" for d, _ in weakest)
+    answer.markdown({"Go": f"**Go** (average {avg:.1f} / 5). Weakest areas to keep an eye on: {weak}.",
+                     "Fix first": f"**Not yet: fix first** (average {avg:.1f} / 5). Before launch, work on {weak}.",
+                     "Not ready": f"**Not ready** (average {avg:.1f} / 5). Start with {weak}."}[v])
 
     figr = px.bar(
         pd.DataFrame({"Dimension": list(dim_scores), "Score": list(dim_scores.values())}),
@@ -442,15 +450,19 @@ with tab3:
     st.caption("Rules: Go = average ≥ 3.5 and no dimension below 2.5 · Fix first = any dimension below 2.5 "
                "(or average 2.5–3.5) · Not ready = average below 2.5.")
     st.session_state["readiness"] = {"verdict": v, "avg": avg, "weakest": weakest}
+    nav_footer("ready")
 
-# ---------------------------------------------------------------- Tab 5
-# Runs before Tab 4 so the business case summary can include value delivered to date.
+# ---------------------------------------------------------------- Page 5
+SHORTFALL = {"Failures (volume)": "the plant had fewer breakdowns to prevent than assumed",
+             "Model recall": "the model caught fewer failures than in testing",
+             "Flagged failures acted on": "the crew ignored some correct alerts",
+             "False alarms": "more false alarms than expected"}
 GAP_ACTIONS = {
     "Failures (volume)": "The plant had a different number of failures than the business case assumed. "
-                         "This is not the model's fault; update failures per year in the Prove value tab.",
+                         "This is not the model's fault; update failures per year on the Prove the value page.",
     "Model recall": "The model is catching fewer failures than it did in testing. Retrain it on recent data.",
     "Flagged failures acted on": "The model warned about failures the crew did not act on. "
-                                 "Fix the workflow and build trust (see the Readiness tab).",
+                                 "Fix the workflow and build trust (see Check readiness).",
     "False alarms": "There were more false alarms than in testing. Review the alert threshold.",
 }
 
@@ -471,175 +483,176 @@ def load_pipeline() -> dict | None:
     return {"gold": gold, "log": log, "matches": bool(matches)}
 
 
-with tab5:
-    st.subheader("After go-live: is the AI delivering the value we promised?")
-    st.write(
-        "Business cases are approved on a forecast, but few teams check the forecast once the model is live. "
-        "Upload monthly counts from your maintenance system to compare **actual savings with the forecast**, "
-        "see whether the crew acts on alerts, and catch the model drifting before value drops."
-    )
-    val = st.session_state.get("value", {})
-    if not val:
-        st.info("Open the Prove value tab first.")
-    else:
-        sample = pd.read_csv("data/sample_actuals.csv")
+def page_track():
+    answer = page_header(5, "After launch: is it delivering what we promised?",
+                         "Few teams check the forecast once the model is live. Monthly counts from the maintenance "
+                         "system are turned into dollars and compared with the forecast, alongside two early warnings: "
+                         "the crew ignoring alerts, and the model getting worse.")
+    val = get_value()
+    sample = pd.read_csv("data/sample_actuals.csv")
+    pipe = load_pipeline()
+    with st.expander("Data source: pipeline, sample or your own file"):
         u1, u2 = st.columns([3, 1])
         upload = u1.file_uploader("Monthly actuals (CSV, one row per month)", type="csv", key="actuals_upload")
         u2.download_button("Download template (sample data)", sample.to_csv(index=False),
                            file_name="monthly_actuals_template.csv", key="dl_template")
-        pipe = load_pipeline()
         use_pipe = upload is None and pipe is not None and st.radio(
             "Data source", ["Pipeline: S3 → Databricks gold table", "Bundled sample file"], horizontal=True,
             key="actuals_source").startswith("Pipeline")
-        if upload is not None:
-            actuals, source = pd.read_csv(upload), "uploaded file"
-        elif use_pipe:
-            actuals, source = pipe["gold"][COLUMNS], "S3 → Databricks pipeline"
-        else:
-            actuals, source = sample, "simulated sample"
-        if upload is None and not use_pipe:
-            st.caption("Showing a **simulated** 12-month rollout, not real plant data: adoption is slow at first, "
-                       "then the model starts to drift in month 9. Upload your own file to replace it.")
-        if use_pipe:
-            log = pipe["log"]
-            st.caption(md(
-                f"Loaded from the **pipeline** (the same simulated 12-month rollout, not real plant data): monthly files land in an encrypted S3 bucket (us-east-2), are synced to "
-                f"Databricks and flow through bronze → silver → gold tables. Last refresh {log['refreshed_at'][:16].replace('T', ' ')} UTC; "
-                f"{log['bronze_rows']} rows received, {log['silver_rows']} months passed the checks. "
-                + ("Gold matches this tab's formula ✅" if pipe["matches"] else "⚠️ Gold differs from this tab's formula")))
-            for q in log["quarantined"]:
-                st.warning(md(f"**Quarantined** `{q['file']}` ({q['month']}): {q['reason']}. Ask the plant to fix and resend it."))
-        with st.expander("What goes in the file"):
-            st.markdown(
-                "- `month`: e.g. 2026-01\n"
-                "- `alerts_raised`: alerts the model sent\n"
-                "- `failures_flagged`: failures the model warned about in advance (acted on or not)\n"
-                "- `failures_prevented`: flagged failures the crew fixed in time\n"
-                "- `failures_missed`: unplanned failures (not flagged, or flagged but ignored)\n"
-                "- `false_alarms`: inspections that found nothing wrong\n\n"
-                "Dollars come from these counts and the costs in the Prove value tab, using the same formula as the forecast."
-            )
+        st.markdown(
+            "**File format**, one row per month:\n"
+            "- `month`: e.g. 2026-01\n"
+            "- `alerts_raised`: alerts the model sent\n"
+            "- `failures_flagged`: failures the model warned about in advance (acted on or not)\n"
+            "- `failures_prevented`: flagged failures the crew fixed in time\n"
+            "- `failures_missed`: unplanned failures (not flagged, or flagged but ignored)\n"
+            "- `false_alarms`: inspections that found nothing wrong\n\n"
+            "Dollars come from these counts and the costs on the Prove the value page, using the same formula as the forecast."
+        )
+    if upload is not None:
+        actuals, source = pd.read_csv(upload), "uploaded file"
+    elif use_pipe:
+        actuals, source = pipe["gold"][COLUMNS], "S3 → Databricks pipeline"
+    else:
+        actuals, source = sample, "simulated sample"
+    if upload is None and not use_pipe:
+        st.caption("Showing a **simulated** 12-month rollout, not real plant data: adoption is slow at first, "
+                   "then the model starts to drift in month 9. Upload your own file to replace it.")
+    if use_pipe:
+        log = pipe["log"]
+        st.caption(md(
+            f"Loaded from the **pipeline** (the same simulated 12-month rollout, not real plant data): monthly files land in an encrypted S3 bucket (us-east-2), are synced to "
+            f"Databricks and flow through bronze → silver → gold tables. Last refresh {log['refreshed_at'][:16].replace('T', ' ')} UTC; "
+            f"{log['bronze_rows']} rows received, {log['silver_rows']} months passed the checks. "
+            + ("Gold matches this page's formula ✅" if pipe["matches"] else "⚠️ Gold differs from this page's formula")))
+        for q in log["quarantined"]:
+            st.warning(md(f"**Quarantined** `{q['file']}` ({q['month']}): {q['reason']}. Ask the plant to fix and resend it."))
 
-        errors = validate(actuals)
-        if errors:
-            st.error("This file can't be used:\n\n" + "\n".join(f"- {e}" for e in errors))
-            st.session_state.pop("tracking", None)
-        else:
-            c = val["costs"]
-            t = track(actuals, val, c)
-            gap = explain_gap(t, val, c)
-            last = t.iloc[-1]
-            n = len(t)
-            delivered, promised = last["cum_actual"], last["cum_forecast"]
-            pct = delivered / promised if promised > 0 else np.nan
-            recall_now = t["recall_3m"].dropna().iloc[-1] if t["recall_3m"].notna().any() else np.nan
+    errors = validate(actuals)
+    if errors:
+        st.error("This file can't be used:\n\n" + "\n".join(f"- {e}" for e in errors))
+        st.session_state.pop("tracking", None)
+    else:
+        c = val["costs"]
+        t = track(actuals, val, c)
+        gap = explain_gap(t, val, c)
+        last = t.iloc[-1]
+        n = len(t)
+        delivered, promised = last["cum_actual"], last["cum_forecast"]
+        pct = delivered / promised if promised > 0 else np.nan
+        recall_now = t["recall_3m"].dropna().iloc[-1] if t["recall_3m"].notna().any() else np.nan
 
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric(f"Savings after {n} months", money(delivered), f"{money(delivered - promised)} vs forecast")
-            m2.metric("Share of forecast delivered", f"{pct*100:.0f}%" if np.isfinite(pct) else "n/a")
-            m3.metric("Alerts acted on (last month)", f"{last['adoption']*100:.0f}%" if pd.notna(last["adoption"]) else "n/a",
-                      help=f"Warning below {ADOPTION_FLOOR:.0%}.")
-            m4.metric(f"Recall (last {DRIFT_WINDOW} months)", f"{recall_now*100:.0f}%" if np.isfinite(recall_now) else "n/a",
-                      f"{(recall_now - val['recall'])*100:+.0f} pts vs launch" if np.isfinite(recall_now) else None,
-                      help=f"Launch recall {val['recall']*100:.0f}% on test data. Warning when {DRIFT_DROP*100:.0f}+ points lower.")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric(f"Savings after {n} months", money(delivered), f"{money(delivered - promised)} vs forecast")
+        m2.metric("Share of forecast delivered", f"{pct*100:.0f}%" if np.isfinite(pct) else "n/a")
+        m3.metric("Alerts acted on (last month)", f"{last['adoption']*100:.0f}%" if pd.notna(last["adoption"]) else "n/a",
+                  help=f"Warning below {ADOPTION_FLOOR:.0%}.")
+        m4.metric(f"Recall (last {DRIFT_WINDOW} months)", f"{recall_now*100:.0f}%" if np.isfinite(recall_now) else "n/a",
+                  f"{(recall_now - val['recall'])*100:+.0f} pts vs launch" if np.isfinite(recall_now) else None,
+                  help=f"Launch recall {val['recall']*100:.0f}% on test data. Warning when {DRIFT_DROP*100:.0f}+ points lower.")
 
-            low_months = t.loc[t["adoption_alert"], "month"].tolist()
-            if last["adoption_alert"]:
-                st.error(f"**Adoption alert:** the crew acted on only {last['adoption']*100:.0f}% of alerts last month "
-                         f"(target {ADOPTION_FLOOR:.0%}). Value is being left on the table.")
-            elif low_months:
-                st.info(f"Adoption was below {ADOPTION_FLOOR:.0%} in {', '.join(low_months)} and has since recovered.")
-            drift_months = t.loc[t["drift_alert"], "month"].tolist()
-            if last["drift_alert"]:
-                st.error(f"**Drift alert:** recall over the last {DRIFT_WINDOW} months is {recall_now*100:.0f}%, "
-                         f"{(val['recall'] - recall_now)*100:.0f} points below launch. Retrain the model before value drops further "
-                         f"(first flagged {drift_months[0]}).")
-            elif drift_months:
-                st.warning(f"Recall dipped below the drift line in {', '.join(drift_months)} but is back above it.")
+        low_months = t.loc[t["adoption_alert"], "month"].tolist()
+        if last["adoption_alert"]:
+            st.error(f"**Adoption alert:** the crew acted on only {last['adoption']*100:.0f}% of alerts last month "
+                     f"(target {ADOPTION_FLOOR:.0%}). Value is being left on the table.")
+        elif low_months:
+            st.info(f"Adoption was below {ADOPTION_FLOOR:.0%} in {', '.join(low_months)} and has since recovered.")
+        drift_months = t.loc[t["drift_alert"], "month"].tolist()
+        if last["drift_alert"]:
+            st.error(f"**Drift alert:** recall over the last {DRIFT_WINDOW} months is {recall_now*100:.0f}%, "
+                     f"{(val['recall'] - recall_now)*100:.0f} points below launch. Retrain the model before value drops further "
+                     f"(first flagged {drift_months[0]}).")
+        elif drift_months:
+            st.warning(f"Recall dipped below the drift line in {', '.join(drift_months)} but is back above it.")
 
-            lo, hi = val["band"]["annual_net"]
-            k = np.arange(1, n + 1)
-            figc = go.Figure()
-            figc.add_trace(go.Scatter(x=t["month"], y=hi / 12 * k, mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip"))
-            figc.add_trace(go.Scatter(x=t["month"], y=lo / 12 * k, mode="lines", fill="tonexty", fillcolor="rgba(15,109,116,0.12)",
-                                      line=dict(width=0), name="Forecast range (model uncertainty)", hoverinfo="skip"))
-            figc.add_trace(go.Scatter(x=t["month"], y=t["cum_forecast"], name="Forecast", mode="lines", line=dict(color="#0f6d74", dash="dash")))
-            figc.add_trace(go.Scatter(x=t["month"], y=t["cum_actual"], name="Actual", mode="lines+markers",
-                                      line=dict(color="#15222a")))
-            figc.update_layout(height=340, margin=dict(l=10, r=10, t=30, b=10), title="Cumulative net savings since go-live",
-                               yaxis=dict(tickformat="$,.0f", title=""), xaxis_title="", legend=dict(orientation="h", y=-0.2))
-            st.plotly_chart(figc, width="stretch")
+        lo, hi = val["band"]["annual_net"]
+        k = np.arange(1, n + 1)
+        figc = go.Figure()
+        figc.add_trace(go.Scatter(x=t["month"], y=hi / 12 * k, mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip"))
+        figc.add_trace(go.Scatter(x=t["month"], y=lo / 12 * k, mode="lines", fill="tonexty", fillcolor="rgba(15,109,116,0.12)",
+                                  line=dict(width=0), name="Forecast range (model uncertainty)", hoverinfo="skip"))
+        figc.add_trace(go.Scatter(x=t["month"], y=t["cum_forecast"], name="Forecast", mode="lines", line=dict(color="#0f6d74", dash="dash")))
+        figc.add_trace(go.Scatter(x=t["month"], y=t["cum_actual"], name="Actual", mode="lines+markers",
+                                  line=dict(color="#15222a")))
+        figc.update_layout(height=340, margin=dict(l=10, r=10, t=30, b=10), title="Cumulative net savings since go-live",
+                           yaxis=dict(tickformat="$,.0f", title=""), xaxis_title="", legend=dict(orientation="h", y=-0.2))
+        st.plotly_chart(figc, width="stretch")
 
-            g1, g2 = st.columns(2)
-            figa = go.Figure(go.Bar(x=t["month"], y=t["adoption"] * 100,
-                                    marker_color=["#b4322c" if a else "#1d7a45" for a in t["adoption_alert"]]))
-            figa.add_hline(y=ADOPTION_FLOOR * 100, line_dash="dot", line_color="#8a979c",
-                           annotation_text=f"{ADOPTION_FLOOR:.0%} target", annotation_position="top left")
-            figa.update_layout(height=280, margin=dict(l=10, r=10, t=30, b=10), title="Alerts acted on (%)",
-                               yaxis=dict(range=[0, 105], title=""), xaxis_title="")
-            g1.plotly_chart(figa, width="stretch")
+        g1, g2 = st.columns(2)
+        figa = go.Figure(go.Bar(x=t["month"], y=t["adoption"] * 100,
+                                marker_color=["#b4322c" if a else "#1d7a45" for a in t["adoption_alert"]]))
+        figa.add_hline(y=ADOPTION_FLOOR * 100, line_dash="dot", line_color="#8a979c",
+                       annotation_text=f"{ADOPTION_FLOOR:.0%} target", annotation_position="top left")
+        figa.update_layout(height=280, margin=dict(l=10, r=10, t=30, b=10), title="Alerts acted on (%)",
+                           yaxis=dict(range=[0, 105], title=""), xaxis_title="")
+        g1.plotly_chart(figa, width="stretch")
 
-            figd = go.Figure()
-            figd.add_trace(go.Scatter(x=t["month"], y=t["recall_3m"] * 100, mode="lines+markers", name="Recall (3-month)",
-                                      line=dict(color="#15222a")))
-            figd.add_hline(y=val["recall"] * 100, line_color="#0f6d74", annotation_text="launch",
-                           annotation_position="top left")
-            figd.add_hline(y=(val["recall"] - DRIFT_DROP) * 100, line_dash="dot", line_color="#b4322c",
-                           annotation_text="drift alert", annotation_position="bottom left")
-            figd.update_layout(height=280, margin=dict(l=10, r=10, t=30, b=10), showlegend=False,
-                               title=f"Failures caught, rolling {DRIFT_WINDOW} months (%)",
-                               yaxis=dict(range=[0, 105], title=""), xaxis_title="")
-            g2.plotly_chart(figd, width="stretch")
+        figd = go.Figure()
+        figd.add_trace(go.Scatter(x=t["month"], y=t["recall_3m"] * 100, mode="lines+markers", name="Recall (3-month)",
+                                  line=dict(color="#15222a")))
+        figd.add_hline(y=val["recall"] * 100, line_color="#0f6d74", annotation_text="launch",
+                       annotation_position="top left")
+        figd.add_hline(y=(val["recall"] - DRIFT_DROP) * 100, line_dash="dot", line_color="#b4322c",
+                       annotation_text="drift alert", annotation_position="bottom left")
+        figd.update_layout(height=280, margin=dict(l=10, r=10, t=30, b=10), showlegend=False,
+                           title=f"Failures caught, rolling {DRIFT_WINDOW} months (%)",
+                           yaxis=dict(range=[0, 105], title=""), xaxis_title="")
+        g2.plotly_chart(figd, width="stretch")
 
-            st.markdown("**Why actual differs from the forecast**")
-            figw = go.Figure(go.Waterfall(
-                x=["Forecast"] + gap["cause"].tolist() + ["Actual"],
-                measure=["absolute"] + ["relative"] * len(gap) + ["total"],
-                y=[promised] + gap["effect"].tolist() + [0],
-                text=[money(promised)] + [money(e) for e in gap["effect"]] + [money(delivered)], textposition="outside",
-                increasing=dict(marker_color="#1d7a45"), decreasing=dict(marker_color="#b4322c"),
-                totals=dict(marker_color="#15222a"), connector=dict(line=dict(color="#8a979c")),
-            ))
-            figw.update_layout(height=340, margin=dict(l=10, r=10, t=30, b=10), yaxis=dict(tickformat="$,.0f", title=""),
-                               showlegend=False)
-            st.plotly_chart(figw, width="stretch")
+        st.markdown("**Why actual differs from the forecast**")
+        figw = go.Figure(go.Waterfall(
+            x=["Forecast"] + gap["cause"].tolist() + ["Actual"],
+            measure=["absolute"] + ["relative"] * len(gap) + ["total"],
+            y=[promised] + gap["effect"].tolist() + [0],
+            text=[money(promised)] + [money(e) for e in gap["effect"]] + [money(delivered)], textposition="outside",
+            increasing=dict(marker_color="#1d7a45"), decreasing=dict(marker_color="#b4322c"),
+            totals=dict(marker_color="#15222a"), connector=dict(line=dict(color="#8a979c")),
+        ))
+        figw.update_layout(height=340, margin=dict(l=10, r=10, t=30, b=10), yaxis=dict(tickformat="$,.0f", title=""),
+                           showlegend=False)
+        st.plotly_chart(figw, width="stretch")
 
-            fmt = {"Failures (volume)": lambda x: f"{x:.0f} failures", "Model recall": lambda x: f"{x*100:.0f}%",
-                   "Flagged failures acted on": lambda x: f"{x*100:.0f}%", "False alarms": lambda x: f"{x:.0f}"}
-            st.dataframe(pd.DataFrame({
-                "Cause": gap["cause"],
-                "Forecast assumed": [fmt[cs](a) for cs, a in zip(gap["cause"], gap["assumed"])],
-                "Actual": [fmt[cs](a) for cs, a in zip(gap["cause"], gap["actual"])],
-                "Effect on savings": [money(e) for e in gap["effect"]],
-            }), hide_index=True, width="stretch")
-            worst = gap.loc[gap["effect"].idxmin()]
-            if worst["effect"] < 0:
-                st.markdown(md(f"**Biggest shortfall: {worst['cause']}** ({money(worst['effect'])}). "
-                               f"{GAP_ACTIONS[worst['cause']]}"))
-            st.caption(md(
-                "Each cause is swapped from its forecast value to its actual value one at a time, so the effects add up "
-                "exactly to the gap. The forecast assumes every alert is acted on. Dollar costs per failure can't be "
-                f"checked from counts: the biggest cost driver in Prove value is **{val['top_driver']}**, so check it "
-                "against real repair invoices."
-            ))
+        fmt = {"Failures (volume)": lambda x: f"{x:.0f} failures", "Model recall": lambda x: f"{x*100:.0f}%",
+               "Flagged failures acted on": lambda x: f"{x*100:.0f}%", "False alarms": lambda x: f"{x:.0f}"}
+        st.dataframe(pd.DataFrame({
+            "Cause": gap["cause"],
+            "Forecast assumed": [fmt[cs](a) for cs, a in zip(gap["cause"], gap["assumed"])],
+            "Actual": [fmt[cs](a) for cs, a in zip(gap["cause"], gap["actual"])],
+            "Effect on savings": [money(e) for e in gap["effect"]],
+        }), hide_index=True, width="stretch")
+        worst = gap.loc[gap["effect"].idxmin()]
+        if worst["effect"] < 0:
+            st.markdown(md(f"**Biggest shortfall: {worst['cause']}** ({money(worst['effect'])}). "
+                           f"{GAP_ACTIONS[worst['cause']]}"))
+        st.caption(md(
+            "Each cause is swapped from its forecast value to its actual value one at a time, so the effects add up "
+            "exactly to the gap. The forecast assumes every alert is acted on. Dollar costs per failure can't be "
+            f"checked from counts: the biggest cost driver in Prove value is **{val['top_driver']}**, so check it "
+            "against real repair invoices."
+        ))
 
-            with st.expander("Monthly data"):
-                st.dataframe(t[COLUMNS + ["recall", "adoption", "actual", "forecast"]].round(2), hide_index=True, width="stretch")
+        with st.expander("Monthly data"):
+            st.dataframe(t[COLUMNS + ["recall", "adoption", "actual", "forecast"]].round(2), hide_index=True, width="stretch")
 
-            st.session_state["tracking"] = {
-                "source": source, "months": n, "first": t["month"].iloc[0], "last": last["month"],
-                "delivered": delivered, "promised": promised, "pct": pct,
-                "adoption_last": last["adoption"], "low_adoption_months": low_months,
-                "recall_now": recall_now, "drift_now": bool(last["drift_alert"]),
-                "worst_cause": worst["cause"] if worst["effect"] < 0 else None, "worst_effect": worst["effect"],
-            }
+        tk = st.session_state["tracking"] = summarize_tracking(t, gap, source)
+        answer.markdown(md(
+            f"**{pct*100:.0f}% of the forecast delivered** after {n} months ({money(delivered)} of {money(promised)}). "
+            + (f"Biggest shortfall: {SHORTFALL[tk['worst_cause']]}. " if tk["worst_cause"] else "")
+            + ("**Drift alert:** the model is catching fewer failures; retrain it." if tk["drift_now"] else "")))
+    nav_footer("track")
 
-# ---------------------------------------------------------------- Tab 4
-with tab4:
-    st.subheader("Business case summary")
-    val = st.session_state.get("value", {})
-    rd = st.session_state.get("readiness", {})
-    tk = st.session_state.get("tracking")
+# ---------------------------------------------------------------- Page 4
+def page_case():
+    answer = page_header(4, "The one-page business case",
+                         "Everything from steps 1–3, plus value delivered after launch, in a summary you can download "
+                         "and send to finance. It updates when you change any input on the earlier pages.")
+    val = get_value()
+    rd = get_readiness()
+    answer.markdown(md(
+        f"**{money(val['annual_net'])} a year, {months(val['payback_months'])} payback.** Readiness says "
+        f"**{rd['verdict'].lower()}**" + (f", so fix {rd['weakest'][0][0].lower()} before launch" if rd["verdict"] != "Go" else "")
+        + ". Download the one-pager below."))
+    tk = st.session_state.get("tracking") or default_tracking()
     tracking_md = ""
     if tk:
         pct_txt = f"{tk['pct']*100:.0f}% of forecast" if np.isfinite(tk["pct"]) else "forecast not positive"
@@ -654,12 +667,9 @@ with tab4:
                f"{tk['recall_now']*100:.0f}% over the last {DRIFT_WINDOW} months, {DRIFT_DROP*100:.0f}+ points below launch. Retrain.\n"
                if tk["drift_now"] else "- No drift alert in the latest month\n")
         )
-    if not val:
-        st.info("Open the Prove value tab first.")
-    else:
-        summary = f"""# AI Business Case: Predictive Maintenance
+    summary = f"""# AI Business Case: Predictive Maintenance
 
-**Use case:** Predictive maintenance (manufacturing). Top-ranked use case in the Prioritize tab: {st.session_state.get('top_use_case', 'n/a')} ({st.session_state.get('top_quadrant', 'n/a')}).
+**Use case:** Predictive maintenance (manufacturing). Top-ranked use case on the Pick a use case page: {st.session_state.get('top_use_case', 'n/a')} ({st.session_state.get('top_quadrant', 'n/a')}).
 
 ## Value
 - Annual net savings: {money(val['annual_net'])} (90% range from model uncertainty: {money_range(val['band']['annual_net'])})
@@ -674,20 +684,23 @@ with tab4:
 | Case | Annual net savings | 3-year net value | Payback |
 |---|---|---|---|
 """ + "".join(f"| {name} | {money(c['annual_net'])} | {money(c['three_year'])} | {months(c['payback_months'])} |\n"
-              for name, c in val["cases"].items()) + f"""
+          for name, c in val["cases"].items()) + f"""
 - Biggest driver: {val['top_driver']} (moves 3-year value by {money(val['top_swing'])}). Agree this number with finance first.
 
 ## Readiness
 - Verdict: {rd.get('verdict', 'n/a')} (average {rd.get('avg', 0):.1f} / 5)
 """ + "".join(f"- Fix: {d} ({s:.1f}): {ACTIONS[d]}\n" for d, s in rd.get("weakest", [])) + tracking_md + """
 ## Key assumptions
-- Plant costs as entered in the Prove value tab (illustrative defaults otherwise)
+- Plant costs as entered on the Prove the value page (illustrative defaults otherwise)
 - Model results from held-out test data (AI4I 2020 dataset), scaled to the plant's failures per year
 """
+    st.download_button("Download summary (.md)", summary, file_name="ai_business_case.md", key="dl_summary",
+                       type="primary")
+    with st.container(border=True):
         st.markdown(md(summary))
-        st.download_button("Download summary (.md)", summary, file_name="ai_business_case.md", key="dl_summary")
+    nav_footer("case")
 
-# ---------------------------------------------------------------- Tab 6
+# ---------------------------------------------------------------- Page 6
 @st.cache_data
 def load_pilot() -> dict:
     cases = pd.read_csv("pilot/pilot_cases.csv")
@@ -708,15 +721,18 @@ def show_draft(reply: str):
         st.caption("Parts: " + ", ".join(d["parts"]))
 
 
-with tab6:
-    st.subheader("Does a GenAI assistant pay for itself? A measured pilot")
-    st.write(
-        "The prediction model raises an alert; a small language model (Amazon Nova Micro on Amazon Bedrock) drafts the "
-        "work order for the technician. We ran 30 real alerts from the test set through it twice and measured cost, "
-        "speed and whether each draft named the right cause (the true cause is known from the data)."
-    )
+def page_pilot():
+    answer = page_header(6, "Does a GenAI assistant pay for itself?",
+                         "When the model raises an alert, a small language model (Amazon Nova Micro on Bedrock) drafts "
+                         "the work order. We ran 30 real alerts through it twice and measured cost, speed and whether "
+                         "each draft named the right cause.")
     pilot = load_pilot()
     s1, s2 = pilot["summary"][1], pilot["summary"][2]
+    answer.markdown(md(
+        f"Only if the AI is kept away from the diagnosis. Writing the work order costs **${s2['cost_per_task']*1000:.2f} "
+        f"per 1,000 drafts**, but when the AI also diagnosed the fault it was right only "
+        f"**{s1['correct_on_real_failures']:.0%}** of the time on real failures. Letting simple rules diagnose and the AI "
+        f"only write raised that to **{s2['correct_on_real_failures']:.0%}**. Review time, not the model fee, decides the ROI."))
 
     st.markdown("**Pilot results** (30 alerts each, run on Bedrock in us-east-2)")
     st.dataframe(pd.DataFrame({
@@ -805,6 +821,7 @@ with tab6:
     ))
     st.caption("Black tick = value of time saved. Training: 2 hours for 6 planners. Error rate = wrong-cause rate from "
                "the pilot × share that slips past review.")
+    nav_footer("pilot")
 
 
 # ---------------------------------------------------------------- Tab 7
@@ -827,7 +844,7 @@ def aws_ready() -> bool:
 
 
 def agent_reply(version: str, case_id: str) -> str:
-    row = next(r for r in AGENTS["runs"][version] if r["id"] == case_id)
+    row = next(r for r in load_agents()["runs"][version] if r["id"] == case_id)
     return row.get("final", row["reply"])
 
 
@@ -847,16 +864,18 @@ def show_objections(reply: str):
     st.markdown(f"Verdict: **{d.get('verdict', 'n/a')}**")
 
 
-with tab7:
+def page_agents():
+    answer = page_header(7, "Can AI agents do the analyst's paperwork?",
+                         "Three small agents on Amazon Bedrock (Nova Lite): **Intake** turns a manager's paragraph into "
+                         "calculator inputs, **Memo** writes the CFO memo, **Red team** plays the skeptical CFO. Each is "
+                         "graded automatically on cases with known answers, including business cases with a planted flaw.")
     AGENTS = load_agents()
-    st.subheader("Can AI agents do the analyst's paperwork? Three agents, graded automatically")
-    st.write(
-        "Three small agents on Amazon Bedrock (Amazon Nova Lite) take on the analyst work around a business case: "
-        "**Intake** turns a manager's paragraph into calculator inputs, **Memo** writes the one-page CFO memo, and "
-        "**Red team** plays the skeptical CFO. Each is tested on cases with known answers and graded in code, "
-        "including business cases with a deliberately planted flaw."
-    )
     sc = AGENTS["scores"]
+    answer.markdown(md(
+        f"Yes, once **code checks the numbers and the AI only writes**. Intake went from "
+        f"{sc['v1']['intake_field_accuracy']:.0%} to {sc['v3']['intake_field_accuracy']:.0%} of fields right, memos stopped "
+        f"inventing numbers, and the red team went from {sc['v1']['redteam_caught']} to {sc['v3']['redteam_caught']} of "
+        f"{sc['v3']['redteam_flaws']} planted flaws caught, for about ${sc['v3']['total_cost']:.3f} a run."))
     col = lambda v: [
         f"{sc[v]['intake_field_accuracy']:.0%}", f"{sc[v]['intake_invented_fields']}",
         f"{sc[v]['memo_faithful']} of 2", f"{sc[v]['redteam_caught']} of {sc[v]['redteam_flaws']}",
@@ -942,3 +961,170 @@ with tab7:
     else:
         st.caption("Live mode runs only on a machine with AWS credentials (set AWS_PROFILE), so this public demo "
                    "shows saved results and cannot spend anyone's AWS credits.")
+
+
+# ---------------------------------------------------------------- Shared results (so every page works on its own)
+@st.cache_data(show_spinner="Training the model…")
+def default_value() -> dict:
+    """Prove-the-value result at the default plant costs and the most profitable threshold."""
+    res = get_model_results()
+    y, name, costs = res["y_test"], "Gradient boosting", Costs()
+    proba = res["models"][name]["proba"]
+    curve = sweep(y, proba, costs)
+    thr = float(round(curve.loc[curve["annual_net"].idxmax(), "threshold"], 2))
+    ranges = default_ranges(costs)
+    top = sensitivity(y, proba, thr, costs, ranges).iloc[0]
+    return {**evaluate(y, proba, thr, costs), "model": name, "band": bootstrap(y, proba, thr, costs),
+            "cases": scenarios(y, proba, thr, costs, ranges), "costs": costs,
+            "top_driver": top["assumption"].replace(" ($)", ""), "top_swing": top["swing"]}
+
+
+def get_value() -> dict:
+    return st.session_state.get("value") or default_value()
+
+
+def get_readiness() -> dict:
+    if "readiness" in st.session_state:
+        return st.session_state["readiness"]
+    dims = {d: sum(v) / len(v) for d, v in EXAMPLE_PILOT.items()}
+    v, weakest = verdict(dims)
+    return {"verdict": v, "avg": sum(dims.values()) / len(dims), "weakest": weakest}
+
+
+def summarize_tracking(t: pd.DataFrame, gap: pd.DataFrame, source: str) -> dict:
+    last = t.iloc[-1]
+    delivered, promised = last["cum_actual"], last["cum_forecast"]
+    worst = gap.loc[gap["effect"].idxmin()]
+    return {
+        "source": source, "months": len(t), "first": t["month"].iloc[0], "last": last["month"],
+        "delivered": delivered, "promised": promised, "pct": delivered / promised if promised > 0 else np.nan,
+        "adoption_last": last["adoption"], "low_adoption_months": t.loc[t["adoption_alert"], "month"].tolist(),
+        "recall_now": t["recall_3m"].dropna().iloc[-1] if t["recall_3m"].notna().any() else np.nan,
+        "drift_now": bool(last["drift_alert"]),
+        "worst_cause": worst["cause"] if worst["effect"] < 0 else None, "worst_effect": worst["effect"],
+    }
+
+
+def default_tracking() -> dict:
+    val, pipe = get_value(), load_pipeline()
+    actuals, source = ((pipe["gold"][COLUMNS], "S3 → Databricks pipeline") if pipe
+                       else (pd.read_csv("data/sample_actuals.csv"), "simulated sample"))
+    t = track(actuals, val, val["costs"])
+    return summarize_tracking(t, explain_gap(t, val, val["costs"]), source)
+
+
+# ---------------------------------------------------------------- Layout helpers
+SECTIONS = {1: "Plan the project", 2: "Plan the project", 3: "Plan the project", 4: "Plan the project",
+            5: "After launch", 6: "Generative AI", 7: "Generative AI"}
+ORDER = ["home", "pick", "value", "ready", "case", "track", "pilot", "agents"]
+
+
+def page_header(step: int, title: str, intro: str):
+    """Step label, question, one-paragraph context and an 'answer' box the page fills in once it has computed it."""
+    st.markdown(f'<div class="eyebrow">Step {step} of 7 · {SECTIONS[step]}</div>', unsafe_allow_html=True)
+    st.title(title)
+    st.markdown(intro)
+    box = st.container(key=f"answer_{step}")
+    box.markdown('<div class="answer-label">The answer</div>', unsafe_allow_html=True)
+    return box
+
+
+def nav_footer(name: str):
+    i = ORDER.index(name)
+    st.divider()
+    back, _, nxt = st.columns([2, 3, 2])
+    if i > 0:
+        back.page_link(PAGES[ORDER[i - 1]], label=f"← {PAGES[ORDER[i - 1]].title}")
+    if i < len(ORDER) - 1:
+        nxt.page_link(PAGES[ORDER[i + 1]], label=f"Next: {PAGES[ORDER[i + 1]].title} →")
+
+
+# ---------------------------------------------------------------- Overview
+TOUR = {
+    "Plan the project": [("pick", "Which of 12 AI ideas to do first"),
+                         ("value", "What it is worth in dollars, and how sure we are"),
+                         ("ready", "Whether the team is ready to go live"),
+                         ("case", "A one-page summary for finance")],
+    "After launch": [("track", "Is it delivering? Forecast vs actual, adoption and drift, fed by an S3 → Databricks pipeline")],
+    "Generative AI": [("pilot", "A measured Amazon Bedrock pilot: does an AI work-order writer pay for itself?"),
+                      ("agents", "AI analyst agents, graded automatically on cases with known answers")],
+}
+
+
+def page_home():
+    st.markdown('<div class="eyebrow">AI value engineering · portfolio project</div>', unsafe_allow_html=True)
+    st.title("AI Use-Case ROI Navigator")
+    st.markdown(
+        "**Most AI projects never make it from pilot to production.** This app follows one project the whole way: "
+        "pick the right idea, prove it in dollars, check the team is ready, keep checking the value after launch, "
+        "and test where generative AI actually pays off. The example is predictive maintenance in a factory."
+    )
+    val, tk = get_value(), default_tracking()
+    sc = load_agents()["scores"]["v3"]
+    s2 = load_pilot()["summary"][2]
+    k1, k2, k3 = st.columns(3)
+    with k1.container(border=True, key="kpi_1"):
+        st.metric("Value of predictive maintenance", f"{money(val['annual_net'])} a year")
+        st.caption(md(f"Pays back in {months(val['payback_months'])}. Tuned for dollars, not accuracy."))
+    with k2.container(border=True, key="kpi_2"):
+        st.metric("Delivered after 12 months", f"{tk['pct']*100:.0f}% of forecast")
+        st.caption("The gap is explained cause by cause, and a drift alert says when to retrain.")
+    with k3.container(border=True, key="kpi_3"):
+        st.metric("GenAI that you can trust", f"{s2['correct_on_real_failures']:.0%} right cause")
+        st.caption(md(f"Once code checks the numbers and the AI only writes; agents caught "
+                      f"{sc['redteam_caught']} of {sc['redteam_flaws']} planted flaws."))
+
+    st.markdown("### Take the tour")
+    cols = st.columns(3)
+    for col, (section, steps) in zip(cols, TOUR.items()):
+        with col.container(border=True, key=f"tour_{section.split()[0].lower()}"):
+            st.markdown(f"**{section}**")
+            for name, blurb in steps:
+                st.page_link(PAGES[name], label=PAGES[name].title)
+                st.caption(blurb)
+    st.caption("Real: the AI4I 2020 machine dataset, the trained model, the Amazon Bedrock pilot and agent runs, the "
+               "S3 and Databricks pipeline. Illustrative: plant costs, use-case scores and the 12-month rollout, "
+               "all editable. Independent concept project.")
+    nav_footer("home")
+
+
+# ---------------------------------------------------------------- Style and navigation
+st.markdown("""
+<style>
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+[data-testid="stMainBlockContainer"] { max-width: 1150px; padding-top: 2.5rem; }
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > * { animation: fadeUp 0.5s ease-out both; }
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(2) { animation-delay: 0.05s; }
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(3) { animation-delay: 0.1s; }
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(4) { animation-delay: 0.15s; }
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(n+5) { animation-delay: 0.2s; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; font-weight: 600; color: #0f6d74; }
+.answer-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.72rem; font-weight: 700;
+                color: #0f6d74; margin-bottom: -0.4rem; }
+[class*="st-key-answer_"] { background: rgba(15, 109, 116, 0.08); border-left: 4px solid #0f6d74;
+                            border-radius: 10px; padding: 0.9rem 1.2rem; font-size: 1.08rem; }
+[class*="st-key-kpi_"], [class*="st-key-tour_"] { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+[class*="st-key-kpi_"]:hover, [class*="st-key-tour_"]:hover { transform: translateY(-2px);
+                                                              box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); }
+[data-testid="stPageLink"] a { border: 1px solid rgba(128, 128, 128, 0.3); border-radius: 8px; padding: 0.3rem 0.8rem;
+                               transition: background 0.2s ease, border-color 0.2s ease; }
+[data-testid="stPageLink"] a:hover { border-color: #0f6d74; background: rgba(15, 109, 116, 0.08); }
+.stAppDeployButton { display: none; }
+</style>
+""", unsafe_allow_html=True)
+
+PAGES = {
+    "home": st.Page(page_home, title="Overview", icon=":material/home:", default=True),
+    "pick": st.Page(page_pick, title="1 · Pick a use case", url_path="pick"),
+    "value": st.Page(page_value, title="2 · Prove the value", url_path="value"),
+    "ready": st.Page(page_ready, title="3 · Check readiness", url_path="readiness"),
+    "case": st.Page(page_case, title="4 · Business case", url_path="business-case"),
+    "track": st.Page(page_track, title="5 · Track the value", url_path="track"),
+    "pilot": st.Page(page_pilot, title="6 · GenAI pilot", url_path="genai-pilot"),
+    "agents": st.Page(page_agents, title="7 · AI analyst agents", url_path="agents"),
+}
+st.navigation({"": [PAGES["home"]],
+               "Plan the project": [PAGES[k] for k in ("pick", "value", "ready", "case")],
+               "After launch": [PAGES["track"]],
+               "Generative AI": [PAGES["pilot"], PAGES["agents"]]}, position="top").run()

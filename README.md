@@ -2,17 +2,17 @@
 
 > Most teams judge AI models by accuracy. This tool judges them by dollars.
 
-Most AI projects stall between pilot and production: companies pick projects on hype, judge models by accuracy instead of business value, and launch before they're ready. The ROI Navigator walks an operations leader through four steps, checks the promise after launch, tests a GenAI assistant with a measured pilot, and puts AI agents through graded evals:
+Most AI projects stall between pilot and production: companies pick projects on hype, judge models by accuracy instead of business value, and launch before they're ready. The ROI Navigator follows one project through 7 steps in three stages. It opens on an overview with the headline results, and every page leads with its question and **the answer**, then the detail, then a link to the next step:
 
-| Tab | Question it answers |
+| Step | Question it answers |
 |---|---|
-| **1 · Prioritize** | Which AI use case should we do first? Scores 12 use cases on value vs feasibility. |
-| **2 · Prove value** | What is it worth, and how sure are we? Tunes a real predictive-maintenance model for **dollars saved, not accuracy**, with uncertainty ranges and low / base / high cases. |
-| **3 · Readiness** | Are we ready to go live? 10-question scorecard with a Go / Fix first / Not ready verdict. |
-| **4 · Business case** | One-page summary to share with finance (downloadable). |
-| **5 · Track value** | Is it delivering what we promised? Compares actual savings with the forecast month by month, warns when the crew stops acting on alerts or the model drifts, and explains the gap. Data arrives through an **S3 → Databricks** pipeline (bronze, silver, gold). |
-| **6 · GenAI pilot** | Does a GenAI assistant pay for itself? A measured Amazon Bedrock pilot of an AI that drafts work orders, with ROI across five cost categories. |
-| **7 · Analyst agents** | Can AI agents do the analyst's paperwork? Intake, CFO-memo and red-team agents on Amazon Bedrock, each graded automatically on cases with known answers. |
+| **Plan · 1 · Pick a use case** | Which AI use case should we do first? Scores 12 use cases on value vs feasibility. |
+| **Plan · 2 · Prove the value** | What is it worth, and how sure are we? Tunes a real predictive-maintenance model for **dollars saved, not accuracy**, with uncertainty ranges and low / base / high cases. |
+| **Plan · 3 · Check readiness** | Are we ready to go live? 10-question scorecard with a Go / Fix first / Not ready verdict. |
+| **Plan · 4 · Business case** | One-page summary to share with finance (downloadable). |
+| **After launch · 5 · Track the value** | Is it delivering what we promised? Compares actual savings with the forecast month by month, warns when the crew stops acting on alerts or the model drifts, and explains the gap. Data arrives through an **S3 → Databricks** pipeline (bronze, silver, gold). |
+| **GenAI · 6 · GenAI pilot** | Does a GenAI assistant pay for itself? A measured Amazon Bedrock pilot of an AI that drafts work orders, with ROI across five cost categories. |
+| **GenAI · 7 · AI analyst agents** | Can AI agents do the analyst's paperwork? Intake, CFO-memo and red-team agents on Amazon Bedrock, each graded automatically on cases with known answers. |
 
 *Independent concept project. Use-case scores and plant costs are illustrative assumptions and can be edited in the app.*
 
@@ -21,18 +21,22 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 - catches **~86% of failures** with **~80% of alerts being real**
 - yields **~$660K annual net savings** for a plant with 40 failures a year, with a **~4.7-month payback**
 - **The result holds up under pessimistic assumptions.** Model uncertainty puts annual savings at **$611K–$704K** (90% range). In the low case, with every cost assumption at its unfavorable end, the project still saves **~$164K a year** and pays back in **~20 months**. The biggest driver is the cost of an unplanned failure, so that's the number to agree with finance first.
-- **Forecasts need checking after launch.** In a simulated 12-month rollout the plant banks **$464K of the $660K forecast (70%)**. The Track value tab splits the $197K gap into fewer failures than assumed (−$91K), the crew ignoring correct alerts in the first months (−$63K) and model drift (−$46K), and raises a retrain alert in month 11.
+- **Forecasts need checking after launch.** In a simulated 12-month rollout the plant banks **$464K of the $660K forecast (70%)**. The Track the value page splits the $197K gap into fewer failures than assumed (−$91K), the crew ignoring correct alerts in the first months (−$63K) and model drift (−$46K), and raises a retrain alert in month 11.
 - **For GenAI, the model fee is not the cost; review time is.** A 30-alert pilot on Amazon Bedrock (Nova Micro) cost **$0.04 per 1,000 drafts**. When the model diagnosed the fault itself it was right only **33%** of the time; moving the diagnosis into a rule check and letting the model only write raised that to **100% on real failures**. With 4-minute reviews the assistant returns **72% in year one**, but only **−14% in cash** if half the saved hours turn into money, and it stops paying once review takes more than **~10 minutes** a draft.
 - **Agents need evals, and evals show where code beats prompts.** Three Nova Lite agents were graded on 19 cases with known answers. Version 1 got **42%** of intake fields right, invented a number in a memo and caught **3 of 6** planted flaws. Letting the model only quote numbers (code converts units and fills them into the memo) made intake and memos exact. The red team still failed until a code checklist decided what was implausible and the model only explained it: **6 of 6** flaws caught, **0** false alarms, for about **$0.001** a run.
 - **The most accurate setting is not the most profitable.** Tuning the alert threshold for dollars instead of accuracy saves **~$29K more per year**, because a missed failure ($25K) costs far more than a false alarm ($500).
 
-| Prioritize | Prove value |
+**Overview** (the landing page)
+
+![](docs/overview.png)
+
+| Pick a use case | Prove the value |
 |---|---|
 | ![](docs/tab1_prioritize.png) | ![](docs/tab2_prove_value.png) |
-| **Readiness** | **Business case** |
+| **Check readiness** | **Business case** |
 | ![](docs/tab3_readiness.png) | ![](docs/tab4_business_case.png) |
 
-**Track value** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
+**Track the value** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
 
 ![](docs/tab5_track_value.png)
 
@@ -40,7 +44,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 
 ![](docs/tab6_genai_pilot.png)
 
-**Analyst agents** (graded on Amazon Bedrock)
+**AI analyst agents** (graded on Amazon Bedrock)
 
 ![](docs/tab7_agents.png)
 
