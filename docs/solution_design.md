@@ -75,8 +75,8 @@ Lenovo publicly describes Hybrid AI Advantage as covering the full AI lifecycle:
 |---|---|---|---|
 | **Advisory** | Which AI should we do, and is it worth it? | Epic 1 Prioritize, Epic 2 Prove value | ✅ |
 | **Implementation** | Are we ready, and how do we deploy safely? | Epic 3 Readiness, Epic 5 Responsible AI & deployment | ✅ partly |
-| **Adoption** | Will people use it, and can we prove it to finance? | Epic 4 Share, Epic 6 Adoption & value tracking | ✅ partly |
-| **Managed services** | Is it still delivering value after launch? | Epic 6 Adoption & value tracking | Backlog |
+| **Adoption** | Will people use it, and can we prove it to finance? | Epic 4 Share, Epic 6 Adoption & value tracking | ✅ |
+| **Managed services** | Is it still delivering value after launch? | Epic 6 Adoption & value tracking | ✅ partly |
 
 ### 3.2 Functional requirements (user stories and acceptance criteria)
 
@@ -122,9 +122,9 @@ Lenovo publicly describes Hybrid AI Advantage as covering the full AI lifecycle:
 #### Epic 6 · Adoption & value tracking (Adoption → Managed services)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should (v2) |
-| US-6.2 | As an AI business analyst, I want to track adoption (share of alerts acted on), so that I can spot when users stop trusting the AI. | Adoption rate shown monthly; alert if it drops below 70%. | Should (v2) |
-| US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could (v2) |
+| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should ✅ (Track value tab; gap split into volume, recall, adoption and false alarms) |
+| US-6.2 | As an AI business analyst, I want to track adoption (share of alerts acted on), so that I can spot when users stop trusting the AI. | Adoption rate shown monthly; alert if it drops below 70%. | Should ✅ |
+| US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could ✅ (3-month rolling recall, since ~3 failures a month is too few to judge one month alone) |
 | US-6.4 | As an ops director, I want the tool to suggest the next AI use case once the first is live, so that we expand value step by step. | After a "Go" verdict, the summary lists the next 2 quick wins from Epic 1. | Could (v2) |
 
 ### 3.3 Non-functional requirements
@@ -161,6 +161,7 @@ Hosted on Streamlit Community Cloud (public link)
 | Model training | Train and test a failure-prediction model on AI4I 2020 | `src/model.py` |
 | Cost engine | Converts caught / missed / false alarms into dollars, ROI and payback; bootstrap ranges and sensitivity cases | `src/value.py` |
 | Readiness engine | Scores dimensions and applies verdict rules | `src/readiness.py` |
+| Value tracking | Forecast vs actual savings, adoption and drift alerts, gap breakdown, simulated sample rollout | `src/tracking.py`, `data/sample_actuals.csv` |
 | User interface | Tabs, inputs, charts, summary | `app.py` |
 
 ---
@@ -199,6 +200,9 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Dollar math matches hand calculation | US-2.2 | Unit test on a 4-record example | ✅ Passed |
 | Uncertainty range contains the point estimate | US-2.7 | Unit test (`tests/test_core.py`) | ✅ Passed: default case $660k, range $611k–$704k |
 | Scenarios are ordered low ≤ base ≤ high; tornado sorted by impact | US-2.8 | Unit test (`tests/test_core.py`) | ✅ Passed: low case $164k/year, 20.5-month payback |
+| Actual savings match hand calculation; adoption and drift alerts fire on the right months | US-6.1, US-6.2, US-6.3 | Unit test on a 4-month example | ✅ Passed |
+| Gap causes add up exactly to actual − forecast; actuals equal to the forecast give no gap | US-6.1 | Unit tests (5 simulated rollouts + exact-match case) | ✅ Passed: sample rollout $464k vs $660k forecast, gap −$197k |
+| Bad actuals files are rejected with a clear message | US-6.1 | Unit test (missing column, impossible counts) | ✅ Passed |
 
 ---
 

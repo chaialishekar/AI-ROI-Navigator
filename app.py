@@ -7,6 +7,7 @@ Tab 1  Prioritize   - score use cases on value vs feasibility
 Tab 2  Prove value  - tune a real predictive maintenance model for dollars, not accuracy
 Tab 3  Readiness    - pilot-to-production readiness check
 Tab 4  Business case - one-page summary to share with finance
+Tab 5  Track value  - after go-live: forecast vs actual savings, adoption and drift
 """
 
 import numpy as np
@@ -25,6 +26,7 @@ from src.scoring import (
 )
 from src.model import train_and_score
 from src.readiness import ACTIONS, DIMENSIONS, verdict
+from src.tracking import ADOPTION_FLOOR, COLUMNS, DRIFT_DROP, DRIFT_WINDOW, explain_gap, track, validate
 from src.value import (
     ASSUMPTIONS,
     Costs,
@@ -59,7 +61,9 @@ st.caption(
     "scores are analyst assumptions you can edit."
 )
 
-tab1, tab2, tab3, tab4 = st.tabs(["1 · Prioritize", "2 · Prove value", "3 · Readiness", "4 · Business case"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    ["1 · Prioritize", "2 · Prove value", "3 · Readiness", "4 · Business case", "5 · Track value"]
+)
 
 
 @st.cache_resource
@@ -385,7 +389,7 @@ with tab2:
         f"({int(y_test.sum())} real failures). Data: AI4I 2020 Predictive Maintenance Dataset (UCI, CC BY 4.0). "
         "Dollar results scale the test-set rates to your plant's failures per year."
     )
-    st.session_state["value"] = {**r, "model": model_name, "band": band, "cases": cases,
+    st.session_state["value"] = {**r, "model": model_name, "band": band, "cases": cases, "costs": costs,
                                  "top_driver": top["assumption"].replace(" ($)", ""), "top_swing": top["swing"]}
 
 # ---------------------------------------------------------------- Tab 3
@@ -427,11 +431,183 @@ with tab3:
                "(or average 2.5–3.5) · Not ready = average below 2.5.")
     st.session_state["readiness"] = {"verdict": v, "avg": avg, "weakest": weakest}
 
+# ---------------------------------------------------------------- Tab 5
+# Runs before Tab 4 so the business case summary can include value delivered to date.
+GAP_ACTIONS = {
+    "Failures (volume)": "The plant had a different number of failures than the business case assumed. "
+                         "This is not the model's fault; update failures per year in the Prove value tab.",
+    "Model recall": "The model is catching fewer failures than it did in testing. Retrain it on recent data.",
+    "Flagged failures acted on": "The model warned about failures the crew did not act on. "
+                                 "Fix the workflow and build trust (see the Readiness tab).",
+    "False alarms": "There were more false alarms than in testing. Review the alert threshold.",
+}
+
+with tab5:
+    st.subheader("After go-live: is the AI delivering the value we promised?")
+    st.write(
+        "Business cases are approved on a forecast, but few teams check the forecast once the model is live. "
+        "Upload monthly counts from your maintenance system to compare **actual savings with the forecast**, "
+        "see whether the crew acts on alerts, and catch the model drifting before value drops."
+    )
+    val = st.session_state.get("value", {})
+    if not val:
+        st.info("Open the Prove value tab first.")
+    else:
+        sample = pd.read_csv("data/sample_actuals.csv")
+        u1, u2 = st.columns([3, 1])
+        upload = u1.file_uploader("Monthly actuals (CSV, one row per month)", type="csv", key="actuals_upload")
+        u2.download_button("Download template (sample data)", sample.to_csv(index=False),
+                           file_name="monthly_actuals_template.csv", key="dl_template")
+        actuals = pd.read_csv(upload) if upload is not None else sample
+        source = "uploaded file" if upload is not None else "simulated sample"
+        if upload is None:
+            st.caption("Showing a **simulated** 12-month rollout, not real plant data: adoption is slow at first, "
+                       "then the model starts to drift in month 9. Upload your own file to replace it.")
+        with st.expander("What goes in the file"):
+            st.markdown(
+                "- `month`: e.g. 2026-01\n"
+                "- `alerts_raised`: alerts the model sent\n"
+                "- `failures_flagged`: failures the model warned about in advance (acted on or not)\n"
+                "- `failures_prevented`: flagged failures the crew fixed in time\n"
+                "- `failures_missed`: unplanned failures (not flagged, or flagged but ignored)\n"
+                "- `false_alarms`: inspections that found nothing wrong\n\n"
+                "Dollars come from these counts and the costs in the Prove value tab, using the same formula as the forecast."
+            )
+
+        errors = validate(actuals)
+        if errors:
+            st.error("This file can't be used:\n\n" + "\n".join(f"- {e}" for e in errors))
+            st.session_state.pop("tracking", None)
+        else:
+            c = val["costs"]
+            t = track(actuals, val, c)
+            gap = explain_gap(t, val, c)
+            last = t.iloc[-1]
+            n = len(t)
+            delivered, promised = last["cum_actual"], last["cum_forecast"]
+            pct = delivered / promised if promised > 0 else np.nan
+            recall_now = t["recall_3m"].dropna().iloc[-1] if t["recall_3m"].notna().any() else np.nan
+
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric(f"Savings after {n} months", money(delivered), f"{money(delivered - promised)} vs forecast")
+            m2.metric("Share of forecast delivered", f"{pct*100:.0f}%" if np.isfinite(pct) else "n/a")
+            m3.metric("Alerts acted on (last month)", f"{last['adoption']*100:.0f}%" if pd.notna(last["adoption"]) else "n/a",
+                      help=f"Warning below {ADOPTION_FLOOR:.0%}.")
+            m4.metric(f"Recall (last {DRIFT_WINDOW} months)", f"{recall_now*100:.0f}%" if np.isfinite(recall_now) else "n/a",
+                      f"{(recall_now - val['recall'])*100:+.0f} pts vs launch" if np.isfinite(recall_now) else None,
+                      help=f"Launch recall {val['recall']*100:.0f}% on test data. Warning when {DRIFT_DROP*100:.0f}+ points lower.")
+
+            low_months = t.loc[t["adoption_alert"], "month"].tolist()
+            if last["adoption_alert"]:
+                st.error(f"**Adoption alert:** the crew acted on only {last['adoption']*100:.0f}% of alerts last month "
+                         f"(target {ADOPTION_FLOOR:.0%}). Value is being left on the table.")
+            elif low_months:
+                st.info(f"Adoption was below {ADOPTION_FLOOR:.0%} in {', '.join(low_months)} and has since recovered.")
+            drift_months = t.loc[t["drift_alert"], "month"].tolist()
+            if last["drift_alert"]:
+                st.error(f"**Drift alert:** recall over the last {DRIFT_WINDOW} months is {recall_now*100:.0f}%, "
+                         f"{(val['recall'] - recall_now)*100:.0f} points below launch. Retrain the model before value drops further "
+                         f"(first flagged {drift_months[0]}).")
+            elif drift_months:
+                st.warning(f"Recall dipped below the drift line in {', '.join(drift_months)} but is back above it.")
+
+            lo, hi = val["band"]["annual_net"]
+            k = np.arange(1, n + 1)
+            figc = go.Figure()
+            figc.add_trace(go.Scatter(x=t["month"], y=hi / 12 * k, mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip"))
+            figc.add_trace(go.Scatter(x=t["month"], y=lo / 12 * k, mode="lines", fill="tonexty", fillcolor="rgba(15,109,116,0.12)",
+                                      line=dict(width=0), name="Forecast range (model uncertainty)", hoverinfo="skip"))
+            figc.add_trace(go.Scatter(x=t["month"], y=t["cum_forecast"], name="Forecast", mode="lines", line=dict(color="#0f6d74", dash="dash")))
+            figc.add_trace(go.Scatter(x=t["month"], y=t["cum_actual"], name="Actual", mode="lines+markers",
+                                      line=dict(color="#15222a")))
+            figc.update_layout(height=340, margin=dict(l=10, r=10, t=30, b=10), title="Cumulative net savings since go-live",
+                               yaxis=dict(tickformat="$,.0f", title=""), xaxis_title="", legend=dict(orientation="h", y=-0.2))
+            st.plotly_chart(figc, width="stretch")
+
+            g1, g2 = st.columns(2)
+            figa = go.Figure(go.Bar(x=t["month"], y=t["adoption"] * 100,
+                                    marker_color=["#b4322c" if a else "#1d7a45" for a in t["adoption_alert"]]))
+            figa.add_hline(y=ADOPTION_FLOOR * 100, line_dash="dot", line_color="#8a979c",
+                           annotation_text=f"{ADOPTION_FLOOR:.0%} target", annotation_position="top left")
+            figa.update_layout(height=280, margin=dict(l=10, r=10, t=30, b=10), title="Alerts acted on (%)",
+                               yaxis=dict(range=[0, 105], title=""), xaxis_title="")
+            g1.plotly_chart(figa, width="stretch")
+
+            figd = go.Figure()
+            figd.add_trace(go.Scatter(x=t["month"], y=t["recall_3m"] * 100, mode="lines+markers", name="Recall (3-month)",
+                                      line=dict(color="#15222a")))
+            figd.add_hline(y=val["recall"] * 100, line_color="#0f6d74", annotation_text="launch",
+                           annotation_position="top left")
+            figd.add_hline(y=(val["recall"] - DRIFT_DROP) * 100, line_dash="dot", line_color="#b4322c",
+                           annotation_text="drift alert", annotation_position="bottom left")
+            figd.update_layout(height=280, margin=dict(l=10, r=10, t=30, b=10), showlegend=False,
+                               title=f"Failures caught, rolling {DRIFT_WINDOW} months (%)",
+                               yaxis=dict(range=[0, 105], title=""), xaxis_title="")
+            g2.plotly_chart(figd, width="stretch")
+
+            st.markdown("**Why actual differs from the forecast**")
+            figw = go.Figure(go.Waterfall(
+                x=["Forecast"] + gap["cause"].tolist() + ["Actual"],
+                measure=["absolute"] + ["relative"] * len(gap) + ["total"],
+                y=[promised] + gap["effect"].tolist() + [0],
+                text=[money(promised)] + [money(e) for e in gap["effect"]] + [money(delivered)], textposition="outside",
+                increasing=dict(marker_color="#1d7a45"), decreasing=dict(marker_color="#b4322c"),
+                totals=dict(marker_color="#15222a"), connector=dict(line=dict(color="#8a979c")),
+            ))
+            figw.update_layout(height=340, margin=dict(l=10, r=10, t=30, b=10), yaxis=dict(tickformat="$,.0f", title=""),
+                               showlegend=False)
+            st.plotly_chart(figw, width="stretch")
+
+            fmt = {"Failures (volume)": lambda x: f"{x:.0f} failures", "Model recall": lambda x: f"{x*100:.0f}%",
+                   "Flagged failures acted on": lambda x: f"{x*100:.0f}%", "False alarms": lambda x: f"{x:.0f}"}
+            st.dataframe(pd.DataFrame({
+                "Cause": gap["cause"],
+                "Forecast assumed": [fmt[cs](a) for cs, a in zip(gap["cause"], gap["assumed"])],
+                "Actual": [fmt[cs](a) for cs, a in zip(gap["cause"], gap["actual"])],
+                "Effect on savings": [money(e) for e in gap["effect"]],
+            }), hide_index=True, width="stretch")
+            worst = gap.loc[gap["effect"].idxmin()]
+            if worst["effect"] < 0:
+                st.markdown(md(f"**Biggest shortfall: {worst['cause']}** ({money(worst['effect'])}). "
+                               f"{GAP_ACTIONS[worst['cause']]}"))
+            st.caption(md(
+                "Each cause is swapped from its forecast value to its actual value one at a time, so the effects add up "
+                "exactly to the gap. The forecast assumes every alert is acted on. Dollar costs per failure can't be "
+                f"checked from counts: the biggest cost driver in Prove value is **{val['top_driver']}**, so check it "
+                "against real repair invoices."
+            ))
+
+            with st.expander("Monthly data"):
+                st.dataframe(t[COLUMNS + ["recall", "adoption", "actual", "forecast"]].round(2), hide_index=True, width="stretch")
+
+            st.session_state["tracking"] = {
+                "source": source, "months": n, "first": t["month"].iloc[0], "last": last["month"],
+                "delivered": delivered, "promised": promised, "pct": pct,
+                "adoption_last": last["adoption"], "low_adoption_months": low_months,
+                "recall_now": recall_now, "drift_now": bool(last["drift_alert"]),
+                "worst_cause": worst["cause"] if worst["effect"] < 0 else None, "worst_effect": worst["effect"],
+            }
+
 # ---------------------------------------------------------------- Tab 4
 with tab4:
     st.subheader("Business case summary")
     val = st.session_state.get("value", {})
     rd = st.session_state.get("readiness", {})
+    tk = st.session_state.get("tracking")
+    tracking_md = ""
+    if tk:
+        pct_txt = f"{tk['pct']*100:.0f}% of forecast" if np.isfinite(tk["pct"]) else "forecast not positive"
+        tracking_md = (
+            f"\n## Value delivered after go-live ({tk['source']}, {tk['first']} to {tk['last']})\n"
+            f"- Net savings to date: {money(tk['delivered'])} vs {money(tk['promised'])} forecast ({pct_txt})\n"
+            + (f"- Biggest shortfall: {tk['worst_cause']} ({money(tk['worst_effect'])}). "
+               f"{GAP_ACTIONS[tk['worst_cause']]}\n" if tk["worst_cause"] else "")
+            + (f"- Adoption below {ADOPTION_FLOOR:.0%} in: {', '.join(tk['low_adoption_months'])}\n"
+               if tk["low_adoption_months"] else f"- Adoption at or above {ADOPTION_FLOOR:.0%} every month\n")
+            + ("- Drift alert: recall is "
+               f"{tk['recall_now']*100:.0f}% over the last {DRIFT_WINDOW} months, {DRIFT_DROP*100:.0f}+ points below launch. Retrain.\n"
+               if tk["drift_now"] else "- No drift alert in the latest month\n")
+        )
     if not val:
         st.info("Open the Prove value tab first.")
     else:
@@ -457,7 +633,7 @@ with tab4:
 
 ## Readiness
 - Verdict: {rd.get('verdict', 'n/a')} (average {rd.get('avg', 0):.1f} / 5)
-""" + "".join(f"- Fix: {d} ({s:.1f}): {ACTIONS[d]}\n" for d, s in rd.get("weakest", [])) + """
+""" + "".join(f"- Fix: {d} ({s:.1f}): {ACTIONS[d]}\n" for d, s in rd.get("weakest", [])) + tracking_md + """
 ## Key assumptions
 - Plant costs as entered in the Prove value tab (illustrative defaults otherwise)
 - Model results from held-out test data (AI4I 2020 dataset), scaled to the plant's failures per year
