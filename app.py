@@ -1,22 +1,22 @@
-"""AI Use-Case ROI Navigator
+"""AI ROI Navigator: an AI business systems analysis case study
 
-An independent concept project: helps a company decide which AI use case to deploy,
-prove its value in dollars, and check whether it is ready for production.
+An independent project: a factory's downtime problem taken through to an AI investment decision and
+a check of the value it delivers after launch.
 
-Overview          - what the project shows, headline results, and the steps to click into
-Plan the project
-  1 Match AI to client - match a provider's library of 12 AI solutions to one client's problem, data and risk
-  2 Prove the value   - tune a real predictive maintenance model for dollars, not accuracy
-  3 Check readiness   - pilot-to-production readiness check
-  4 Business case     - one-page summary to share with finance
+Overview           - the lifecycle as one chart, my role, a closer look at each stage, conclusion
+Before launch
+  1 Evaluate AI solutions      - 12 AI options scored and matched to the business need, with reasons
+  2 Build the business case    - a real predictive maintenance model, priced in dollars, with ranges and sensitivity
+  3 Assess readiness           - readiness check, stakeholder impact, human review and escalation rules
+  4 Prepare the decision       - recommendation, decision rule and a one-page business case
 After launch
-  5 Track the value   - forecast vs actual savings, adoption and drift (fed by the S3 -> Databricks pipeline)
-Generative AI
-  6 GenAI pilot       - measured Bedrock pilot of an AI work-order writer, and its ROI across five cost categories
-  7 AI analyst agents - intake, memo and red-team agents on Bedrock, graded automatically (v1 vs v2 vs v3)
+  5 Measure realized value     - forecast vs actual savings, reasons for the gap (fed by the S3 -> Databricks pipeline)
+GenAI experiments (separate from the main case)
+  A GenAI work orders          - measured Bedrock pilot of an AI work-order writer, and its ROI
+  B GenAI business-case review - intake, memo and critic agents on Bedrock, graded on known answers
 
-Every page follows one template: the question, the answer, three numbers, one chart and what to do next
-(the client view), then 'See the analysis' with the assumptions, method and data, then Back / Next links.
+Every page follows one template: the question, the answer, three numbers, one chart and what to do next,
+then 'Show the details' with the assumptions, method and data, then Back / Next links.
 """
 
 import html
@@ -39,7 +39,7 @@ from src.scoring import (
     VALUE_CRITERIA,
     score,
 )
-from src.model import train_and_score
+from src.model import load_data, train_and_score
 from src.matching import EXAMPLE_CLIENTS, INDUSTRIES, RISK_WEIGHT, URGENCY_WEIGHT, Client, match, problems, weights
 from src.readiness import ACTIONS, DIMENSIONS, verdict
 from src.genai import COST_LABELS, GenAIInputs
@@ -389,9 +389,37 @@ def page_value():
     figs.update_yaxes(range=[min(0, low["annual_net"]) * 1.2, max(c["annual_net"] for c in cases.values()) * 1.2])
 
     with client:
-        kpis([("Saved each year", money(r["annual_net"]), f"likely {money_range(band['annual_net'])}"),
+        kpis([("Projected savings a year", money(r["annual_net"]), f"likely {money_range(band['annual_net'])}"),
               ("Pays for itself in", months(r["payback_months"]), f"{money(costs.deployment_cost)} to set up"),
               ("Saved over 3 years", money(r["three_year"]), "after all AI costs")])
+        be = break_even_cost(r, costs)
+        with st.expander("How the savings are worked out", icon=":material/calculate:", expanded=True):
+            st.markdown(md(
+                "| Each year | Amount | How it is worked out |\n|---|---|---|\n"
+                f"| Breakdowns today | {money(r['cost_without'])} | {costs.failures_per_year:.0f} breakdowns × "
+                f"{money(costs.cost_missed)} downtime and emergency repair |\n"
+                f"| Breakdowns the AI warns about in time | {money(r['caught'] * costs.cost_caught)} | "
+                f"{r['caught']:.1f} become planned repairs × {money(costs.cost_caught)} |\n"
+                f"| Breakdowns it misses | {money(r['missed'] * costs.cost_missed)} | {r['missed']:.1f} × "
+                f"{money(costs.cost_missed)} |\n"
+                f"| False alarms | {money(r['false_alarms'] * costs.cost_false_alarm)} | {r['false_alarms']:.1f} "
+                f"inspections × {money(costs.cost_false_alarm)} |\n"
+                f"| Running the AI | {money(costs.running_cost)} | licence, computing and support |\n"
+                f"| Cost with the AI | {money(r['cost_with'])} | sum of the four lines above |\n"
+                f"| **Net savings** | **{money(r['annual_net'])}** | today minus with the AI, after running costs |\n\n"
+                "| One-off and over time | Amount | How it is worked out |\n|---|---|---|\n"
+                f"| Setup and integration | {money(costs.deployment_cost)} | one-time, single estimate (not split "
+                "into software, integration and training) |\n"
+                f"| Payback | {months(r['payback_months'])} | {costs.months_to_deploy:.0f} months to go live, then "
+                "savings cover the setup cost |\n"
+                f"| 3-year net value | {money(r['three_year'])} | savings for {36 - costs.months_to_deploy:.0f} live "
+                "months minus setup |\n"
+                f"| 3-year ROI | {r['roi_3y']*100:,.0f}% | 3-year net value ÷ setup cost |\n"
+                f"| Break-even | {money(be)} per breakdown | it stops paying only if a breakdown costs less than "
+                f"this (assumed: {money(costs.cost_missed)}) |"))
+            st.caption("Catch, miss and false-alarm rates are measured on 3,000 machine records the model never saw, "
+                       "then scaled to this plant. Costs are assumptions: change them under Show the details, "
+                       "where you also find the ranges and which assumption matters most.")
         st.markdown("**Savings a year, depending on how good our cost estimates turn out to be**")
         st.plotly_chart(figs, width="stretch")
         next_steps([
@@ -409,11 +437,41 @@ EXAMPLE_PILOT = {"Data": [4, 4], "Fits how people work": [2, 2], "Clear payoff":
                  "People trust it": [3, 2], "Clear ownership": [3, 3]}
 
 
+STAKEHOLDER_IMPACT = [
+    ("Maintenance planner", "Checks AI warnings and draft work orders instead of writing orders after a breakdown",
+     "Will it bury us in false alarms?", "Warning level set to keep false alarms rare (step 2); planner approves every order"),
+    ("Technicians", "Planned repairs at the next stop instead of emergency call-outs", "Will the warnings be right?",
+     "Every warning gives its reason in plain words; outcomes are logged each month"),
+    ("Operations director", "Owns the monthly value review", "Is it paying off?",
+     "Step 5 compares savings with the forecast every month"),
+    ("Finance", "Agrees the cost assumptions and signs off", "Are the savings real?",
+     "Cost of a breakdown agreed first; savings measured from the plant's own records"),
+    ("Data / IT lead", "Connects warnings to the maintenance system; sends the monthly file", "Who maintains it?",
+     "Named owner; files that fail the checks are set aside automatically"),
+]
+OVERSIGHT_RULES = [
+    "No work order is released without a planner's approval.",
+    f"If the crew acts on fewer than {ADOPTION_FLOOR:.0%} of warnings in a month, the maintenance manager reviews the workflow.",
+    f"If the AI catches {DRIFT_DROP*100:.0f}+ points fewer breakdowns than at launch over {DRIFT_WINDOW} months, "
+    "the data / IT lead updates it with recent data.",
+    "A warning for an unknown machine is held, not dropped, and IT is told the same day.",
+    "A monthly file that fails the data checks is set aside with the reason and the plant is asked to resend it.",
+]
+
+
 def page_ready():
     answer, client, detail = page_header(3, "Is the team ready?",
                                          "Most AI projects stall because of people and process, not the technology. "
                                          "Ten statements in five areas, filled in for the example factory.")
-    t_rate, t_rules = detail.tabs(["Rate your team", "How the verdict works"])
+    t_rate, t_people, t_rules = detail.tabs(["Rate your team", "People and process", "How the verdict works"])
+    with t_people:
+        st.markdown("**What changes for each group, and what worries them**")
+        st.dataframe(pd.DataFrame(STAKEHOLDER_IMPACT, columns=["Who", "What changes", "Likely concern", "How it is handled"]),
+                     hide_index=True, width="stretch")
+        st.markdown("**Human review and escalation rules**")
+        st.markdown("\n".join(f"- {r}" for r in OVERSIGHT_RULES))
+        st.caption("Stakeholders are personas and the concerns are typical ones, not from interviews. The process maps "
+                   "for today and with the AI are in docs/requirements.md.")
     dim_scores = {}
     with t_rate:
         st.caption("1 = not at all true, 5 = fully true.")
@@ -454,6 +512,28 @@ def page_ready():
 
 
 # ---------------------------------------------------------------- Page 4
+DECISION_RULES = [("Stop", "Expected savings are not positive"),
+                  ("Revise", "Savings turn negative if costs are worse than expected, or the team is not ready"),
+                  ("Proceed after fixes", "Savings stay positive in the worst case, but the team check says fix first"),
+                  ("Proceed", "Savings stay positive in the worst case and the team is ready")]
+
+
+def decision_rule(val: dict, rd: dict) -> tuple[str, str]:
+    """The recommendation finance is asked to approve: (short label, one sentence)."""
+    worst = val["cases"]["Low"]["annual_net"]
+    if val["annual_net"] <= 0:
+        return "Stop", "Even as planned it costs more than it saves."
+    if worst <= 0:
+        return "Revise", "Firm up the cost estimates first: it loses money if they are too optimistic."
+    if rd["verdict"] == "Not ready":
+        return "Revise", "The team is not ready: close the gaps and check again."
+    if rd["verdict"] == "Fix first":
+        fixes = " and ".join(f"“{d.lower()}”" for d, _ in rd["weakest"][:2])
+        return "Proceed after fixes", (f"Close the readiness gaps first ({fixes}). It saves money even in the worst case "
+                                       f"({money(worst)} a year).")
+    return "Proceed", f"It saves money even in the worst case ({money(worst)} a year) and the team is ready."
+
+
 def page_case():
     answer, client, detail = page_header(4, "Ready for sign-off?",
                                          "Everything so far on one page for finance to approve. "
@@ -462,9 +542,9 @@ def page_case():
     val = get_value()
     rd = get_readiness()
     tk = st.session_state.get("tracking") or default_tracking()
-    answer.markdown(md(
-        f"**Worth doing: {money(val['annual_net'])} a year, paying for itself in {months(val['payback_months'])}.** The team check says "
-        f"**{rd['verdict'].lower()}**" + (f", so fix {rd['weakest'][0][0].lower()} before launch." if rd["verdict"] != "Go" else ".")))
+    label, reason = decision_rule(val, rd)
+    answer.markdown(md(f"**Recommendation: {label.lower()}.** {reason}"))
+    rules_md = "| Recommendation | When |\n|---|---|\n" + "".join(f"| {a} | {b} |\n" for a, b in DECISION_RULES)
     tracking_md = ""
     if tk:
         pct_txt = f"{tk['pct']*100:.0f}% of forecast" if np.isfinite(tk["pct"]) else "forecast not positive"
@@ -503,16 +583,23 @@ def page_case():
 
 ## Readiness
 - Verdict: {rd.get('verdict', 'n/a')} (average {rd.get('avg', 0):.1f} / 5)
-""" + "".join(f"- Fix: {d} ({s:.1f}): {ACTIONS[d]}\n" for d, s in rd.get("weakest", [])) + tracking_md + """
+""" + "".join(f"- Fix: {d} ({s:.1f}): {ACTIONS[d]}\n" for d, s in rd.get("weakest", [])) + f"""
+## Recommendation: {label}
+{reason}
+
+{rules_md}
+Acceptance criteria: 12 user acceptance tests and a requirements traceability matrix (docs/requirements.md).
+""" + tracking_md + """
 ## Key assumptions
-- Plant costs as entered on the Prove the value page (illustrative defaults otherwise)
+- Plant costs as entered on step 2 (illustrative defaults otherwise)
 - Model results from held-out test data (AI4I 2020 dataset), scaled to the plant's failures per year
 """
     with client:
-        kpis([("Saved each year", money(val["annual_net"]), f"pays for itself in {months(val['payback_months'])}"),
-              ("Team ready?", rd["verdict"], f"average {rd['avg']:.1f} / 5"),
-              ("Delivered after launch", f"{tk['pct']*100:.0f}%" if tk and np.isfinite(tk["pct"]) else "n/a",
-               f"of what was promised, {tk['months']} months" if tk else "")])
+        kpis([("Projected savings a year", money(val["annual_net"]), f"pays for itself in {months(val['payback_months'])}"),
+              ("If costs are worse", money(val["cases"]["Low"]["annual_net"]), "savings a year, worst case"),
+              ("Team ready?", rd["verdict"], f"average {rd['avg']:.1f} / 5")])
+        st.markdown("**How the recommendation is decided**")
+        st.markdown(rules_md.replace(f"| {label} |", f"| **{label}** (this case) |"))
         st.download_button("Download the one-pager (.md)", summary, file_name="ai_business_case.md", key="dl_summary",
                            type="primary")
     with detail:
@@ -531,7 +618,7 @@ GAP_NEXT = {"Failures (volume)": "update the failures per year in the business c
             "False alarms": "review the alert threshold."}
 GAP_ACTIONS = {
     "Failures (volume)": "The plant had a different number of failures than the business case assumed. "
-                         "This is not the model's fault; update failures per year on the Prove the value page.",
+                         "This is not the model's fault; update failures per year on step 2.",
     "Model recall": "The model is catching fewer failures than it did in testing. Retrain it on recent data.",
     "Flagged failures acted on": "The model warned about failures the crew did not act on. "
                                  "Fix the workflow and build trust (see Check readiness).",
@@ -703,15 +790,29 @@ def page_track():
     for q in (log or {}).get("quarantined", []):
         steps.append(f"**Ask the plant to resend the {q['month']} file**: it failed the data checks.")
 
+    if not np.isfinite(pct) or delivered <= 0:
+        call = ("Reconsider", "it has not saved money so far; check whether the problem and the forecast still hold.")
+    elif pct >= 0.9:
+        call = ("Scale", "it delivers close to the forecast; roll it out to more lines.")
+    else:
+        call = ("Improve, then scale", f"it pays, but delivered {pct*100:.0f}% of the forecast; fix the causes "
+                                        "below and update the forecast before rolling it out further.")
+    gap_lines = [f"**{SHORTFALL[cs][0].upper() + SHORTFALL[cs][1:]}**: {money(e)}"
+                 for cs, e in zip(gap["cause"], gap["effect"]) if e < 0]
+    steps = [md(f"**{call[0]}**: {call[1]}")] + steps
+
     with client:
-        kpis([(f"Saved in {n} months", money(delivered), f"{money(delivered - promised)} vs promised"),
-              ("Of the promise delivered", f"{pct*100:.0f}%" if np.isfinite(pct) else "n/a", f"of {money(promised)}"),
+        kpis([(f"Saved in {n} months", money(delivered), f"{money(delivered - promised)} vs forecast"),
+              ("Of the year-1 target", f"{pct*100:.0f}%" if np.isfinite(pct) else "n/a", f"of {money(promised)}"),
               ("Breakdowns caught now", f"{recall_now*100:.0f}%" if np.isfinite(recall_now) else "n/a",
                f"{val['recall']*100:.0f}% at launch")])
-        st.markdown("**Saved each month vs promised** (amber = a month with a warning)")
+        st.markdown("**Saved each month vs forecast** (amber = a month with a warning)")
         st.plotly_chart(figc, width="stretch")
-        if steps:
-            next_steps(steps)
+        if gap_lines:
+            st.markdown(md(f"**Why it fell short by {money(promised - delivered)}**  \n" + "  \n".join(gap_lines)))
+        st.caption(f"Forecast: the {money(promised)} the business case promised for these {n} months. Delivered: the "
+                   "same formula applied to the plant's monthly records. Simulated data for this example.")
+        next_steps(steps, label="Scale, improve or reconsider?")
     nav_footer("track")
 
 
@@ -1066,8 +1167,8 @@ def default_tracking() -> dict:
 
 
 # ---------------------------------------------------------------- Layout helpers
-SECTIONS = {1: "Before launch", 2: "Before launch", 3: "Before launch", 4: "Before launch",
-            5: "After launch", 6: "Where GenAI helps", 7: "Where GenAI helps"}
+SECTIONS = {1: "Before launch", 2: "Before launch", 3: "Before launch", 4: "Before launch", 5: "After launch"}
+EXPERIMENTS = {6: "A", 7: "B"}   # the GenAI experiments sit outside the numbered lifecycle
 ORDER = ["home", "pick", "value", "ready", "case", "track", "pilot", "agents"]
 
 
@@ -1080,7 +1181,9 @@ def page_header(step: int, title: str, intro: str, detail_label: str = "Show the
 
     Returns (answer, client, detail) containers; the page fills them in any order, so inputs inside the
     detail tabs can be read before the answer and the client view are written."""
-    st.markdown(f'<div class="eyebrow">Step {step} of 7 · {SECTIONS[step]}</div>', unsafe_allow_html=True)
+    eyebrow = (f"GenAI experiment {EXPERIMENTS[step]} · separate from the main case" if step in EXPERIMENTS
+               else f"Stage {step} of 5 · {SECTIONS[step]}")
+    st.markdown(f'<div class="eyebrow">{eyebrow}</div>', unsafe_allow_html=True)
     st.title(title)
     intro = re.sub(r"[*][*](.+?)[*][*]", r"<b>\1</b>", intro)
     st.markdown(f'<div class="intro">{intro}</div>', unsafe_allow_html=True)
@@ -1100,7 +1203,7 @@ def kpis(items: list[tuple[str, str, str]]):
 
 
 def next_steps(items: list[str], label: str = "What to do next"):
-    with st.container(key=f"next_{label.split()[0].lower()}"):
+    with st.container(key=f"next_{re.sub(r'[^a-z]', '', label.split()[0].lower())}"):
         st.markdown(f'<div class="box-label">{label}</div>', unsafe_allow_html=True)
         st.markdown("\n".join(f"{i}. {s}" for i, s in enumerate(items, 1)))
 
@@ -1117,7 +1220,12 @@ def nav_footer(name: str):
 
 # ---------------------------------------------------------------- Overview
 SAGE, LIME, INK = "#c8d2c3", "#d4ee5e", "#1d2521"
-WHY_URL = ""   # link to the Substack post; the overview shows the title without a link until this is set
+REPO = "https://github.com/chaialishekar/AI-ROI-Navigator/blob/main"
+DOCS = {"Requirements pack": f"{REPO}/docs/requirements.md",
+        "Process maps (as-is and to-be)": f"{REPO}/docs/requirements.md#2-process-map-from-warning-to-repair-today-and-with-ai",
+        "Acceptance tests and traceability": f"{REPO}/docs/requirements.md#5-user-acceptance-tests",
+        "User stories and stakeholders": f"{REPO}/docs/solution_design.md",
+        "Roadmap": f"{REPO}/docs/roadmap.md"}
 
 
 @st.cache_data
@@ -1127,6 +1235,14 @@ def accuracy_vs_profit() -> dict:
     curve = sweep(res["y_test"], res["models"]["Gradient boosting"]["proba"], Costs())
     return {"accurate": float(curve.loc[curve["accuracy"].idxmax(), "annual_net"]),
             "profitable": float(curve.loc[curve["annual_net"].idxmax(), "annual_net"])}
+
+
+@st.cache_data
+def failure_causes() -> dict:
+    """Breakdowns by cause in the 10,000 machine records (a breakdown can have more than one cause)."""
+    df = load_data()
+    names = {"TWF": "Tool wear", "HDF": "Heat", "PWF": "Power", "OSF": "Overstrain", "RNF": "Random"}
+    return {names[k]: int(df[k].sum()) for k in names}
 
 
 def default_track_frame() -> pd.DataFrame:
@@ -1157,161 +1273,329 @@ def mini_bars(labels, values, texts, highlight, horizontal=False) -> go.Figure:
     return fig
 
 
-def tour_content(step: str) -> dict:
-    """Question, plain answer, chips and a small chart for one step of the overview's closer look."""
+def break_even_cost(val: dict, c: Costs) -> float:
+    """Cost of a breakdown at which the AI stops paying: savings = caught × (breakdown − planned repair) − other costs."""
+    if val["caught"] <= 0:
+        return float("inf")
+    return c.cost_caught + (val["false_alarms"] * c.cost_false_alarm + c.running_cost) / val["caught"]
+
+
+STAGES = ["0 · Problem", "1 · Solutions", "2 · Business case", "3 · Readiness", "4 · Decision", "5 · Results",
+          "A · Work orders", "B · Case review"]
+
+
+def tour_content(stage: str) -> dict:
+    """For one stage: the business question, how it was analysed, what was produced, the decision it supported,
+    what kind of evidence the headline number is, and a small chart."""
     val, rd = get_value(), get_readiness()
-    if step == "Pick the AI":
-        lib = load_use_cases()
-        tops = {name: match(lib, c).iloc[0] for name, c in EXAMPLE_CLIENTS.items()}
-        m = match(lib, EXAMPLE_CLIENTS["Mid-size factory"])
-        return dict(page="pick", q="Which AI fits the business need?",
-                    a="12 AI options are checked against what the business needs: its main problem, how good its data "
-                      "is, how much risk it accepts and how fast it needs results. Different businesses get different "
-                      "answers:",
-                    chips=[f"{name} → {r['use_case']}" for name, r in tops.items()],
-                    chart_title="How well each option fits the factory (green = solves its main problem)",
+    c = val["costs"]
+    if stage.startswith("0"):
+        causes = failure_causes()
+        return dict(page=None, q="How big is the problem, and what would success look like?",
+                    how=f"Set the baseline: {c.failures_per_year:.0f} surprise breakdowns a year at "
+                        f"{money(c.cost_missed)} each in downtime and emergency repair. Broke the "
+                        f"{int(load_data()['Machine failure'].sum())} breakdowns in the machine data down by cause, mapped how repairs "
+                        "happen today, and listed who is involved: operations, maintenance, finance and IT.",
+                    made="Problem statement and baseline, stakeholder list, as-is process map, user stories with "
+                         "success measures.",
+                    docs=["Process maps (as-is and to-be)", "User stories and stakeholders"],
+                    decision=f"Worth solving: {money(c.failures_per_year * c.cost_missed)} a year is at stake.",
+                    evidence="Baseline cost is an assumption you can edit; the breakdown data is real.",
+                    chart_title="Breakdown causes in 10,000 real machine records",
+                    fig=mini_bars(list(causes), list(causes.values()), [str(v) for v in causes.values()],
+                                  [False] * len(causes), horizontal=True))
+    if stage.startswith("1"):
+        m = match(load_use_cases(), EXAMPLE_CLIENTS["Mid-size factory"])
+        return dict(page="pick", q="Which AI fits this need, and why that one?",
+                    how="Scored 12 AI options on 7 criteria (3 for value, 4 for ease, including how ready the data is), "
+                        "then adjusted the scores for this factory's main problem, data quality, tolerance for AI "
+                        "mistakes and how fast it needs results.",
+                    made="Weighted decision matrix, value vs effort map, and the reasons for the pick.",
+                    docs=[],
+                    decision=f"{m.iloc[0]['use_case']}: the only option that solves unplanned downtime, and ready to start.",
+                    evidence="Option scores are my estimates; the method is shown and the weights can be changed.",
+                    chart_title="Fit score for the factory (green = solves its main problem)",
                     fig=mini_bars(m["use_case"], m["priority"], [f"{p:.1f}" for p in m["priority"]],
                                   m["solves_problem"], horizontal=True))
-    if step == "Worth it?":
+    if stage.startswith("2"):
         ap = accuracy_vs_profit()
-        return dict(page="value", q="Is it worth the money?",
-                    a=f"The AI learned from 10,000 real machine records to warn before a breakdown. Set to save the most "
-                      f"money, rather than to be the most accurate, it saves {money(val['annual_net'])} a year and pays "
-                      f"for itself in {months(val['payback_months'])}.",
-                    chips=["Real machine data", "Best and worst case", "The one number to check first"],
-                    chart_title="Saved each year, same AI, two settings",
-                    fig=mini_bars(["Most accurate", "Saves the most"], [ap["accurate"], ap["profitable"]],
-                                  [money(ap["accurate"]), money(ap["profitable"])], [False, True]))
-    if step == "Team ready?":
+        low = val["cases"]["Low"]["annual_net"]
+        return dict(page="value", q="Does it save more than it costs, and how sure are we?",
+                    how="Trained a breakdown-warning model on real machine data and turned every catch, miss and false "
+                        "alarm into dollars. Set the warning level to save the most money rather than to be the most "
+                        f"accurate (worth {money(ap['profitable'] - ap['accurate'])} a year more), then tested best "
+                        "and worst cases and which assumption matters most.",
+                    made="Financial model: savings, costs, payback, 3-year ROI, ranges and sensitivity analysis.",
+                    docs=[],
+                    decision=f"Invest: {money(val['annual_net'])} a year after running costs, {money(c.deployment_cost)} "
+                             f"to set up, pays back in {months(val['payback_months'])}. Still {money(low)} a year if "
+                             "every cost estimate is too optimistic.",
+                    evidence="Projection: real model results, assumed plant costs.",
+                    chart_title="Cost of breakdowns each year",
+                    fig=mini_bars(["Today", "With the AI", "Saved"],
+                                  [val["cost_without"], val["cost_with"], val["annual_net"]],
+                                  [money(val["cost_without"]), money(val["cost_with"]), money(val["annual_net"])],
+                                  [False, False, True]))
+    if stage.startswith("3"):
         dims = rd.get("dims") or {d: sum(v) / len(v) for d, v in EXAMPLE_PILOT.items()}
-        weak = {d for d, _ in rd["weakest"][:2]}
-        return dict(page="ready", q="Is the team ready to use it?",
-                    a=f"Most AI projects stall because of people and process. Ten questions in five areas say "
-                      f"**{rd['verdict'].lower()}**: the data is fine, but "
-                      f"{' and '.join(d.lower() for d, _ in rd['weakest'][:2])} need work before launch.",
-                    chips=[f"Fix: {d}" for d, _ in rd["weakest"][:2]],
+        weak = [d for d, _ in rd["weakest"][:2]]
+        return dict(page="ready", q="Will people use it, and what has to change first?",
+                    how="Rated the team on 10 statements in 5 areas, mapped how the repair process changes with the AI, "
+                        "and listed what changes for each group and what worries them.",
+                    made="Readiness score with fixes, to-be process map, stakeholder impact table, human review and "
+                         "escalation rules.",
+                    docs=["Process maps (as-is and to-be)"],
+                    decision=(f"Close two gaps before launch: “{weak[0].lower()}” ({rd['weakest'][0][1]:.1f} / 5) and "
+                              f"“{weak[1].lower()}” ({rd['weakest'][1][1]:.1f} / 5)." if rd["verdict"] != "Go"
+                              else "Ready to launch."),
+                    evidence="Assessment: example ratings for the factory.",
                     chart_title="Score out of 5 (green = fix before launch)",
                     fig=mini_bars(list(dims), list(dims.values()), [f"{v:.1f}" for v in dims.values()],
                                   [d in weak for d in dims], horizontal=True))
-    if step == "Paying off?":
-        tk = default_tracking()
-        fig = mini_chart(monthly_vs_forecast(default_track_frame(), SAGE, "#e3a948", height=260), 260)
-        return dict(page="track", q="After launch, is it delivering what was promised?",
-                    a=f"Each month the plant's repair records are turned into dollars. After {tk['months']} months it "
-                      f"delivered **{tk['pct']*100:.0f}% of the promise**. The app explains the gap and warns when the "
-                      "crew ignores warnings or the AI gets worse.",
-                    chips=["Monthly data from the plant", "Reasons for the gap", "Early warnings"],
-                    chart_title="Saved each month vs promised (dashed); amber = a month with a warning", fig=fig)
-    if step == "Repair orders":
-        s1, s2 = load_pilot()["summary"][1], load_pilot()["summary"][2]
-        return dict(page="pilot", q="Can AI write the repair orders?",
-                    a=f"An AI writing assistant drafted repair orders for 30 real warnings. When it also diagnosed the "
-                      f"fault it was right {s1['correct_on_real_failures']:.0%} of the time; with simple rules "
-                      f"diagnosing and the AI only writing, {s2['correct_on_real_failures']:.0%}.",
-                    chips=["30 real warnings", f"${s2['cost_per_task']*1000:.2f} per 1,000 drafts", "A person still checks"],
-                    chart_title="Drafts with the right diagnosis",
-                    fig=mini_bars(["AI diagnoses", "Rules diagnose, AI writes"],
-                                  [s1["correct_on_real_failures"], s2["correct_on_real_failures"]],
-                                  [f"{s1['correct_on_real_failures']:.0%}", f"{s2['correct_on_real_failures']:.0%}"],
-                                  [False, True]))
+    if stage.startswith("4"):
+        cases = val["cases"]
+        return dict(page="case", q="What exactly is finance being asked to approve?",
+                    how="Put the value, the range of outcomes, the risks and the readiness gaps on one page, with a "
+                        "rule for when to proceed, fix first, revise or stop.",
+                    made="One-page business case (download), decision rule, 12 acceptance tests, and a traceability "
+                         "matrix linking each requirement to its test.",
+                    docs=["Acceptance tests and traceability"],
+                    decision=": ".join(decision_rule(val, rd)),
+                    evidence="Recommendation, not an approval: no real finance team signed it.",
+                    chart_title="Savings a year if costs turn out worse, as planned, or better",
+                    fig=mini_bars(["Worse", "As planned", "Better"], [x["annual_net"] for x in cases.values()],
+                                  [money(x["annual_net"]) for x in cases.values()], [False, True, False]))
+    if stage.startswith("5"):
+        t = default_track_frame()
+        tk, gap = default_tracking(), explain_gap(t, val, c)
+        gap = gap[gap["effect"] < 0].sort_values("effect")
+        return dict(page="track", q="After 12 months, did it deliver what was promised?",
+                    how="Turned each month's repair records into dollars with the same formula as the forecast, then "
+                        "split the gap into its causes, one at a time, so the parts add up exactly.",
+                    made="Forecast-vs-actual tracking, warnings when the crew ignores alerts or the AI gets weaker, and "
+                         "the reasons for the gap.",
+                    docs=[],
+                    decision=f"Improve, then scale. It delivered {money(tk['delivered'])} of the {money(tk['promised'])} "
+                             f"promised ({tk['pct']*100:.0f}%). The plant had fewer breakdowns than assumed (update the "
+                             f"forecast), the crew ignored warnings in {len(tk['low_adoption_months'])} months (fix the "
+                             "workflow) and " + ("the AI got weaker late in the year (update it with recent data)."
+                                                 if tk["drift_now"] else "the AI caught fewer breakdowns than in testing."),
+                    evidence="Simulated: 12 made-up months, run through the real data pipeline.",
+                    chart_title="Why it fell short of the promise",
+                    fig=mini_bars([SHORTFALL[x].split(" than")[0].replace("the ", "").capitalize() for x in gap["cause"]],
+                                  list(-gap["effect"]), [money(e) for e in gap["effect"]],
+                                  [False] * len(gap), horizontal=True))
+    if stage.startswith("A"):
+        pilot = load_pilot()
+        s1, s2 = pilot["summary"][1], pilot["summary"][2]
+        g2 = pilot["runs"][2]
+        real = int((g2["true_mode"] != "NONE").sum())
+        fa = len(g2) - real
+        right1, right2 = round(s1["correct_on_real_failures"] * real), round(s2["correct_on_real_failures"] * real)
+        return dict(page="pilot", q="Can GenAI draft repair orders a planner can trust?",
+                    how=f"Sent {len(g2)} warnings from the test data ({real} real breakdowns, {fa} false alarms) to "
+                        "Amazon Nova Micro on Bedrock and graded each draft against the true cause, in two versions.",
+                    made="Graded results for both versions, cost per draft, and payback including review time.",
+                    docs=[],
+                    decision=f"Use GenAI to write, not to diagnose. Right cause on real breakdowns: {right1} of {real} "
+                             f"when it diagnosed, {right2} of {real} when rules diagnosed and it only wrote. On false "
+                             f"alarms it still named a fault in {fa - round(s2['false_alarm_handled_rate'] * fa)} of "
+                             f"{fa}, so a planner reviews every draft.",
+                    evidence=f"Measured on {len(g2)} cases: a small sample, not proof of reliability.",
+                    chart_title=f"Right cause named, out of {real} real breakdowns",
+                    fig=mini_bars(["AI diagnoses", "Rules diagnose, AI writes"], [right1, right2],
+                                  [f"{right1} of {real}", f"{right2} of {real}"], [False, True]))
     sc = load_agents()["scores"]
     caught = [sc[v]["redteam_caught"] for v in ("v1", "v2", "v3")]
-    return dict(page="agents", q="Can AI do the analyst's paperwork?",
-                a=f"Three AI helpers take down the numbers, write the memo for finance and look for weak spots. Tested "
-                  f"on cases with known answers, the critic went from catching {caught[0]} to {caught[2]} of "
-                  f"{sc['v3']['redteam_flaws']} hidden mistakes once simple code checked the numbers.",
-                chips=["3 AI helpers", "19 test cases", "Under a cent per run"],
-                chart_title=f"Hidden mistakes caught, out of {sc['v3']['redteam_flaws']}",
-                fig=mini_bars(["Try 1", "Try 2", "Try 3"], caught, [str(c) for c in caught], [False, False, True]))
+    n = sc["v3"]["redteam_flaws"]
+    return dict(page="agents", q="Can GenAI spot errors in a business case?",
+                how="Built three AI helpers on Amazon Bedrock (take down the numbers, write the memo, critique the "
+                    "case) and tested them on 19 cases with known answers, including business cases with errors I seeded.",
+                made="Scorecard for each version and the grading code.",
+                docs=[],
+                decision=f"Useful as a first check, not a replacement for a finance review. The critic went from "
+                         f"{caught[0]} to {caught[2]} of {n} seeded errors once code checked the numbers, with "
+                         f"{sc['v3']['redteam_clean_high']} false alarms on the sound case.",
+                evidence="Measured on test cases I wrote: not a blind test.",
+                chart_title=f"Seeded errors caught, out of {n}",
+                fig=mini_bars(["Version 1", "Version 2", "Version 3"], caught, [str(x) for x in caught],
+                              [False, False, True]))
 
 
-def flow_node(page: str, num: str, title: str, question: str, result: str) -> str:
-    return (f'<a class="node" href="{PAGES[page].url_path}" target="_self"><span class="num">{num}</span>'
-            f'<span class="node-title">{esc_html(title)}</span><span class="node-q">{esc_html(question)}</span>'
-            f'<span class="node-res">{esc_html(result)}</span></a>')
+def flow_node(page: str | None, num: str, title: str, desc: str, result: str, kind: str) -> str:
+    """One stage card. kind says what the result is: a baseline, a decision, a projection, a result."""
+    inner = (f'<span class="node-top"><span class="num">{num}</span>'
+             + ('<span class="go">→</span>' if page else "") + '</span>'
+             f'<span class="node-title">{esc_html(title)}</span><span class="node-q">{esc_html(desc)}</span>'
+             f'<span class="node-kind">{esc_html(kind)}</span><span class="node-res">{esc_html(result)}</span>')
+    if page is None:
+        return f'<div class="node need">{inner}</div>'
+    return f'<a class="node" href="{PAGES[page].url_path}" target="_self" aria-label="{esc_html(title)}">{inner}</a>'
 
 
 def process_chart() -> str:
-    """The whole project as one process chart, in three lanes. Every step links to its page."""
+    """The investment lifecycle as one chart: stages 0-4 before launch, stage 5 after. Every stage links to its page."""
     val, rd, tk = get_value(), get_readiness(), default_tracking()
     c = val["costs"]
     top = match(load_use_cases(), EXAMPLE_CLIENTS["Mid-size factory"]).iloc[0]["use_case"]
-    s1, s2 = load_pilot()["summary"][1], load_pilot()["summary"][2]
-    sc = load_agents()["scores"]["v3"]
+    n_fix = len([1 for _, s in rd["weakest"] if s < 3.5][:2]) if rd["verdict"] != "Go" else 0
     arrow = '<span class="arrow">→</span>'
-    need = ('<div class="node need"><span class="num">0</span><span class="node-title">The business need</span>'
-            f'<span class="node-q">A factory with {c.failures_per_year} surprise breakdowns a year</span>'
-            f'<span class="node-res">{esc_html(money(c.failures_per_year * c.cost_missed))} lost a year</span></div>')
     before = arrow.join([
-        need,
-        flow_node("pick", "1", "Pick the right AI", "Which option fits the need?", top),
-        flow_node("value", "2", "Prove it's worth it", "Does it save more than it costs?", f"{money(val['annual_net'])} a year"),
-        flow_node("ready", "3", "Get the team ready", "Will people use it?", {"Go": "Ready to go", "Fix first": "Not yet: 2 fixes", "Not ready": "Not ready"}[rd["verdict"]]),
-        flow_node("case", "4", "Get sign-off", "Will finance approve it?", "One-page case"),
+        flow_node(None, "0", "Define the business problem", "Quantify unplanned downtime and its impact.",
+                  f"{money(c.failures_per_year * c.cost_missed)} lost a year", "Baseline"),
+        flow_node("pick", "1", "Evaluate AI solutions", "Compare 12 options on value, ease and data readiness.",
+                  top, "Selected"),
+        flow_node("value", "2", "Build the business case", "Estimate savings, costs, payback and risks.",
+                  f"{money(val['annual_net'])} a year", "Projection"),
+        flow_node("ready", "3", "Assess readiness", "Find adoption barriers and process gaps.",
+                  f"{n_fix} gaps to fix" if n_fix else "Ready to go", "Assessment"),
+        flow_node("case", "4", "Prepare the decision", "Recommendation, evidence, risks and decision rule.",
+                  decision_rule(val, rd)[0], "Recommendation"),
     ])
-    after = flow_node("track", "5", "Check it pays off", "Is it delivering what was promised?",
-                      f"{tk['pct']*100:.0f}% delivered in {tk['months']} months")
-    genai = arrow.join([
-        flow_node("pilot", "6", "AI writes repair orders", "Can it be trusted?",
-                  f"{s1['correct_on_real_failures']:.0%} → {s2['correct_on_real_failures']:.0%} right"),
-        flow_node("agents", "7", "AI does the paperwork", "Can it check a business case?",
-                  f"{sc['redteam_caught']} of {sc['redteam_flaws']} mistakes caught"),
-    ])
+    after = flow_node("track", "5", "Measure realized value", "Compare actual results with the forecast.",
+                      f"{tk['pct']*100:.0f}% of year-1 target", "Simulated result")
     return ('<div class="flow">'
             f'<div class="lane"><div class="lane-label">Before launch</div><div class="lane-nodes">{before}</div></div>'
-            '<div class="launch"><span>Launch</span></div>'
+            '<div class="launch"><span>Launch</span><em>stages 0–4 happen before launch, stage 5 after</em></div>'
             f'<div class="lane"><div class="lane-label">After launch</div><div class="lane-nodes">{after}'
-            '<div class="loop">Every month: compare savings with the promise, find the reasons, act. '
-            'Then go back to step 2 with what was learned.</div></div></div>'
-            f'<div class="lane genai"><div class="lane-label">Where GenAI helps</div><div class="lane-nodes">{genai}</div></div>'
+            '<div class="loop">Every month: compare savings with the forecast, find the reasons for any gap, act on '
+            'them, and feed what was learned back into the business case.</div></div></div>'
             '</div>')
 
 
+def genai_cards() -> str:
+    pilot = load_pilot()
+    s1, s2, g2 = pilot["summary"][1], pilot["summary"][2], pilot["runs"][2]
+    real = int((g2["true_mode"] != "NONE").sum())
+    sc = load_agents()["scores"]["v3"]
+    return ('<div class="lane-nodes genai-nodes">'
+            + flow_node("pilot", "A", "GenAI work orders",
+                        "Can GenAI turn a warning into an accurate draft work order?",
+                        f"Right cause: {round(s1['correct_on_real_failures'] * real)} → "
+                        f"{round(s2['correct_on_real_failures'] * real)} of {real} breakdowns",
+                        f"Measured on {len(g2)} cases")
+            + flow_node("agents", "B", "GenAI business-case review",
+                        "Can GenAI flag errors in a financial business case?",
+                        f"{sc['redteam_caught']} of {sc['redteam_flaws']} seeded errors caught",
+                        "Measured on my own test cases")
+            + '</div>')
+
+
+@st.cache_data
+def data_facts() -> dict:
+    df = load_data()
+    return {"rows": len(df), "failures": int(df["Machine failure"].sum()),
+            "rate": df["Machine failure"].mean(), "types": df["Type"].value_counts().to_dict()}
+
+
+def case_and_data() -> str:
+    """The three questions a reader asks first: what is the business, why this AI, and what data is behind it."""
+    c, f = get_value()["costs"], data_facts()
+    res = get_model_results()
+    cards = [
+        ("The business",
+         f"A mid-size parts maker running milling machines. About {c.failures_per_year:.0f} times a year a machine "
+         f"breaks down without warning: the line stops, parts are scrapped and a technician is called out. At about "
+         f"{money(c.cost_missed)} each, that is {money(c.failures_per_year * c.cost_missed)} a year, the biggest "
+         "avoidable cost on the shop floor."),
+        ("Why predictive maintenance",
+         "Breakdowns rarely come from nowhere: tool wear builds up, torque climbs, heat stops escaping. The machines "
+         "already record these readings, so a model can learn the warning signs and flag a machine early enough to "
+         "repair it at the next planned stop. Stage 1 compares it with 11 other AI options on value, ease and data "
+         "readiness; it is the only one that targets unplanned downtime."),
+        ("The data",
+         f"<b>{f['rows']:,} machine records</b> from the AI4I 2020 predictive maintenance dataset (UCI). Each record "
+         "has five sensor readings: air and process temperature, rotation speed, torque and tool wear, plus the "
+         f"product quality (low / medium / high). <b>{f['failures']} records ({f['rate']:.1%}) end in a breakdown</b>, "
+         f"from five causes: tool wear, heat, power, overstrain and random. The model learns from "
+         f"{res['n_train']:,} records and is tested on {res['n_test']:,} it never saw. The dataset is synthetic, "
+         "designed to reflect real industrial machine data."),
+    ]
+    return ('<div class="case-cards">' + "".join(
+        f'<div class="case-card"><div class="row-label">{t}</div><div class="case-text">{x}</div></div>'
+        for t, x in cards) + '</div>')
+
+
 def page_home():
+    val = get_value()
+    c = val["costs"]
     with st.container(key="hero"):
         st.markdown(
-            '<div class="eyebrow">AI business systems analysis · portfolio project</div>'
-            '<div class="hero-title">From a business problem to an AI that pays off</div>'
-            '<div class="hero-text">One AI project, followed through every step a business systems analyst owns: '
-            'understand the need, pick the right AI, prove it is worth it, get the team ready, get sign-off, '
-            'and check after launch that it delivers. Click any step.</div>', unsafe_allow_html=True)
+            '<div class="eyebrow">AI business systems analysis · interactive case study</div>'
+            f'<div class="hero-title">From {esc_html(money(c.failures_per_year * c.cost_missed).replace(".00M", "M"))} in downtime losses '
+            'to a measurable AI investment</div>'
+            '<div class="hero-text">How a manufacturing problem becomes an AI investment decision: defining the '
+            'problem, evaluating solutions, modelling ROI, preparing for launch and measuring results. '
+            'Select any stage to see the analysis and deliverables behind it.</div>'
+            '<div class="hero-note">Illustrative case: real machine data and real AI tests; plant costs are '
+            'assumptions and the results after launch are simulated.</div>', unsafe_allow_html=True)
         st.markdown(process_chart(), unsafe_allow_html=True)
 
-    st.markdown('<div class="row-label">Look closer at a step</div>', unsafe_allow_html=True)
-    step = st.segmented_control("Step", ["Pick the AI", "Worth it?", "Team ready?", "Paying off?", "Repair orders",
-                                         "Paperwork"], default="Worth it?", key="tour",
-                                label_visibility="collapsed") or "Worth it?"
-    tc = tour_content(step)
+    with st.container(key="case_data"):
+        st.markdown(case_and_data(), unsafe_allow_html=True)
+
+    with st.container(key="role"):
+        r1, r2 = st.columns([1.15, 1], gap="large")
+        r1.markdown(
+            '<div class="row-label">My role</div>'
+            '<div class="role-text">Independent project, built end to end by me: the business analysis, the '
+            'financial model, the data pipeline, the AI tests and this app.</div>', unsafe_allow_html=True)
+        r2.markdown(
+            '<div class="row-label">Methods</div>'
+            + "".join(f'<span class="chip soft">{m}</span>' for m in [
+                "Requirements and user stories", "As-is / to-be process maps", "Decision matrix",
+                "ROI and sensitivity model", "Readiness and risk assessment", "Acceptance tests and traceability",
+                "AI output testing", "Value tracking"])
+            + '<div class="row-label tools">Tools</div><div class="tools-text">Python, pandas, scikit-learn, Plotly, '
+              'Streamlit, Amazon Bedrock, Amazon S3, Databricks, pytest</div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="row-label">Look closer at a stage</div>', unsafe_allow_html=True)
+    stage = st.segmented_control("Stage", STAGES, default=STAGES[2], key="tour",
+                                 label_visibility="collapsed") or STAGES[2]
+    tc = tour_content(stage)
     with st.container(key="tour_panel"):
-        left, right = st.columns([1, 1.1], gap="large")
+        left, right = st.columns([1.05, 1], gap="large")
         with left:
             st.markdown(f'<div class="tour-q">{esc_html(tc["q"])}</div>', unsafe_allow_html=True)
-            st.markdown(md(tc["a"]))
-            st.markdown("".join(f'<span class="chip soft">{esc_html(x)}</span>' for x in tc["chips"]),
-                        unsafe_allow_html=True)
-            st.page_link(PAGES[tc["page"]], label=f"Open {PAGES[tc['page']].title}", icon=":material/arrow_forward:")
+            st.markdown("".join(
+                f'<div class="tour-label">{label}</div><div class="tour-text">{esc_html(text)}</div>'
+                for label, text in [("How I analysed it", tc["how"]), ("What I produced", tc["made"]),
+                                    ("Decision it supported", tc["decision"])]), unsafe_allow_html=True)
+            if tc["docs"]:
+                st.markdown(" · ".join(f"[{d}]({DOCS[d]})" for d in tc["docs"]))
+            if tc["page"]:
+                st.page_link(PAGES[tc["page"]], label="View analysis and deliverables", icon=":material/arrow_forward:")
         with right:
             st.markdown(f'<div class="chart-title">{esc_html(tc["chart_title"])}</div>', unsafe_allow_html=True)
             st.plotly_chart(tc["fig"], width="stretch", config={"displayModeBar": False, "staticPlot": True})
+            st.markdown(f'<div class="evidence">{esc_html(tc["evidence"])}</div>', unsafe_allow_html=True)
 
-    post = "AI's Hidden Problem: Nobody Revisits the Original Decision"
-    title = f'<a href="{WHY_URL}">{post}</a>' if WHY_URL else post
-    st.markdown(f'<div class="why-built"><b>Why I built this.</b> In <i>{title}</i> I argued that most AI waste '
-                "comes from decisions that were right when they were made and never looked at again. Step 5 is that "
-                "second look, every month.</div>", unsafe_allow_html=True)
+    with st.container(key="genai"):
+        st.markdown(
+            '<div class="row-label">Supporting GenAI experiments</div>'
+            '<div class="genai-intro">Separate from the main case. The breakdown warnings above come from a '
+            '<b>predictive</b> model that scores sensor data. These two experiments test <b>generative</b> AI, which '
+            'writes text, with graded results and a person reviewing the output.</div>' + genai_cards(),
+            unsafe_allow_html=True)
 
-    e1, e2, e3 = st.columns(3)
-    with e1.expander("What is real, what is made up"):
-        st.markdown("**Real:** the machine data and the AI trained on it, the Amazon Bedrock tests, the cloud data "
-                    "pipeline.  \n**Made up for the example, and editable:** the factory's costs, the scores of the "
-                    "12 AI options and the 12 months after launch.")
-    with e2.expander("How it is built"):
-        st.markdown("Python and scikit-learn · Amazon Bedrock · Amazon S3 and Databricks · Streamlit. "
-                    "[Code on GitHub](https://github.com/chaialishekar/AI-ROI-Navigator).")
-    with e3.expander("Requirements and design documents"):
-        st.markdown("[Requirements, process maps and test cases](https://github.com/chaialishekar/AI-ROI-Navigator/blob/main/docs/requirements.md) · "
-                    "[Solution design](https://github.com/chaialishekar/AI-ROI-Navigator/blob/main/docs/solution_design.md) · "
-                    "[Roadmap](https://github.com/chaialishekar/AI-ROI-Navigator/blob/main/docs/roadmap.md)")
+    with st.container(key="conclusion"):
+        st.markdown(
+            '<div class="row-label">What this case study demonstrates</div>'
+            '<div class="conclusion">An AI project needs more than a good model: a clearly defined business problem, '
+            'a defensible investment case, a team ready to use it, measurable acceptance criteria, and a regular '
+            'check that the promised value is real.</div>'
+            '<div class="doc-links">' + "".join(f'<a href="{u}" target="_blank">{esc_html(d)}</a>'
+                                                for d, u in DOCS.items()) + '</div>', unsafe_allow_html=True)
+        with st.expander("Data, assumptions and limitations"):
+            st.markdown(
+                "- **Real:** the 10,000 machine records (AI4I 2020, UCI) and the model trained on them; the Amazon "
+                "Bedrock tests; the S3 → Databricks data pipeline.\n"
+                "- **Assumed, and editable in the app:** the factory's costs, the scores of the 12 AI options and the "
+                "readiness ratings.\n"
+                "- **Simulated:** the 12 months after launch.\n"
+                "- **Limits:** the dataset is synthetic, so the model's accuracy is likely better than in a real plant. "
+                "The GenAI tests are small (30 and 19 cases) and the business-case test was written by me, so it is "
+                "not blind. Stakeholders are personas.")
     nav_footer("home")
 
 
@@ -1355,7 +1639,7 @@ st.markdown("""
 .flow { margin-top: 1.4rem; }
 .lane { display: flex; gap: 1rem; align-items: stretch; margin-bottom: 0.4rem; }
 .lane-label { flex: 0 0 6.5rem; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.68rem; font-weight: 700;
-              color: #6b766d; padding-top: 1rem; }
+              color: #56615a; padding-top: 1rem; }
 .lane-nodes { flex: 1; display: flex; align-items: stretch; gap: 0.35rem; flex-wrap: nowrap; }
 .node { flex: 1 1 0; min-width: 0; background: #fff; border-radius: 18px; padding: 0.8rem 0.85rem; display: flex;
         flex-direction: column; gap: 0.2rem; text-decoration: none !important; color: #1d2521 !important;
@@ -1365,27 +1649,57 @@ a.node:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(29, 37,
 .node .num { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #1d2521; color: #fff; font-size: 0.75rem;
              font-weight: 700; display: flex; align-items: center; justify-content: center; }
 .node.need .num { background: #b9c4b4; }
+.node-top { display: flex; justify-content: space-between; align-items: center; }
+.node .go { color: #0f6d74; font-weight: 700; opacity: 0.55; transition: opacity 0.2s ease, transform 0.2s ease; }
+a.node:hover .go, a.node:focus-visible .go { opacity: 1; transform: translateX(3px); }
+a.node:focus-visible { outline: 3px solid #0f6d74; outline-offset: 2px; }
+.node-kind { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #56615a;
+             margin-top: 0.35rem; }
 .node-title { font-weight: 700; font-size: 0.95rem; line-height: 1.2; margin-top: 0.2rem; }
-.node-q { font-size: 0.8rem; color: #5b665f; line-height: 1.3; flex: 1; }
+.node-q { font-size: 0.8rem; color: #4d5852; line-height: 1.3; flex: 1; }
 .node-res { align-self: flex-start; background: #d4ee5e; border-radius: 10px; padding: 0.15rem 0.55rem; line-height: 1.35; font-size: 0.8rem;
-            font-weight: 600; margin-top: 0.3rem; }
+            font-weight: 600; margin-top: 0.15rem; }
 .arrow { align-self: center; color: #8a979c; font-size: 1.1rem; }
 .launch { margin: 1.1rem 0 1.1rem 7.5rem; border-top: 2px solid #1d2521; position: relative; }
+.launch em { position: absolute; top: -0.65rem; left: 5.6rem; background: #eef3e6; padding: 0 0.5rem; font-size: 0.75rem;
+             color: #4d5852; font-style: normal; }
 .launch span { position: absolute; top: -0.75rem; left: 0; background: #1d2521; color: #fff; border-radius: 999px;
                padding: 0.1rem 0.7rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .loop { flex: 3 1 0; align-self: center; font-size: 0.9rem; color: #3d4741; padding: 0 0.8rem; }
-.lane.genai { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed #b9c4b4; }
-.lane.genai .lane-nodes { max-width: 50%; }
+.hero-note { font-size: 0.85rem; color: #4d5852; border-left: 3px solid #b9c4b4; padding-left: 0.7rem; }
+.st-key-role { padding: 1.2rem 0.4rem 0.4rem; }
+.st-key-case_data { margin-top: 1.2rem; }
+.case-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.case-card { background: #fff; border-radius: 22px; padding: 1.1rem 1.3rem; box-shadow: 0 4px 16px rgba(29, 37, 33, 0.06); }
+.case-text { font-size: 0.93rem; line-height: 1.55; color: #2f3833; margin-top: 0.35rem; }
+@media (max-width: 800px) { .case-cards { grid-template-columns: 1fr; } }
+.role-text { font-size: 1rem; line-height: 1.55; color: #2f3833; margin-top: 0.3rem; }
+.row-label.tools { margin-top: 0.4rem; }
+.tools-text { font-size: 0.9rem; color: #3d4741; }
+.tour-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #0f6d74;
+              margin-top: 0.7rem; }
+.tour-text { font-size: 0.97rem; line-height: 1.5; }
+.evidence { font-size: 0.82rem; color: #4d5852; background: #f1f4ed; border-radius: 10px; padding: 0.4rem 0.7rem; }
+.st-key-genai { margin-top: 1.2rem; background: #f1f4ed; border: 1.5px dashed #b9c4b4; border-radius: 28px;
+                padding: 1.4rem 1.6rem; }
+.genai-intro { font-size: 0.95rem; color: #2f3833; max-width: 52rem; margin: 0.2rem 0 0.9rem; }
+.genai-nodes { max-width: 60%; gap: 0.8rem; }
+.st-key-conclusion { margin-top: 1.2rem; }
+.conclusion { font-size: 1.2rem; line-height: 1.5; font-weight: 600; max-width: 54rem; margin: 0.3rem 0 0.8rem;
+              border-left: 4px solid #d4ee5e; padding-left: 1rem; }
+.doc-links a { display: inline-block; margin: 0 0.4rem 0.5rem 0; padding: 0.35rem 0.85rem; border-radius: 999px;
+               background: #fff; color: #1d2521 !important; text-decoration: none; font-size: 0.88rem;
+               box-shadow: 0 1px 3px rgba(29, 37, 33, 0.1); }
+.doc-links a:hover { background: #eef4d6; }
 @media (max-width: 800px) {
   .lane { flex-direction: column; gap: 0.3rem; } .lane-label { flex: none; padding-top: 0; }
   .lane-nodes { flex-direction: column; } .arrow { transform: rotate(90deg); }
-  .launch { margin-left: 0; } .lane.genai .lane-nodes { max-width: none; } .loop { padding: 0.4rem 0; } }
+  .launch { margin-left: 0; } .launch em { display: none; } .genai-nodes { max-width: none; }
+  .loop { padding: 0.4rem 0; } }
 .st-key-tour_panel { background: #fff; border-radius: 28px; padding: 1.6rem 1.9rem; box-shadow: 0 12px 36px rgba(29, 37, 33, 0.07); }
 .tour-q { font-size: 1.5rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; margin: 0.3rem 0 0.6rem; }
 .chart-title { font-size: 0.85rem; color: #6b766d; margin-bottom: 0.2rem; }
 [data-testid="stButtonGroup"] button { border-radius: 999px !important; padding: 0.35rem 1rem; }
-.why-built { margin: 0.9rem 0 0.4rem; padding: 0.9rem 1.2rem; border-radius: 18px; background: #eef4d6; font-size: 0.95rem; }
-.why-built a { color: #1d2521; }
 @media (max-width: 640px) { .hero-title { font-size: 1.9rem; } .st-key-hero { padding: 1.4rem 1.2rem; border-radius: 24px; } }
 [data-testid="stExpander"] summary { font-weight: 600; }
 [data-testid="stPageLink"] a { border: 1px solid rgba(128, 128, 128, 0.3); border-radius: 8px; padding: 0.3rem 0.8rem;
@@ -1397,15 +1711,15 @@ a.node:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(29, 37,
 
 PAGES = {
     "home": st.Page(page_home, title="Overview", icon=":material/home:", default=True),
-    "pick": st.Page(page_pick, title="1 · Pick the right AI", url_path="match"),
-    "value": st.Page(page_value, title="2 · Prove it's worth it", url_path="value"),
-    "ready": st.Page(page_ready, title="3 · Get the team ready", url_path="readiness"),
-    "case": st.Page(page_case, title="4 · Get sign-off", url_path="business-case"),
-    "track": st.Page(page_track, title="5 · Check it pays off", url_path="track"),
-    "pilot": st.Page(page_pilot, title="6 · AI writes repair orders", url_path="genai-pilot"),
-    "agents": st.Page(page_agents, title="7 · AI does the paperwork", url_path="agents"),
+    "pick": st.Page(page_pick, title="1 · Evaluate AI solutions", url_path="match"),
+    "value": st.Page(page_value, title="2 · Build the business case", url_path="value"),
+    "ready": st.Page(page_ready, title="3 · Assess readiness", url_path="readiness"),
+    "case": st.Page(page_case, title="4 · Prepare the decision", url_path="business-case"),
+    "track": st.Page(page_track, title="5 · Measure realized value", url_path="track"),
+    "pilot": st.Page(page_pilot, title="A · GenAI work orders", url_path="genai-pilot"),
+    "agents": st.Page(page_agents, title="B · GenAI business-case review", url_path="agents"),
 }
 st.navigation({"": [PAGES["home"]],
                "Before launch": [PAGES[k] for k in ("pick", "value", "ready", "case")],
                "After launch": [PAGES["track"]],
-               "Where GenAI helps": [PAGES["pilot"], PAGES["agents"]]}, position="top").run()
+               "GenAI experiments": [PAGES["pilot"], PAGES["agents"]]}, position="top").run()

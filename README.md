@@ -1,35 +1,47 @@
 # AI ROI Navigator
 
-> From a business problem to an AI that pays off, with a check every month that it still does.
+> From $1M in downtime losses to a measurable AI investment.
 
-A portfolio project in **AI business systems analysis**. It follows one AI project through every step a business systems analyst owns: understand the business need, pick the AI that fits it, prove it is worth the money, check the team is ready, get finance to sign off, and after launch check every month that it delivers what was promised. The worked example is a mid-size factory losing $1.0M a year to surprise machine breakdowns.
+An interactive case study in **AI business systems analysis**. It takes a manufacturing problem (a mid-size factory losing $1.0M a year to surprise machine breakdowns) through to an AI investment decision: defining the problem, evaluating solutions, modelling ROI, preparing for launch and measuring the value delivered.
 
-## The whole process
+**My role:** independent project, built end to end by me: the business analysis, the financial model, the data pipeline, the AI tests and the app.
+
+**Why predictive maintenance:** surprise breakdowns are the factory's biggest avoidable cost, and they rarely come from nowhere: tool wear builds up, torque climbs, heat stops escaping. The machines already record these readings, so a model can learn the warning signs and flag a machine in time for a planned repair. Stage 1 compares it with 11 other AI options.
+
+**The data:** 10,000 machine records from the AI4I 2020 predictive maintenance dataset (UCI): five sensor readings (air and process temperature, rotation speed, torque, tool wear) plus product quality. 339 records (3.4%) end in a breakdown, from five causes (tool wear, heat, power, overstrain, random). The model trains on 7,000 and is tested on 3,000 it never saw. The dataset is synthetic, designed to reflect real industrial machine data.
+
+**Real vs illustrative:** the machine data (AI4I 2020) and the model trained on it, the Amazon Bedrock tests and the S3 → Databricks pipeline are real. Plant costs, AI option scores and readiness ratings are assumptions you can edit; the 12 months after launch are simulated.
+
+## The investment lifecycle
 
 ```mermaid
 flowchart LR
-    N([Business need<br/>40 breakdowns a year]) --> S1[1 Pick the right AI]
-    S1 --> S2[2 Prove it's worth it]
-    S2 --> S3[3 Get the team ready]
-    S3 --> S4[4 Get sign-off]
+    N([0 Define the business problem<br/>$1.0M lost a year]) --> S1[1 Evaluate AI solutions]
+    S1 --> S2[2 Build the business case]
+    S2 --> S3[3 Assess readiness]
+    S3 --> S4[4 Prepare the decision]
     S4 --> L{{Launch}}
-    L --> S5[5 Check it pays off<br/>every month]
+    L --> S5[5 Measure realized value<br/>every month]
     S5 -- gap found --> A[Act on the reason]
     A --> S5
     S5 -. lessons .-> S2
-    G6[6 AI writes repair orders] -.-> S5
-    G7[7 AI does the paperwork] -.-> S4
 ```
 
-| Step | Question | What the app does |
+| Stage | Business question | Analysis and deliverables |
 |---|---|---|
-| **1 · Pick the right AI** | Which AI fits this business need? | Checks 12 AI options against the business's main problem, data quality, tolerance for AI mistakes and how fast it needs results, and gives the reasons. A factory, a hospital network and an online retailer get three different answers, or describe your own. |
-| **2 · Prove it's worth it** | Does it save more than it costs? | Sets a real breakdown-warning AI to **save the most money, not to be the most accurate**, with ranges and best / worst cases. |
-| **3 · Get the team ready** | Will people use it? | 10 questions in 5 areas, a Go / Fix first / Not ready verdict and the fixes. |
-| **4 · Get sign-off** | Will finance approve it? | A one-page business case to download. |
-| **5 · Check it pays off** | Is it delivering what was promised? | Compares savings with the promise each month, explains the gap, and warns when the crew ignores warnings or the AI gets worse. Data arrives through an **S3 → Databricks** pipeline. |
-| **6 · AI writes repair orders** | Can a writing assistant be trusted? | A measured Amazon Bedrock pilot that drafts repair orders, with the full cost counted. |
-| **7 · AI does the paperwork** | Can AI check a business case? | Three AI helpers on Amazon Bedrock, each tested on cases with known answers. |
+| **0 · Define the business problem** | How big is the problem? | Baseline cost, breakdown causes in the machine data, stakeholders, as-is process map, user stories ([requirements](docs/requirements.md), [solution design](docs/solution_design.md)). |
+| **1 · Evaluate AI solutions** | Which AI fits this need, and why? | Weighted decision matrix: checks 12 AI options against the business's main problem, data quality, tolerance for AI mistakes and how fast it needs results, and gives the reasons. A factory, a hospital network and an online retailer get three different answers, or describe your own. |
+| **2 · Build the business case** | Does it save more than it costs? | Financial model: every line of the savings calculation, setup and running costs, payback, 3-year ROI, break-even, ranges, best / worst case and sensitivity. The warning level is set to **save the most money, not to be the most accurate**. |
+| **3 · Assess readiness** | Will people use it? | 10 questions in 5 areas with a Go / Fix first / Not ready verdict, stakeholder impact, human review and escalation rules, to-be process map. |
+| **4 · Prepare the decision** | What is finance asked to approve? | Recommendation from a stated decision rule (proceed / proceed after fixes / revise / stop), one-page business case, acceptance tests and traceability. |
+| **5 · Measure realized value** | Did it deliver what was forecast? | Forecast vs actual each month, the causes of the shortfall, a scale / improve / reconsider call, and warnings when the crew ignores alerts or the AI gets weaker. Data arrives through an **S3 → Databricks** pipeline. |
+
+**Supporting GenAI experiments** (separate from the main case: the breakdown warnings come from a *predictive* model; these test *generative* AI that writes text):
+
+| Experiment | Question | What was measured |
+|---|---|---|
+| **A · GenAI work orders** | Can GenAI turn a warning into an accurate draft work order? | 30 warnings (24 real breakdowns, 6 false alarms) on Amazon Bedrock, graded against the true cause; right cause on 10 of 24 breakdowns when the model diagnosed, 24 of 24 when rules diagnosed and it only wrote. A planner still reviews every draft. |
+| **B · GenAI business-case review** | Can GenAI flag errors in a business case? | Three AI helpers tested on 19 cases with known answers; the critic caught 6 of 6 seeded errors in its final version. Small and not blind: I wrote the test cases. |
 
 Every page shows **the answer first** (the question, the answer, three numbers, one chart, what to do next) and **the details on demand** under *Show the details*.
 
@@ -49,7 +61,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 - catches **~86% of failures** with **~80% of alerts being real**
 - yields **~$660K annual net savings** for a plant with 40 failures a year, with a **~4.7-month payback**
 - **The result holds up under pessimistic assumptions.** Model uncertainty puts annual savings at **$611K–$704K** (90% range). In the low case, with every cost assumption at its unfavorable end, the project still saves **~$164K a year** and pays back in **~20 months**. The biggest driver is the cost of an unplanned failure, so that's the number to agree with finance first.
-- **Forecasts need checking after launch.** In a simulated 12-month rollout the plant banks **$464K of the $660K forecast (70%)**. Step 5 splits the $197K gap into fewer failures than assumed (−$91K), the crew ignoring correct alerts in the first months (−$63K) and model drift (−$46K), and raises a retrain alert in month 11.
+- **Forecasts need checking after launch.** In a simulated 12-month rollout the plant banks **$464K of the $660K forecast (70%)**. Stage 5 splits the $197K gap into fewer failures than assumed (−$91K), the crew ignoring correct alerts in the first months (−$63K) and model drift (−$46K), and raises a retrain alert in month 11.
 - **For GenAI, the model fee is not the cost; review time is.** A 30-alert pilot on Amazon Bedrock (Nova Micro) cost **$0.04 per 1,000 drafts**. When the model diagnosed the fault itself it was right only **33%** of the time; moving the diagnosis into a rule check and letting the model only write raised that to **100% on real failures**. With 4-minute reviews the assistant returns **72% in year one**, but only **−14% in cash** if half the saved hours turn into money, and it stops paying once review takes more than **~10 minutes** a draft.
 - **Agents need evals, and evals show where code beats prompts.** Three Nova Lite agents were graded on 19 cases with known answers. Version 1 got **42%** of intake fields right, invented a number in a memo and caught **3 of 6** planted flaws. Letting the model only quote numbers (code converts units and fills them into the memo) made intake and memos exact. The red team still failed until a code checklist decided what was implausible and the model only explained it: **6 of 6** flaws caught, **0** false alarms, for about **$0.001** a run.
 - **The most accurate setting is not the most profitable.** Tuning the alert threshold for dollars instead of accuracy saves **~$29K more per year**, because a missed failure ($25K) costs far more than a false alarm ($500).
@@ -58,21 +70,21 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 
 ![](docs/overview.png)
 
-| 1 · Pick the right AI | 2 · Prove it's worth it |
+| 1 · Evaluate AI solutions | 2 · Build the business case |
 |---|---|
 | ![](docs/tab1_prioritize.png) | ![](docs/tab2_prove_value.png) |
-| **3 · Get the team ready** | **4 · Get sign-off** |
+| **3 · Assess readiness** | **4 · Prepare the decision** |
 | ![](docs/tab3_readiness.png) | ![](docs/tab4_business_case.png) |
 
-**5 · Check it pays off** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
+**5 · Measure realized value** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
 
 ![](docs/tab5_track_value.png)
 
-**6 · AI writes repair orders** (measured on Amazon Bedrock)
+**Experiment A · GenAI work orders** (measured on Amazon Bedrock)
 
 ![](docs/tab6_genai_pilot.png)
 
-**7 · AI does the paperwork** (tested on Amazon Bedrock)
+**Experiment B · GenAI business-case review** (tested on Amazon Bedrock)
 
 ![](docs/tab7_agents.png)
 
@@ -101,10 +113,6 @@ Matzka, S. (2020). *AI4I 2020 Predictive Maintenance Dataset*. UCI Machine Learn
 Chaitali Shekar · MS Engineering Management, NC State University
 
 
-
-## Why I built this
-
-In *AI's Hidden Problem: Nobody Revisits the Original Decision* (Substack, August 2026) I argued that most AI waste comes from decisions that were right when they were made and never revisited once the facts changed. Step 5 of this app is that revisit: it goes back to the business case every month and asks whether its assumptions still hold.
 
 ## How it was managed
 

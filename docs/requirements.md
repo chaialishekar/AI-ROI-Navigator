@@ -17,12 +17,12 @@ this pack adds what a delivery team needs to build and test it.
 
 ```mermaid
 flowchart LR
-    N([Business need:<br/>40 breakdowns a year,<br/>$1.0M lost]) --> A[1 Pick the right AI<br/>fit-gap across 12 options]
-    A --> B[2 Prove it's worth it<br/>$660k a year]
-    B --> C[3 Get the team ready<br/>10-question check]
-    C --> D[4 Get sign-off<br/>one-page case]
+    N([Business need:<br/>40 breakdowns a year,<br/>$1.0M lost]) --> A[1 Evaluate AI solutions<br/>12 options compared]
+    A --> B[2 Build the business case<br/>$660k a year projected]
+    B --> C[3 Assess readiness<br/>10-question check]
+    C --> D[4 Prepare the decision<br/>proceed after fixes]
     D --> L{{Launch}}
-    L --> E[5 Check it pays off<br/>every month]
+    L --> E[5 Measure realized value<br/>every month]
     E -- gap found --> F[Act: update the AI,<br/>fix the workflow,<br/>correct the forecast]
     F --> E
     E -. what was learned .-> B
@@ -191,9 +191,10 @@ Written for business users. Each is run in the app by the named role before sign
 | UAT-06 | Planner | A monthly file where prevented is larger than flagged | I upload it on step 5 | The file is refused with the reason in plain words, and nothing is added to the totals | US-6.1, US-9.2 | Pass |
 | UAT-07 | Ops director | 12 months of results | I open step 5 | I see the share of the promise delivered, the biggest reason for the gap, and what to do next | US-6.1 | Pass |
 | UAT-08 | Data / IT lead | The AI's catch rate falls 10+ points below launch | The month is loaded | Step 5 says to update the AI with recent data | US-6.3 | Pass |
-| UAT-09 | Planner | Warning case 17 | I compare drafts on step 6 | The try-2 draft names the same cause as the rule check | US-7.4 | Pass |
-| UAT-10 | Finance partner | A business case with a hidden mistake (hourly cost $400) | I open the critic on step 7 | The hourly cost is listed first as a serious issue | US-8.3 | Pass |
-| UAT-11 | Any visitor | No AWS credentials | I open step 7 | Saved results are shown and the live AI cannot be called | US-8.5 | Pass |
+| UAT-09 | Planner | Warning case 17 | I compare drafts in experiment A | The try-2 draft names the same cause as the rule check | US-7.4 | Pass |
+| UAT-10 | Finance partner | A business case with a hidden mistake (hourly cost $400) | I open the critic in experiment B | The hourly cost is listed first as a serious issue | US-8.3 | Pass |
+| UAT-11 | Any visitor | No AWS credentials | I open experiment B | Saved results are shown and the live AI cannot be called | US-8.5 | Pass |
+| UAT-13 | Finance partner | Default costs and the example ratings | I open step 4 | The recommendation is "proceed after fixes", with the decision rule that produced it | US-4.1 | Pass |
 | UAT-12 | Any visitor | A phone-sized screen | I open the overview | The process chart stacks top to bottom and every step can be opened | NFR Clarity | Pass |
 
 ## 6. Requirements traceability matrix
@@ -210,7 +211,7 @@ Every Must story, where it is built, how it is tested and the result. Should and
 | US-2.3 Warning level set for money, not accuracy | `src/value.py` `sweep()`, step 2 | Validation table, solution_design.md §8 | UAT-03 | Pass |
 | US-2.7 / 2.8 Ranges and best / worst case | `src/value.py` `bootstrap()`, `scenarios()` | `test_bootstrap_range_contains_point_estimate`, `test_sensitivity_and_scenarios_are_ordered` | UAT-03 | Pass |
 | US-3.1 / 3.2 Readiness check and verdict | `src/readiness.py` | `test_verdict_rules` | UAT-05 | Pass |
-| US-4.1 One-page case for finance | step 4 | n/a | UAT-04 | Pass |
+| US-4.1 One-page case and recommendation for finance | step 4, `decision_rule()` | n/a | UAT-04, UAT-13 | Pass |
 | US-6.1 Promised vs delivered, with reasons | `src/tracking.py` `track()`, `explain_gap()` | `test_gap_effects_add_up_to_total_gap`, `test_actuals_matching_forecast_have_no_gap` | UAT-07 | Pass |
 | US-6.2 / 6.3 Warnings for ignored alerts and a weakening AI | `src/tracking.py` | `test_tracking_actual_savings_and_alerts` | UAT-08 | Pass |
 | US-7.1 Count every cost of the writing assistant | `src/genai.py` | `test_genai_matches_forbes_bookkeeping_example`, `test_genai_cash_vs_capacity` | n/a | Pass |

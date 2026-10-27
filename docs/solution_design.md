@@ -55,7 +55,7 @@ Operations leaders at mid-size manufacturers face three gaps when adopting AI:
 ### 3.1 Use cases
 | ID | Use case | Primary actor | Trigger | Outcome |
 |---|---|---|---|---|
-| UC-1 | Pick the right AI | Dana, with the AI BSA | Leadership asks "which AI would help with our breakdowns?" | Recommended option, with reasons and a ranked shortlist |
+| UC-1 | Evaluate AI solutions | Dana, with the AI BSA | Leadership asks "which AI would help with our breakdowns?" | Recommended option, with reasons and a ranked shortlist |
 | UC-2 | Prove value of predictive maintenance | Dana, with the AI BSA | An option rated "Start now" is picked | Annual $ saved, ROI and payback from a tested model |
 | UC-3 | Check production readiness | Dana | Business case is positive | Go / Fix first / Not ready, with top actions |
 | UC-4 | Share the business case | Dana | Ready to request funding | One-page summary for the CFO |
@@ -177,14 +177,14 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 User (browser)
    │
    ▼
-Streamlit web app ──► Overview: process chart of all 7 steps + a closer look at each
-   │  Before launch    ├► 1 Pick the right AI       ──► use_cases.csv + matching.py + scoring
-   │                   ├► 2 Prove it's worth it     ──► trained model + test predictions + cost engine
-   │                   ├► 3 Get the team ready      ──► checklist + verdict rules
-   │                   └► 4 Get sign-off            ──► one-page business case (download)
-   │  After launch     └► 5 Check it pays off       ──► tracking engine + S3 → Databricks gold export
-   │  Where GenAI helps├► 6 AI writes repair orders ──► saved Bedrock pilot runs + GenAI cost engine
-   │                   └► 7 AI does the paperwork   ──► saved Bedrock agent runs + graders (live only with AWS credentials)
+Streamlit web app ──► Overview: lifecycle chart, my role, a closer look at each stage, GenAI experiments, conclusion
+   │  Before launch    ├► 1 Evaluate AI solutions        ──► use_cases.csv + matching.py + scoring
+   │                   ├► 2 Build the business case      ──► trained model + test predictions + cost engine
+   │                   ├► 3 Assess readiness             ──► checklist + verdict rules + stakeholder impact
+   │                   └► 4 Prepare the decision         ──► decision rule + one-page business case (download)
+   │  After launch     └► 5 Measure realized value       ──► tracking engine + S3 → Databricks gold export
+   │  GenAI experiments├► A GenAI work orders            ──► saved Bedrock pilot runs + GenAI cost engine
+   │  (separate)       └► B GenAI business-case review   ──► saved Bedrock agent runs + graders (live only with AWS credentials)
    ▼
 Hosted on Streamlit Community Cloud (public link)
 ```

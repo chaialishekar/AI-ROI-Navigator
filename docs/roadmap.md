@@ -21,7 +21,7 @@ funds it; the plant or business team who live with it after launch.
 
 ## Status overview
 
-7 steps shipped (v1), plus a requirements pack (process maps, integration spec, acceptance tests, traceability). 5 items planned Next, 5 Later. Nothing blocked. One known risk: the agent tests are not blind (see N1).
+6 lifecycle stages and 2 GenAI experiments shipped (v1), plus a requirements pack (process maps, integration spec, acceptance tests, traceability). 5 items planned Next, 5 Later. Nothing blocked. One known risk: the agent tests are not blind (see N1).
 
 ## How items were prioritised
 
@@ -44,14 +44,14 @@ The same value × ease scoring the app uses on step 1, each scored 1–5:
 
 | Item | What it does | Status |
 |---|---|---|
-| Pick the right AI | 12 AI options matched to the business's problem, data quality, tolerance for mistakes and urgency, with reasons | **Done** |
+| Evaluate AI solutions | 12 AI options matched to the business's problem, data quality, tolerance for mistakes and urgency, with reasons | **Done** |
 | Prove the value | Real model on the AI4I 2020 dataset, tuned for dollars; low / base / high case and the biggest risk | **Done** |
 | Check readiness | 10 questions, 5 areas, Go / Fix first / Not ready with actions | **Done** |
 | Business case | One-page summary for finance, downloadable | **Done** |
 | Track the value | Forecast vs actual, adoption and drift alerts, gap explained by cause; S3 → Databricks bronze / silver / gold pipeline | **Done** |
 | GenAI pilot | Bedrock work-order writer measured on 30 alerts; ROI across five cost categories | **Done** |
 | AI analyst agents | Intake, memo and red-team agents graded v1 → v3 | **Done** |
-| Clear, plain-language UX | Overview opens with a process chart of all 7 steps; every page answer first, details on demand | **Done** |
+| Case-study overview | Lifecycle chart with each stage's evidence type, my role, what I analysed / produced / decided per stage, GenAI experiments set apart | **Done** |
 | Requirements pack | As-is / to-be process maps, integration spec, data dictionary, 12 acceptance tests, traceability matrix | **Done** |
 
 ## Next: 1–3 months
