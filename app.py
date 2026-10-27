@@ -8,6 +8,7 @@ Tab 2  Prove value  - tune a real predictive maintenance model for dollars, not 
 Tab 3  Readiness    - pilot-to-production readiness check
 Tab 4  Business case - one-page summary to share with finance
 Tab 5  Track value  - after go-live: forecast vs actual savings, adoption and drift
+Tab 6  GenAI pilot  - measured Bedrock pilot of an AI work-order writer, and its ROI across five cost categories
 """
 
 import numpy as np
@@ -26,7 +27,10 @@ from src.scoring import (
 )
 from src.model import train_and_score
 from src.readiness import ACTIONS, DIMENSIONS, verdict
+from src.genai import COST_LABELS, GenAIInputs
+from src.genai import evaluate as genai_evaluate
 from src.tracking import ADOPTION_FLOOR, COLUMNS, DRIFT_DROP, DRIFT_WINDOW, explain_gap, track, validate
+from src.workorder import MODEL_ID, MODES, grade, parse, summary as pilot_summary
 from src.value import (
     ASSUMPTIONS,
     Costs,
@@ -61,8 +65,8 @@ st.caption(
     "scores are analyst assumptions you can edit."
 )
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["1 · Prioritize", "2 · Prove value", "3 · Readiness", "4 · Business case", "5 · Track value"]
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    ["1 · Prioritize", "2 · Prove value", "3 · Readiness", "4 · Business case", "5 · Track value", "6 · GenAI pilot"]
 )
 
 
@@ -640,3 +644,122 @@ with tab4:
 """
         st.markdown(md(summary))
         st.download_button("Download summary (.md)", summary, file_name="ai_business_case.md", key="dl_summary")
+
+# ---------------------------------------------------------------- Tab 6
+@st.cache_data
+def load_pilot() -> dict:
+    cases = pd.read_csv("pilot/pilot_cases.csv")
+    runs = {v: grade(pd.read_csv(f"pilot/pilot_results_v{v}.csv")) for v in (1, 2)}
+    return {"cases": cases, "runs": runs, "summary": {v: pilot_summary(g) for v, g in runs.items()}}
+
+
+def show_draft(reply: str):
+    d = parse(reply)
+    if not d:
+        st.code(reply)
+        return
+    esc = lambda t: md(str(t)).replace("*", "\\*")      # model text: no accidental markdown or math
+    st.markdown(f"**{esc(d.get('title', ''))}** · {d.get('priority', '')} · cause: **{d.get('failure_mode', '')}**")
+    st.caption(esc(d.get("reason", "")))
+    st.markdown("\n".join(f"{i}. {esc(step)}" for i, step in enumerate(d.get("steps", []), 1)))
+    if d.get("parts"):
+        st.caption("Parts: " + ", ".join(d["parts"]))
+
+
+with tab6:
+    st.subheader("Does a GenAI assistant pay for itself? A measured pilot")
+    st.write(
+        "The prediction model raises an alert; a small language model (Amazon Nova Micro on Amazon Bedrock) drafts the "
+        "work order for the technician. We ran 30 real alerts from the test set through it twice and measured cost, "
+        "speed and whether each draft named the right cause (the true cause is known from the data)."
+    )
+    pilot = load_pilot()
+    s1, s2 = pilot["summary"][1], pilot["summary"][2]
+
+    st.markdown("**Pilot results** (30 alerts each, run on Bedrock in us-east-2)")
+    st.dataframe(pd.DataFrame({
+        "Version 1: AI diagnoses and writes": [
+            f"{s1['correct_mode_rate']:.0%}", f"{s1['correct_on_real_failures']:.0%}",
+            f"{s1['false_alarm_handled_rate']:.0%}", f"${s1['cost_per_task']*1000:.3f}", f"{s1['median_latency_s']:.1f} s"],
+        "Version 2: rule check diagnoses, AI writes": [
+            f"{s2['correct_mode_rate']:.0%}", f"{s2['correct_on_real_failures']:.0%}",
+            f"{s2['false_alarm_handled_rate']:.0%}", f"${s2['cost_per_task']*1000:.3f}", f"{s2['median_latency_s']:.1f} s"],
+    }, index=["Right cause (all 30)", "Right cause (24 real failures)", "False alarm recognised (6)",
+              "Model cost per 1,000 drafts", "Median response time"]), width="stretch")
+    st.warning(
+        "**Version 1 failed:** the model said \"overstrain\" 23 times, 17 of them when the readings were below the limit. "
+        "It writes fluently but cannot be trusted to compare numbers. **Version 2** moves the diagnosis into a few lines of "
+        "code (always right on the 24 real failures) and leaves the model to write. It kept the given diagnosis in all 30 "
+        "drafts, but 4 drafts still mention computer parts such as \"thermal grease on the CPU\", so a human review stays."
+    )
+    st.caption(f"Model {MODEL_ID}, temperature 0, max 500 output tokens. The 5 false alarms version 2 still flags are "
+               "machines with tools at 208-246 min of wear, where the manual says to replace the tool anyway.")
+
+    with st.expander("Compare drafts for one alert"):
+        cases = pilot["cases"]
+        pick = st.selectbox("Alert", cases["case_id"], key="pilot_case",
+                            format_func=lambda c: f"{c} (true cause: {MODES[cases.set_index('case_id').loc[c, 'true_mode']]})")
+        d1, d2 = st.columns(2)
+        for col, v in ((d1, 1), (d2, 2)):
+            row = pilot["runs"][v].set_index("case_id").loc[pick]
+            col.markdown(f"**Version {v}** {'✅' if row['correct_mode'] else '❌'}")
+            with col:
+                show_draft(row["reply"])
+
+    st.divider()
+    st.markdown("**Is it worth it? ROI across the five cost categories**")
+    st.caption("Cost categories from Dogra, \"How To Measure AI ROI In A Small Business\" (Forbes, 2026). "
+               "Model cost per draft and wrong-cause rate come from the pilot; the rest are editable assumptions.")
+    a1, a2, a3 = st.columns(3)
+    tasks = a1.number_input("Work orders per year", 100, 1_000_000, 2_000, 100, key="g_tasks")
+    saved = a1.number_input("Minutes saved per work order (before review)", 1.0, 120.0, 15.0, 1.0, key="g_saved")
+    rate = a1.number_input("Loaded hourly cost of a planner ($)", 10, 500, 55, 5, key="g_rate")
+    review = {1: a2.number_input("Review minutes per draft, version 1", 0.0, 60.0, 12.0, 0.5, key="g_rev1",
+                                 help="Two in three drafts had the wrong cause, so every draft must be re-diagnosed."),
+              2: a2.number_input("Review minutes per draft, version 2", 0.0, 60.0, 4.0, 0.5, key="g_rev2",
+                                 help="Cause is reliable; review checks the steps and parts.")}
+    missed = a2.slider("Share of wrong drafts that slip past review", 0.0, 1.0, 0.1, 0.05, key="g_missed")
+    cost_err = a3.number_input("Cost when a wrong work order reaches the floor ($)", 0, 100_000, 150, 25, key="g_err")
+    setup_h = a3.number_input("Setup hours (integration, prompts, rule check)", 0, 2_000, 40, 5, key="g_setup")
+    redeploy = a3.slider("Share of saved hours that turn into cash", 0.0, 1.0, 0.5, 0.05, key="g_redeploy",
+                         help="Saved hours only become money if they go to other work or delay a hire.")
+    year_one = st.toggle("Include one-time setup and training (first year)", True, key="g_year1")
+
+    out = {}
+    for v, sm in pilot["summary"].items():
+        g = GenAIInputs(tasks_per_year=tasks, minutes_saved_per_task=saved, hourly_cost=rate,
+                        model_cost_per_task=sm["cost_per_task"], setup_hours=setup_h,
+                        review_minutes_per_task=review[v], error_rate=(1 - sm["correct_mode_rate"]) * missed,
+                        cost_per_error=cost_err, share_redeployed=redeploy)
+        out[v] = genai_evaluate(g, year_one=year_one)
+
+    k1, k2, k3, k4 = st.columns(4)
+    r2 = out[2]
+    k1.metric("Net value, version 2", money(r2["net"]), f"{money(r2['net'] - out[1]['net'])} vs version 1")
+    k2.metric("ROI, version 2", f"{r2['roi']*100:,.0f}%", f"{(r2['roi'] - out[1]['roi'])*100:+,.0f} pts vs version 1")
+    k3.metric("Cash ROI, version 2", f"{r2['cash_roi']*100:,.0f}%",
+              help="Counts only the share of saved hours that turns into cash.")
+    k4.metric("Break-even review time", f"{r2['break_even_review_minutes']:.1f} min",
+              help="If reviewing a draft takes longer than this, the assistant loses money.")
+
+    cost_rows = [{"Version": f"Version {v}", "Category": COST_LABELS[k], "Cost": c}
+                 for v, r in out.items() for k, c in r["costs"].items()]
+    figg = px.bar(pd.DataFrame(cost_rows), x="Cost", y="Version", color="Category", orientation="h", height=260,
+                  color_discrete_sequence=["#0f6d74", "#8a979c", "#a25f00", "#1d7a45", "#b4322c"])
+    for v, r in out.items():
+        figg.add_trace(go.Scatter(x=[r["gain"]], y=[f"Version {v}"], mode="markers", name="Value of time saved" if v == 1 else None,
+                                  showlegend=v == 1, marker=dict(symbol="line-ns", size=28, line=dict(width=3, color="#15222a"))))
+    figg.update_layout(margin=dict(l=10, r=10, t=10, b=10), xaxis=dict(tickformat="$,.0f", title="Cost per year"),
+                       yaxis_title="", legend=dict(orientation="h", y=-0.35), barmode="stack")
+    st.plotly_chart(figg, width="stretch")
+
+    usage = r2["costs"]["usage"]
+    st.markdown(md(
+        f"**The model fee is not the cost.** Bedrock charges for {tasks:,} drafts come to **${usage:,.2f} a year**; "
+        f"review time is **{money(r2['costs']['review'])}**. Version 1 costs almost the same to run but needs "
+        f"{review[1]:.0f}-minute reviews, which "
+        + ("wipes out the gain." if out[1]["net"] <= 0 else f"cuts net value to {money(out[1]['net'])}.")
+        + f" On cash, only {redeploy:.0%} of the saved hours count, giving a cash ROI of {r2['cash_roi']*100:,.0f}%."
+    ))
+    st.caption("Black tick = value of time saved. Training: 2 hours for 6 planners. Error rate = wrong-cause rate from "
+               "the pilot × share that slips past review.")

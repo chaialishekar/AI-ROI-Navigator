@@ -118,3 +118,60 @@ def test_validate_catches_bad_files():
     bad = good.copy()
     bad.loc[0, "failures_prevented"] = bad.loc[0, "failures_flagged"] + 1
     assert any("cannot exceed failures_flagged" in e for e in validate(bad))
+
+
+def test_genai_matches_forbes_bookkeeping_example():
+    # Forbes worked example: $1,440/yr tool, 10 h setup at $75, 8 h/week saved and
+    # 2 h/week review at $40. Total cost $6,350, gain $16,640, ROI about 162%.
+    from src.genai import GenAIInputs, evaluate as genai_evaluate
+    g = GenAIInputs(tasks_per_year=52, minutes_saved_per_task=8 * 60, hourly_cost=40,
+                    fixed_fees_per_year=1_440, model_cost_per_task=0, setup_hours=10, setup_rate=75,
+                    review_minutes_per_task=2 * 60, training_hours_per_person=0, people=0,
+                    error_rate=0, share_redeployed=1.0)
+    r = genai_evaluate(g)
+    assert round(r["total_cost"]) == 6_350
+    assert round(r["gain"]) == 16_640
+    assert round(r["net"]) == 10_290
+    assert round(r["roi"] * 100) == 162
+    # at break-even review time, net value is zero
+    g.review_minutes_per_task = r["break_even_review_minutes"]
+    assert abs(genai_evaluate(g)["net"]) < 1e-6
+
+
+def test_genai_cash_vs_capacity():
+    from src.genai import GenAIInputs, evaluate as genai_evaluate
+    r = genai_evaluate(GenAIInputs(share_redeployed=0.25))
+    assert abs(r["cash_gain"] + r["capacity_gain"] - r["gain"]) < 1e-9
+    assert r["cash_roi"] < r["roi"]
+    assert genai_evaluate(GenAIInputs(), year_one=False)["total_cost"] < genai_evaluate(GenAIInputs())["total_cost"]
+
+
+def test_workorder_parse_and_grade():
+    from src.workorder import grade, parse
+    assert parse('Sure! {"failure_mode": "power"} done') == {"failure_mode": "power"}
+    assert parse("no json here") is None
+    results = pd.DataFrame({
+        "true_mode": ["PWF", "NONE", "HDF"],
+        "reply": ['{"failure_mode": "power"}', '{"failure_mode": "tool wear"}', "not json"],
+        "input_tokens": [1000, 1000, 1000], "output_tokens": [1000, 1000, 1000], "latency_ms": [500, 600, 700],
+    })
+    g = grade(results)
+    assert list(g["correct_mode"]) == [True, False, False]
+    assert list(g["valid_json"]) == [True, True, False]
+    assert abs(g["cost_usd"].iloc[0] - (0.000035 + 0.00014)) < 1e-12
+
+
+def test_rule_diagnosis_matches_manual_and_pilot_data():
+    from src.workorder import MODES, diagnose
+    base = {"variant": "L", "air_temp_k": 300.0, "process_temp_k": 310.0, "rpm": 1500, "power_w": 6000,
+            "wear_x_torque": 5000, "tool_wear_min": 100}
+    assert diagnose(pd.Series(base))[0] == "no fault found"
+    assert diagnose(pd.Series({**base, "power_w": 9100}))[0] == "power"
+    assert diagnose(pd.Series({**base, "wear_x_torque": 11500}))[0] == "overstrain"
+    assert diagnose(pd.Series({**base, "variant": "H", "wear_x_torque": 11500}))[0] == "no fault found"
+    assert diagnose(pd.Series({**base, "process_temp_k": 308.6, "rpm": 1300}))[0] == "heat dissipation"
+    assert diagnose(pd.Series({**base, "tool_wear_min": 210}))[0] == "tool wear"
+    # every real failure in the pilot set is diagnosed correctly
+    cases = pd.read_csv("pilot/pilot_cases.csv")
+    real = cases[cases["true_mode"] != "NONE"]
+    assert all(diagnose(r)[0] == MODES[r["true_mode"]] for _, r in real.iterrows())

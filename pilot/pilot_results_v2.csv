@@ -1,0 +1,507 @@
+case_id,true_mode,given_mode,reply,stop_reason,input_tokens,output_tokens,latency_ms,wall_ms
+WO-001,HDF,heat dissipation,"{
+  ""title"": ""Heat Dissipation Alert for Machine L51450"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Diagnosis indicates heat dissipation due to temperature difference of 8.3 K at 1331 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the heat exchanger for efficiency and proper operation."",
+    ""Verify the cooling fluid levels and ensure they are within the recommended range."",
+    ""Test the cooling fans for proper operation and adequate airflow."",
+    ""Monitor the temperature readings post-inspection to confirm the issue is resolved.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is powered off before performing any physical inspections.""],
+  ""estimated_minutes"": 45
+}",end_turn,314,179,1026,1341
+WO-002,OSF,overstrain,"{
+  ""title"": ""Maintenance Work Order for Machine L53258"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The wear x torque 11997 min*Nm exceeds the 11,000 limit for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of excessive wear."",
+    ""Check the torque settings and ensure they are within the specified limits."",
+    ""Verify the machine's power usage and ensure it is within operational parameters."",
+    ""Replace the worn tool if necessary."",
+    ""Re-calculate wear x torque after replacement to confirm the issue is resolved."",
+    ""Run a test cycle to ensure the machine operates within safe parameters.""
+  ],
+  ""parts"": [
+    ""Replacement tool""
+  ],
+  ""safety"": [
+    ""Ensure machine is powered off before inspection and tool replacement.""
+  ],
+  ""estimated_minutes"": 45
+}",end_turn,319,204,1124,1384
+WO-003,NONE,tool wear,"{
+  ""title"": ""Tool Wear Alert on Machine M19239"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear 220 min is in the 200-240 min failure window."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Measure the tool's current wear time and compare it to the failure window."",
+    ""Replace the tool if it exceeds the 240 min failure threshold."",
+    ""Check the torque and power readings to ensure they are within operational limits."",
+    ""Document the inspection and replacement process.""
+  ],
+  ""parts"": [""Replacement tool (200-240 min wear time range)""],
+  ""safety"": [""Ensure machine is powered off before tool inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,311,192,1080,1445
+WO-004,OSF,overstrain,"{
+  ""title"": ""Alert WO-004: Maintenance for Machine M18795"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""wear x torque 12753 min*Nm exceeds the 12,000 limit for variant M."",
+  ""steps"": [
+    ""Inspect the tool wear and torque readings on machine M18795."",
+    ""Check the machine's power and speed settings to ensure they are within operational limits."",
+    ""Replace the worn tool if necessary."",
+    ""Verify that the machine is operating within the specified torque and power limits."",
+    ""Run a test cycle to confirm the issue is resolved."",
+    ""Document the maintenance performed and any observations.""
+  ],
+  ""parts"": [""worn tool""],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 45
+}",end_turn,319,205,972,1227
+WO-005,PWF,power,"{
+  ""title"": ""Alert WO-005: Machine M21659 Failure Prediction"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""Power 3368 W is outside the 3500-9000 W range."",
+  ""steps"": [
+    ""Inspect the power supply connections for any signs of damage or loose connections."",
+    ""Check the power meter for accuracy and calibration."",
+    ""Verify the machine's power settings and compare with the standard operational range."",
+    ""Measure the power consumption again after ensuring all connections are secure."",
+    ""If power remains outside the range, consider replacing the power supply unit.""
+  ],
+  ""parts"": [""Power supply unit""],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 45
+}",end_turn,311,190,967,1221
+WO-006,PWF,power,"{
+  ""title"": ""Alert WO-006: Machine M23442 Power Failure"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""Power 10058 W is outside the 3500-9000 W range."",
+  ""steps"": [
+    ""Check the power supply connections for any loose or damaged cables."",
+    ""Verify the power settings on the machine control panel."",
+    ""Inspect the power supply unit for any signs of damage or overheating."",
+    ""Test the machine with a known good power supply to isolate the issue."",
+    ""If no issues found, perform a short inspection as the alert may be a false alarm.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is powered off and unplugged before inspection.""],
+  ""estimated_minutes"": 30
+}",end_turn,316,187,996,1363
+WO-007,HDF,heat dissipation,"{
+  ""title"": ""Alert WO-007: Machine L51655 Failure Prediction"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Diagnosis (rule check): heat dissipation, because temperature difference 7.8 K is at or below 8.6 K at 1351 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the heat sink and fan operation for proper functionality."",
+    ""Verify the thermal grease on the heat sink and CPU."",
+    ""Measure the temperature difference again after cleaning and ensuring proper operation."",
+    ""Ensure that the cooling system is operating within the specified parameters."",
+    ""Document findings and any corrective actions taken.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 30
+}",end_turn,312,202,1055,1310
+WO-008,NONE,tool wear,"{
+  ""title"": ""Alert WO-008: Machine L54857 (variant L) - Tool Wear"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear is in the 200-240 min failure window."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and measure the tool life remaining."",
+    ""Replace the tool if it is below the 200-240 min threshold."",
+    ""Check the torque and power readings to ensure they are within operational limits."",
+    ""Verify the air and process temperatures to ensure they are within safe operating conditions."",
+    ""Run a short test cycle to confirm tool replacement effectiveness."",
+    ""Document the findings and any actions taken.""
+  ],
+  ""parts"": [
+    ""Replacement tool""
+  ],
+  ""safety"": [
+    ""Ensure machine is properly shut down before inspection."",
+    ""Use appropriate personal protective equipment (PPE).""
+  ],
+  ""estimated_minutes"": 60
+}",end_turn,313,221,1098,1357
+WO-009,PWF,power,"{
+  ""title"": ""Power Failure Alert for Machine L54460"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""Power 9388 W is outside the 3500-9000 W range."",
+  ""steps"": [
+    ""Inspect the power supply connections for any signs of damage or loose connections."",
+    ""Check the power meter for accuracy and calibration."",
+    ""Verify the machine's power settings and compare them to the operational specifications."",
+    ""Measure the power consumption again after ensuring all connections are secure."",
+    ""If power remains outside the specified range, consult the machine's technical manual for further troubleshooting steps."",
+    ""Document all findings and actions taken in the maintenance log.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is powered off before performing any checks.""],
+  ""estimated_minutes"": 30
+}",end_turn,312,197,908,1162
+WO-010,TWF,tool wear,"{
+  ""title"": ""Tool Wear Alert on Machine H32278"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear 246 min is in the 200-240 min failure window."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and measure the tool life remaining."",
+    ""Replace the tool if wear exceeds the 200-240 min threshold."",
+    ""Check the torque and power readings to ensure they are within operational limits."",
+    ""Verify the air and process temperature differential to ensure it is within acceptable range."",
+    ""Document the condition and any actions taken in the maintenance log.""
+  ],
+  ""parts"": [""Replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,311,187,988,1353
+WO-011,HDF,heat dissipation,"{
+  ""title"": ""Heat Dissipation Alert for Machine L51724"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Diagnosis indicates heat dissipation issue due to temperature difference of 7.9 K at 1349 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the cooling fluid levels and ensure they are within the recommended range."",
+    ""Verify the cooling fans are operating correctly and at the expected speed."",
+    ""Test the thermal sensors for accuracy and proper placement."",
+    ""Ensure the machine is clean and free from dust or debris that could impede heat dissipation.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Wear appropriate PPE when inspecting cooling systems.""],
+  ""estimated_minutes"": 45
+}",end_turn,315,182,1219,1478
+WO-012,OSF,overstrain,"{
+  ""title"": ""Overstrain Alert for Machine H34813"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""wear x torque 13235 min*Nm exceeds the 13,000 limit for variant H."",
+  ""steps"": [
+    ""Inspect the tool for signs of excessive wear."",
+    ""Check the torque readings to ensure they are within operational limits."",
+    ""Verify the machine's speed and power usage against standard operational parameters."",
+    ""Replace the tool if wear exceeds acceptable limits."",
+    ""Run a diagnostic test to confirm the overstrain condition."",
+    ""Document findings and corrective actions taken.""
+  ],
+  ""parts"": [""Replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,319,185,908,1164
+WO-013,HDF,heat dissipation,"{
+  ""title"": ""Alert WO-013: Machine L51310 Failure Prediction"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Diagnosis (rule check): heat dissipation, because temperature difference 8.5 K is at or below 8.6 K at 1286 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the heat dissipation components for proper operation."",
+    ""Verify the temperature difference readings and compare with operational norms."",
+    ""Ensure that the cooling fans and heat sinks are clean and functioning."",
+    ""Test the machine after maintenance to confirm the issue is resolved."",
+    ""Document the findings and maintenance performed.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Wear protective gear when inspecting cooling components.""],
+  ""estimated_minutes"": 45
+}",end_turn,313,195,911,1277
+WO-014,OSF,overstrain,"{
+  ""title"": ""Overstrain Alert on Machine L56196"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""wear x torque 11172 min*Nm exceeds the 11,000 limit for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of excessive wear."",
+    ""Check the machine's cooling system for proper operation."",
+    ""Verify the machine's speed and torque settings."",
+    ""Measure the power consumption to ensure it is within operational limits."",
+    ""Replace the worn tool if necessary."",
+    ""Run a test cycle to confirm the issue is resolved.""
+  ],
+  ""parts"": [""replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,320,182,976,1241
+WO-015,PWF,power,"{
+  ""title"": ""Maintenance Work Order for Machine M22857"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""Power 2753 W is outside the 3500-9000 W range."",
+  ""steps"": [
+    ""Inspect the power supply connections for any signs of damage or loose connections."",
+    ""Check the power meter for accuracy and calibration."",
+    ""Verify the machine's power settings and compare them to the operational specifications."",
+    ""Replace the power supply unit if it is found to be defective."",
+    ""Test the machine to ensure the power issue is resolved.""
+  ],
+  ""parts"": [""Power supply unit""],
+  ""safety"": [""Ensure the machine is powered off before inspection."", ""Wear appropriate personal protective equipment (PPE).""],
+  ""estimated_minutes"": 45
+}",end_turn,311,188,855,1111
+WO-016,NONE,tool wear,"{
+  ""title"": ""Alert WO-016: Machine L51564 (variant L) - Tool Wear"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear is in the 200-240 min failure window."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Measure the tool wear again to confirm the readings."",
+    ""Replace the tool if wear exceeds the failure window."",
+    ""Check the torque and power readings to ensure they are within operational limits."",
+    ""Document the condition and actions taken in the maintenance log."",
+    ""Test the machine to ensure it operates correctly post-repair.""
+  ],
+  ""parts"": [""Replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,311,188,821,1195
+WO-017,HDF,heat dissipation,"{
+  ""title"": ""Heat Dissipation Alert for Machine M19251"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Temperature difference 7.9 K is at or below 8.6 K at 1368 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the heat sinks and fans for proper operation."",
+    ""Verify the thermal grease on the CPU and other heat-generating components."",
+    ""Measure the ambient temperature and ensure it is within operational limits."",
+    ""Test the machine's cooling performance after maintenance.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is powered off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,312,174,906,1215
+WO-018,HDF,heat dissipation,"{
+  ""title"": ""Heat Dissipation Alert for Machine M18666"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Diagnosis indicates heat dissipation due to temperature difference of 8.6 K at 1360 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the thermal grease on the heat sink and apply new if necessary."",
+    ""Verify the fan operation and clean it if it is dirty."",
+    ""Ensure that the ambient air temperature is within operational limits."",
+    ""Monitor the temperature readings after the inspection to confirm the issue is resolved.""
+  ],
+  ""parts"": [""Thermal grease"", ""Replacement fan filter""],
+  ""safety"": [""Wear protective gloves and eyewear"", ""Ensure machine is powered off before inspection""],
+  ""estimated_minutes"": 45
+}",end_turn,313,194,1202,1476
+WO-019,HDF,heat dissipation,"{
+  ""title"": ""Heat Dissipation Alert on Machine H33979"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Diagnosis indicates heat dissipation due to temperature difference of 8.1 K at 1275 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the heat exchanger for efficiency and cleanliness."",
+    ""Verify the cooling fan operation and ensure it is functioning at optimal speed."",
+    ""Measure the ambient air temperature and compare it to the process temperature."",
+    ""Ensure that the machine is operating within the recommended speed and torque parameters.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Wear appropriate PPE when inspecting cooling components.""],
+  ""estimated_minutes"": 45
+}",end_turn,313,177,1187,1588
+WO-020,HDF,heat dissipation,"{
+  ""title"": ""Maintenance Work Order for Machine H34192"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Diagnosis (rule check): heat dissipation, because temperature difference 8.6 K is at or below 8.6 K at 1371 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the heat exchanger for proper operation and cleanliness."",
+    ""Verify the cooling fans are operational and at the correct speed."",
+    ""Measure the temperature difference again after cleaning and ensuring proper operation."",
+    ""If no improvement, consider replacing the heat exchanger.""
+  ],
+  ""parts"": [""cooling system cleaner"", ""heat exchanger"", ""cooling fans""],
+  ""safety"": [""Wear protective gear"", ""Ensure machine is powered off before inspection""],
+  ""estimated_minutes"": 60
+}",end_turn,313,196,1029,1284
+WO-021,NONE,tool wear,"{
+  ""title"": ""Maintenance Work Order for Machine M17886"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear is in the 200-240 min failure window."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and measure the tool wear time."",
+    ""Replace the tool if wear time exceeds 240 minutes."",
+    ""Check the torque and power readings to ensure they are within operational limits."",
+    ""Verify the air and process temperatures to ensure they are within safe operating conditions."",
+    ""Document the findings and any parts replaced.""
+  ],
+  ""parts"": [""Replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear protective gear.""],
+  ""estimated_minutes"": 45
+}",end_turn,310,179,1146,1406
+WO-022,HDF,heat dissipation,"{
+  ""title"": ""Heat Dissipation Alert for Machine M18980"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Temperature difference 8.6 K is at or below 8.6 K at 1376 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the heat exchanger for proper operation and cleanliness."",
+    ""Verify the cooling fan is running at optimal speed."",
+    ""Measure the temperature difference again after cleaning and ensuring proper operation."",
+    ""If the issue persists, consult the heat dissipation model for further diagnostics.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 45
+}",end_turn,314,180,909,1167
+WO-023,OSF,overstrain,"{
+  ""title"": ""Maintenance Work Order for Machine L47766"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""wear x torque 11056 min*Nm exceeds the 11,000 limit for variant L."",
+  ""steps"": [
+    ""Inspect the tool wear and torque readings."",
+    ""Replace the worn tool if necessary."",
+    ""Verify the machine's operational parameters."",
+    ""Check the machine's lubrication system."",
+    ""Test the machine to ensure it operates within safe limits."",
+    ""Document the maintenance performed.""
+  ],
+  ""parts"": [""worn tool""],
+  ""safety"": [""Ensure the machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 60
+}",end_turn,319,175,935,1316
+WO-024,OSF,overstrain,"{
+  ""title"": ""Overstrain Alert on Machine L50864"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""wear x torque 11885 min*Nm exceeds the 11,000 limit for variant L."",
+  ""steps"": [
+    ""Inspect the tool wear and torque readings."",
+    ""Check the machine's power and speed settings."",
+    ""Verify the air and process temperatures."",
+    ""Ensure the machine is operating within the specified parameters."",
+    ""Replace worn tools if necessary."",
+    ""Run a diagnostic test to confirm the overstrain condition.""
+  ],
+  ""parts"": [""worn tools""],
+  ""safety"": [""Ensure machine is turned off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,319,175,641,897
+WO-025,NONE,tool wear,"{
+  ""title"": ""Alert WO-025: Machine L55373 (variant L) - Tool Wear"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear is in the 200-240 min failure window."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Measure the tool wear time to confirm the diagnosis."",
+    ""Replace the tool if wear time exceeds 240 minutes."",
+    ""Check the torque and power readings to ensure they are within operational limits."",
+    ""Document the inspection and replacement (if applicable)."",
+    ""Run a test cycle to verify machine performance post-repair.""
+  ],
+  ""parts"": [""Replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear protective gear during tool replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,311,199,969,1220
+WO-026,PWF,power,"{
+  ""title"": ""WO-026: Machine L47622 (variant L) Power Failure Alert"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""Power 9010 W is outside the 3500-9000 W range."",
+  ""steps"": [
+    ""Check and record current power reading."",
+    ""Inspect power supply connections for any loose or damaged cables."",
+    ""Verify the machine's power settings against the operational specifications."",
+    ""Test the machine's cooling system to ensure it is operating within normal parameters."",
+    ""If no issues are found, perform a short inspection and monitor for any further alerts.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is turned off before performing any checks.""],
+  ""estimated_minutes"": 30
+}",end_turn,311,186,846,1216
+WO-027,PWF,power,"{
+  ""title"": ""Maintenance Work Order for Machine M17739"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""Power 9047 W is outside the 3500-9000 W range."",
+  ""steps"": [
+    ""Inspect the power supply connections for any signs of damage or loose connections."",
+    ""Check the power meter for accuracy and calibration."",
+    ""Verify the machine's power settings and compare them to the operational specifications."",
+    ""Replace the power supply unit if it is found to be malfunctioning."",
+    ""Test the machine after replacement to ensure the issue is resolved."",
+    ""Document the maintenance performed and any parts replaced.""
+  ],
+  ""parts"": [
+    ""Power supply unit""
+  ],
+  ""safety"": [
+    ""Ensure the machine is powered off and unplugged before starting any maintenance.""
+  ],
+  ""estimated_minutes"": 45
+}",end_turn,310,201,1150,1405
+WO-028,OSF,overstrain,"{
+  ""title"": ""Overstrain Alert for Machine L56847"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""wear x torque 11638 min*Nm exceeds the 11,000 limit for variant L."",
+  ""steps"": [
+    ""Inspect the machine for any visible signs of mechanical strain or damage."",
+    ""Check the tool wear and replace if necessary."",
+    ""Verify the torque and power settings to ensure they are within operational limits."",
+    ""Run a diagnostic test to confirm the overstrain condition."",
+    ""Record all findings and update the maintenance log.""
+  ],
+  ""parts"": [""replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,320,177,917,1167
+WO-029,NONE,no fault found,"{
+  ""title"": ""Work Order for Machine L50769"",
+  ""priority"": ""P2"",
+  ""failure_mode"": ""no fault found"",
+  ""reason"": ""Rule check indicates no fault found as no limit in the maintenance manual is breached."",
+  ""steps"": [
+    ""Perform a short inspection of machine L50769 to verify the absence of any visible faults."",
+    ""Check all connections and ensure they are secure."",
+    ""Verify that all components are functioning within normal operational parameters."",
+    ""Inspect the tool wear indicator and confirm it aligns with the recorded tool wear."",
+    ""Document findings and note that the alert may be a false alarm.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure machine is powered off before performing inspection.""],
+  ""estimated_minutes"": 15
+}",end_turn,300,175,789,1158
+WO-030,HDF,heat dissipation,"{
+  ""title"": ""Heat Dissipation Alert for Machine L51780"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""Temperature difference 8.0 K is at or below 8.6 K at 1359 rpm."",
+  ""steps"": [
+    ""Inspect the cooling system for any blockages or malfunctions."",
+    ""Check the thermal grease on the heat sink and apply if necessary."",
+    ""Verify the cooling fan operation and clean if needed."",
+    ""Ensure the machine is operating within the recommended temperature range."",
+    ""Monitor the temperature difference and operational parameters for any changes.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Wear protective gloves and eyewear when handling cooling components.""],
+  ""estimated_minutes"": 45
+}",end_turn,314,175,884,1135

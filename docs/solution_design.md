@@ -127,6 +127,15 @@ Lenovo publicly describes Hybrid AI Advantage as covering the full AI lifecycle:
 | US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could ✅ (3-month rolling recall, since ~3 failures a month is too few to judge one month alone) |
 | US-6.4 | As an ops director, I want the tool to suggest the next AI use case once the first is live, so that we expand value step by step. | After a "Go" verdict, the summary lists the next 2 quick wins from Epic 1. | Could (v2) |
 
+#### Epic 7 · GenAI pilot (Advisory → Implementation)
+| ID | User story | Acceptance criteria | Priority |
+|---|---|---|---|
+| US-7.1 | As an AI business analyst, I want to count every cost of a GenAI assistant, not just the subscription, so that the ROI isn't overstated. | Five cost categories (usage, setup, review, training, errors); reproduces the Forbes worked example (162%). | Must ✅ |
+| US-7.2 | As a finance partner, I want to see cash value separately from freed-up time, so that I only bank savings that reach the P&L. | Share of saved hours that becomes cash is an input; cash ROI shown next to ROI. | Must ✅ |
+| US-7.3 | As an AI business analyst, I want to measure cost, speed and accuracy in a real pilot before committing, so that the business case uses evidence instead of guesses. | 30 real alerts run on Amazon Bedrock; tokens, latency and cost recorded per call; drafts graded against the known cause. | Must ✅ |
+| US-7.4 | As a maintenance manager, I want the AI's diagnosis to be reliable, so that technicians don't act on a wrong cause. | Diagnosis moved to a rule check; model only writes the work order; right cause on all real failures in the pilot. | Must ✅ |
+| US-7.5 | As an AI business analyst, I want to know the review time at which the assistant stops paying, so that I know what to measure in production. | Break-even review minutes per draft shown. | Should ✅ |
+
 ### 3.3 Non-functional requirements
 | Category | Requirement |
 |---|---|
@@ -161,6 +170,8 @@ Hosted on Streamlit Community Cloud (public link)
 | Model training | Train and test a failure-prediction model on AI4I 2020 | `src/model.py` |
 | Cost engine | Converts caught / missed / false alarms into dollars, ROI and payback; bootstrap ranges and sensitivity cases | `src/value.py` |
 | Readiness engine | Scores dimensions and applies verdict rules | `src/readiness.py` |
+| GenAI cost engine | Time saved minus five cost categories; cash vs capacity; break-even review time | `src/genai.py` |
+| Work-order pilot | Picks 30 alerts, builds prompts, rule-check diagnosis, grades drafts; runs on Amazon Bedrock (Nova Micro, us-east-2) | `src/workorder.py`, `pilot/` |
 | Value tracking | Forecast vs actual savings, adoption and drift alerts, gap breakdown, simulated sample rollout | `src/tracking.py`, `data/sample_actuals.csv` |
 | User interface | Tabs, inputs, charts, summary | `app.py` |
 
@@ -203,6 +214,11 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Actual savings match hand calculation; adoption and drift alerts fire on the right months | US-6.1, US-6.2, US-6.3 | Unit test on a 4-month example | ✅ Passed |
 | Gap causes add up exactly to actual − forecast; actuals equal to the forecast give no gap | US-6.1 | Unit tests (5 simulated rollouts + exact-match case) | ✅ Passed: sample rollout $464k vs $660k forecast, gap −$197k |
 | Bad actuals files are rejected with a clear message | US-6.1 | Unit test (missing column, impossible counts) | ✅ Passed |
+| GenAI ROI reproduces the Forbes bookkeeping example | US-7.1 | Unit test | ✅ Passed: cost $6,350, gain $16,640, ROI 162% |
+| Cash + capacity = total gain; break-even review gives zero net value | US-7.2, US-7.5 | Unit tests | ✅ Passed |
+| Pilot v1 (model diagnoses and writes) | US-7.3 | 30 Bedrock calls, graded against true cause | ❌ 33% right cause (42% on real failures, 0 of 6 false alarms); $0.000038 per draft, 0.9 s |
+| Pilot v2 (rule check diagnoses, model writes) | US-7.4 | Same 30 alerts | ✅ 100% right cause on real failures (83% overall), diagnosis kept in 30/30 drafts; 4 drafts mention PC parts, so review stays |
+| Rule check matches the manual and every real failure in the pilot set | US-7.4 | Unit test | ✅ Passed |
 
 ---
 

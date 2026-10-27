@@ -2,7 +2,7 @@
 
 > Most teams judge AI models by accuracy. This tool judges them by dollars.
 
-Most AI projects stall between pilot and production: companies pick projects on hype, judge models by accuracy instead of business value, and launch before they're ready. The ROI Navigator walks an operations leader through four steps, then checks the promise after launch:
+Most AI projects stall between pilot and production: companies pick projects on hype, judge models by accuracy instead of business value, and launch before they're ready. The ROI Navigator walks an operations leader through four steps, checks the promise after launch, and tests a GenAI assistant with a measured pilot:
 
 | Tab | Question it answers |
 |---|---|
@@ -11,6 +11,7 @@ Most AI projects stall between pilot and production: companies pick projects on 
 | **3 · Readiness** | Are we ready to go live? 10-question scorecard with a Go / Fix first / Not ready verdict. |
 | **4 · Business case** | One-page summary to share with finance (downloadable). |
 | **5 · Track value** | Is it delivering what we promised? Compares actual savings with the forecast month by month, warns when the crew stops acting on alerts or the model drifts, and explains the gap. |
+| **6 · GenAI pilot** | Does a GenAI assistant pay for itself? A measured Amazon Bedrock pilot of an AI that drafts work orders, with ROI across five cost categories. |
 
 *Independent concept project. Use-case scores and plant costs are illustrative assumptions and can be edited in the app.*
 
@@ -20,6 +21,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 - yields **~$660K annual net savings** for a plant with 40 failures a year, with a **~4.7-month payback**
 - **The result holds up under pessimistic assumptions.** Model uncertainty puts annual savings at **$611K–$704K** (90% range). In the low case, with every cost assumption at its unfavorable end, the project still saves **~$164K a year** and pays back in **~20 months**. The biggest driver is the cost of an unplanned failure, so that's the number to agree with finance first.
 - **Forecasts need checking after launch.** In a simulated 12-month rollout the plant banks **$464K of the $660K forecast (70%)**. The Track value tab splits the $197K gap into fewer failures than assumed (−$91K), the crew ignoring correct alerts in the first months (−$63K) and model drift (−$46K), and raises a retrain alert in month 11.
+- **For GenAI, the model fee is not the cost; review time is.** A 30-alert pilot on Amazon Bedrock (Nova Micro) cost **$0.04 per 1,000 drafts**. When the model diagnosed the fault itself it was right only **33%** of the time; moving the diagnosis into a rule check and letting the model only write raised that to **100% on real failures**. With 4-minute reviews the assistant returns **72% in year one**, but only **−14% in cash** if half the saved hours turn into money, and it stops paying once review takes more than **~10 minutes** a draft.
 - **The most accurate setting is not the most profitable.** Tuning the alert threshold for dollars instead of accuracy saves **~$29K more per year**, because a missed failure ($25K) costs far more than a false alarm ($500).
 
 | Prioritize | Prove value |
@@ -32,15 +34,20 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 
 ![](docs/tab5_track_value.png)
 
+**GenAI pilot** (measured on Amazon Bedrock)
+
+![](docs/tab6_genai_pilot.png)
+
 ## How it works
 - **Prioritization:** weighted 1–5 scores. Value = financial impact, strategic fit, scale. Feasibility = data readiness, ease of build, low risk, speed to value. Weights are adjustable.
 - **Model:** AI4I 2020 dataset (10,000 records, 339 failures). Features: temperatures, speed, torque, tool wear, plus engineered power, temperature difference and wear × torque. Failure-mode columns are excluded to avoid leakage. Logistic regression (explainable baseline) vs gradient boosting; stratified 70/30 split.
 - **Dollars:** test-set catch, miss and false-alarm rates are scaled to the plant's failures per year. Savings = cost of failures without AI − (planned repairs + missed failures + false alarms + running cost).
 - **Uncertainty:** *model uncertainty* comes from a bootstrap of the test set (1,000 resamples, 90% range). *Assumption uncertainty* comes from a tornado chart that moves each cost input between an editable low and high value one at a time, plus low / base / high cases that set every input to its unfavorable or favorable end.
 - **Value tracking:** monthly counts (alerts, failures flagged, prevented, missed, false alarms) are turned into dollars with the same formula as the forecast. Adoption = share of alerts acted on (alert below 70%). Drift = 3-month rolling recall 10+ points below launch. The gap is split by swapping each forecast assumption (failure volume, recall, share of flagged failures acted on, false alarms) for its actual value one at a time, so the parts add up exactly. The bundled 12-month rollout is simulated, not real plant data.
+- **GenAI pilot:** 30 alerts from the test set (real failures of each type plus false alarms) are sent to Amazon Nova Micro on Bedrock (us-east-2, US inference profile, temperature 0, 500-token cap). Each draft must name one cause from a fixed list, graded against the true cause in the data. ROI counts the five cost categories from the Forbes article (usage, setup, review, training, errors) and splits time saved into cash and capacity. Re-run with `python -m pilot.run_pilot --profile <aws-profile> --version 2`.
 - **Readiness:** 5 dimensions (data, workflow fit, ROI clarity, user trust, governance). Go = average ≥ 3.5 and no dimension below 2.5.
 
-Business analysis docs (personas, use cases, 22 user stories with acceptance criteria, validation) are in [`docs/solution_design.md`](docs/solution_design.md).
+Business analysis docs (personas, use cases, 27 user stories with acceptance criteria, validation) are in [`docs/solution_design.md`](docs/solution_design.md).
 
 ## Run locally
 ```bash

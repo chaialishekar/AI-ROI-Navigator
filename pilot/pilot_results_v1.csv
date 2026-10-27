@@ -1,0 +1,458 @@
+case_id,true_mode,reply,stop_reason,input_tokens,output_tokens,latency_ms,wall_ms
+WO-001,HDF,"{
+  ""title"": ""Maintenance Alert for Machine L51450"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The calculated tool wear x torque of 8008 min*Nm exceeds the failure limit of 11,000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect the current load on the tool."",
+    ""Reduce the load if possible."",
+    ""Replace the tool if the load cannot be reduced."",
+    ""Verify the torque settings and ensure they are within operational limits.""
+  ],
+  ""parts"": [""Tool (L variant)""],
+  ""safety"": [""Ensure the machine is powered off before replacing the tool.""],
+  ""estimated_minutes"": 45
+}",end_turn,421,167,892,1206
+WO-002,OSF,"{
+  ""title"": ""Immediate Maintenance Required for Machine L53258"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit of 11,000 min*Nm."",
+  ""steps"": [
+    ""Inspect and replace the tool if necessary."",
+    ""Check the torque settings and adjust if needed."",
+    ""Perform a short inspection to confirm no other faults are present.""
+  ],
+  ""parts"": [""Tool (L variant)""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,422,146,790,1036
+WO-003,NONE,"{
+  ""title"": ""Maintenance Work Order for Machine M19239"",
+  ""priority"": ""P2"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit for variant M."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Check the torque settings and ensure they are within the specified limits."",
+    ""Replace the tool if it shows signs of excessive wear."",
+    ""Verify the load settings to ensure they are appropriate for the current operation.""
+  ],
+  ""parts"": [""Tool (M variant)""],
+  ""safety"": [""Ensure the machine is properly shut down before performing any maintenance.""],
+  ""estimated_minutes"": 45
+}",end_turn,420,160,890,1246
+WO-004,OSF,"{
+  ""title"": ""Maintenance Work Order for Machine M18795"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit for variant M."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Measure the torque applied to the tool and verify it against operational limits."",
+    ""Replace the tool if it exceeds the wear limit or shows signs of damage."",
+    ""Check the machine's load settings to ensure they are within operational parameters.""
+  ],
+  ""parts"": [""Tool (M variant)""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,422,164,984,1234
+WO-005,PWF,"{
+  ""title"": ""Maintenance Work Order for Machine M21659"",
+  ""priority"": ""P2"",
+  ""failure_mode"": ""no fault found"",
+  ""reason"": ""The readings do not breach any failure limits."",
+  ""steps"": [
+    ""Inspect the machine for any visible signs of wear or damage."",
+    ""Check lubrication levels and ensure they are within the manufacturer's specifications."",
+    ""Perform a brief operational test to ensure machine functionality."",
+    ""Document findings and report any anomalies observed.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is properly powered down before inspection."", ""Wear appropriate personal protective equipment (PPE).""],
+  ""estimated_minutes"": 30
+}",end_turn,420,153,784,1033
+WO-006,PWF,"{
+  ""title"": ""Maintenance Work Order for Machine M23442"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""Tool wear x torque exceeds 12,000 min*Nm for variant M."",
+  ""steps"": [
+    ""Inspect and replace the tool if necessary."",
+    ""Check the torque settings and adjust if needed."",
+    ""Verify the load settings and make any required adjustments."",
+    ""Perform a short inspection to confirm no other issues are present.""
+  ],
+  ""parts"": [""Tool""],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 45
+}",end_turn,424,154,811,1066
+WO-007,HDF,"{
+  ""title"": ""Maintenance Work Order for Machine L51655"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque (418 min*Nm) exceeds the failure limit of 11,000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Reduce the load on the tool if possible."",
+    ""Replace the tool if it shows significant wear or damage."",
+    ""Verify the torque settings and ensure they are within operational limits."",
+    ""Perform a short inspection to confirm no other faults are present.""
+  ],
+  ""parts"": [""Tool (L variant)""],
+  ""safety"": [""Ensure the machine is properly shut down before performing any maintenance.""],
+  ""estimated_minutes"": 45
+}",end_turn,419,189,906,1274
+WO-008,NONE,"{
+  ""title"": ""Maintenance Work Order for Machine L54857"",
+  ""priority"": ""P2"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""Tool wear x torque exceeds 11,000 min*Nm for L variant."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Measure the torque and tool wear again after a short operation."",
+    ""Replace the tool if wear x torque remains above 11,000 min*Nm."",
+    ""Verify the machine settings and ensure they are within operational limits.""
+  ],
+  ""parts"": [""replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,422,167,1020,1281
+WO-009,PWF,"{
+  ""title"": ""Maintenance Alert for Machine L54460"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque (4315 min*Nm) exceeds the failure limit of 11,000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Reduce the load on the machine if possible."",
+    ""Replace the tool if wear is significant."",
+    ""Verify the torque settings and ensure they are within operational limits."",
+    ""Monitor the machine's performance post-replacement or adjustment.""
+  ],
+  ""parts"": [""Tool""],
+  ""safety"": [""Ensure machine is powered off before tool replacement"", ""Wear protective gear""],
+  ""estimated_minutes"": 45
+}",end_turn,421,184,971,1223
+WO-010,TWF,"{
+  ""title"": ""Maintenance Work Order for Machine H32278"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit of 13,000 min*Nm."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Replace the tool if it shows significant wear."",
+    ""Verify the torque settings and ensure they are within operational limits."",
+    ""Check the load on the machine and reduce if necessary.""
+  ],
+  ""parts"": [""Tool (H variant)""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 60
+}",end_turn,420,161,979,1353
+WO-011,HDF,"{
+  ""title"": ""Immediate Maintenance Required for Machine L51724"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque (10304 min*Nm) exceeds the failure limit of 11000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect and replace the tool if necessary."",
+    ""Check the torque settings and adjust if needed."",
+    ""Perform a short inspection to confirm no other faults are present.""
+  ],
+  ""parts"": [""Tool""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,422,155,847,1130
+WO-012,OSF,"{
+  ""title"": ""Maintenance Work Order for Machine H34813"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear has reached 246 minutes, exceeding the failure limit of 240 minutes."",
+  ""steps"": [
+    ""Replace the worn tool."",
+    ""Verify the new tool is correctly installed."",
+    ""Check the wear x torque value to ensure it does not exceed 13,000 min*Nm."",
+    ""Run a short inspection to confirm machine functionality.""
+  ],
+  ""parts"": [""New tool (H variant)""],
+  ""safety"": [""Ensure machine is powered off before replacing the tool.""],
+  ""estimated_minutes"": 45
+}",end_turn,422,163,829,1080
+WO-013,HDF,"{
+  ""title"": ""Urgent Maintenance Required for Machine L51310"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit of 11,000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Replace the tool if it shows any signs of wear."",
+    ""Check the torque settings and ensure they are within the specified limits."",
+    ""Verify the load on the machine and reduce if necessary."",
+    ""Test the machine after replacement to ensure the issue is resolved.""
+  ],
+  ""parts"": [""Tool (L variant)""],
+  ""safety"": [""Ensure the machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,420,183,945,1306
+WO-014,OSF,"{
+  ""title"": ""Immediate Maintenance Required for Machine L56196"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit of 11,000 min*Nm."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Reduce the load on the machine if possible."",
+    ""Replace the tool if it shows significant wear or damage."",
+    ""Verify the torque settings and ensure they are within operational limits.""
+  ],
+  ""parts"": [""Tool""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,423,157,983,1232
+WO-015,PWF,"{
+  ""title"": ""Maintenance Work Order for Machine M22857"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque (143 min * 9.7 Nm = 1387 min*Nm) exceeds the failure limit of 12,000 min*Nm for variant M."",
+  ""steps"": [
+    ""Inspect and replace the tool if necessary."",
+    ""Check the torque settings and adjust if needed."",
+    ""Perform a short inspection to confirm no other faults are present.""
+  ],
+  ""parts"": [""Tool""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,420,168,920,1169
+WO-016,NONE,"{
+  ""title"": ""Maintenance Work Order for Machine L51564"",
+  ""priority"": ""P2"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque (9864 min*Nm) exceeds the failure limit of 11,000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect the current tool for signs of wear and damage."",
+    ""Calculate the load on the tool and compare it with the maximum allowable load."",
+    ""If the tool is worn or the load exceeds the limit, replace the tool."",
+    ""Perform a short inspection to ensure the machine is operating correctly.""
+  ],
+  ""parts"": [""Replacement tool""],
+  ""safety"": [""Ensure the machine is powered off before replacing the tool.""],
+  ""estimated_minutes"": 45
+}",end_turn,420,184,963,1217
+WO-017,HDF,"{
+  ""title"": ""Immediate Maintenance Required for Machine M19251"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""The temperature difference is below 8.6 K and the speed is below 1380 rpm."",
+  ""steps"": [
+    ""Check the cooling system for any blockages or malfunctions."",
+    ""Inspect and clean the cooling fans."",
+    ""Verify the process temperature and air temperature readings."",
+    ""Ensure the machine speed is within operational limits."",
+    ""Document findings and corrective actions.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 30
+}",end_turn,419,160,848,1232
+WO-018,HDF,"{
+  ""title"": ""Immediate Maintenance Required for Machine M18666"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""heat dissipation"",
+  ""reason"": ""The process temperature and air temperature difference is 8.6 K and speed is below 1380 rpm."",
+  ""steps"": [
+    ""Check the cooling system for any blockages or malfunctions."",
+    ""Inspect and clean the fans to ensure proper airflow."",
+    ""Verify the cooling settings and adjust if necessary."",
+    ""Monitor the temperature difference and speed after adjustments."",
+    ""Document findings and any corrective actions taken.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 30
+}",end_turn,420,167,771,1022
+WO-019,HDF,"{
+  ""title"": ""Maintenance Work Order for Machine H33979"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque (1375 min*Nm) exceeds the failure limit of 13000 min*Nm for variant H."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Measure the torque applied to the tool and verify it against operational limits."",
+    ""If the tool is worn, replace it with a new one."",
+    ""Verify the machine's load settings to ensure they are within operational limits."",
+    ""Perform a short inspection to confirm the issue is resolved.""
+  ],
+  ""parts"": [""new tool""],
+  ""safety"": [""Ensure machine is powered off before inspection and tool replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,420,194,1036,1293
+WO-020,HDF,"{
+  ""title"": ""Immediate Maintenance Required for Machine H34192"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The calculated tool wear x torque of 6115 min*Nm exceeds the failure limit of 13,000 min*Nm for variant H."",
+  ""steps"": [
+    ""Inspect the current tool for signs of wear and damage."",
+    ""Reduce the machine load to prevent further overstrain."",
+    ""Replace the worn tool with a new one."",
+    ""Verify that the torque settings are within the safe operational range."",
+    ""Run a short inspection to ensure no additional issues are present.""
+  ],
+  ""parts"": [""new tool""],
+  ""safety"": [""Ensure all safety protocols are followed before starting maintenance.""],
+  ""estimated_minutes"": 45
+}",end_turn,420,185,968,1338
+WO-021,NONE,"{
+  ""title"": ""Maintenance Work Order for Machine M17886"",
+  ""priority"": ""P2"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit for variant M."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Replace the tool if it shows signs of excessive wear."",
+    ""Check the torque settings and ensure they are within the specified limits."",
+    ""Verify the load on the machine and reduce if necessary.""
+  ],
+  ""parts"": [""Tool (M variant)""],
+  ""safety"": [""Ensure the machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,419,156,877,1133
+WO-022,HDF,"{
+  ""title"": ""Urgent Maintenance for Machine M18980"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit for variant M."",
+  ""steps"": [
+    ""Inspect and replace the tool if necessary."",
+    ""Check the torque settings and adjust if needed."",
+    ""Verify the load on the machine and reduce if over the limit."",
+    ""Perform a short inspection to confirm the issue is resolved.""
+  ],
+  ""parts"": [""Tool (variant M)""],
+  ""safety"": [""Ensure machine is powered off before inspection."", ""Wear protective gear.""],
+  ""estimated_minutes"": 45
+}",end_turn,421,155,868,1126
+WO-023,OSF,"{
+  ""title"": ""Alert for Machine L47766"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Replace the tool if it shows signs of wear."",
+    ""Verify the torque settings and ensure they are within the specified limits."",
+    ""Check the load on the machine and reduce if it exceeds the recommended load for variant L.""
+  ],
+  ""parts"": [""Tool""],
+  ""safety"": [""Ensure the machine is powered off before inspecting or replacing the tool.""],
+  ""estimated_minutes"": 45
+}",end_turn,422,158,832,1209
+WO-024,OSF,"{
+  ""title"": ""Immediate Maintenance Required for Machine L50864"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit of 11,000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Reduce the load on the machine if possible."",
+    ""Replace the tool if it shows significant wear."",
+    ""Verify the torque settings and ensure they are within operational limits."",
+    ""Perform a short inspection to confirm the issue is resolved.""
+  ],
+  ""parts"": [""Replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 60
+}",end_turn,422,172,905,1169
+WO-025,NONE,"{
+  ""title"": ""Maintenance Work Order for Machine L55373"",
+  ""priority"": ""P2"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The product of tool wear and torque exceeds the failure limit for variant L."",
+  ""steps"": [
+    ""Inspect the tool for signs of wear and damage."",
+    ""Check the torque settings and ensure they are within operational limits."",
+    ""Replace the tool if it shows significant wear or damage."",
+    ""Verify the calculated wear x torque does not exceed 11,000 min*Nm."",
+    ""Perform a short inspection to confirm the issue is resolved.""
+  ],
+  ""parts"": [""Tool (L variant)""],
+  ""safety"": [""Ensure the machine is powered off before inspection and replacement.""],
+  ""estimated_minutes"": 45
+}",end_turn,420,178,974,1227
+WO-026,PWF,"{
+  ""title"": ""Maintenance Work Order for Machine L47622"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""The power reading of 9010 W exceeds the upper limit of 9000 W."",
+  ""steps"": [
+    ""Check the drive and load settings to ensure they are within the specified limits."",
+    ""Inspect the power supply and connections for any abnormalities."",
+    ""Verify that the machine is operating within the recommended power range."",
+    ""If necessary, adjust the drive and load settings to bring the power within the safe range."",
+    ""Perform a test run to confirm that the power is now within the acceptable range.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is turned off before performing any checks or adjustments.""],
+  ""estimated_minutes"": 30
+}",end_turn,420,186,899,1170
+WO-027,PWF,"{
+  ""title"": ""Urgent Maintenance for Machine M17739"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""power"",
+  ""reason"": ""The power reading is above 9000 W."",
+  ""steps"": [
+    ""Check the drive settings to ensure they are within the operational range."",
+    ""Verify the load settings to ensure they are not excessive."",
+    ""Inspect the power supply for any anomalies."",
+    ""Monitor the machine's performance post adjustments.""
+  ],
+  ""parts"": [],
+  ""safety"": [""Ensure the machine is powered off before inspection."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 30
+}",end_turn,419,146,882,1252
+WO-028,OSF,"{
+  ""title"": ""Immediate Maintenance Required for Machine L56847"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The calculated tool wear x torque of 11638 min*Nm exceeds the failure limit of 11000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect and replace the tool if necessary."",
+    ""Reduce the load on the machine if possible."",
+    ""Verify the torque settings."",
+    ""Perform a short inspection to confirm the issue.""
+  ],
+  ""parts"": [""replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection.""],
+  ""estimated_minutes"": 45
+}",end_turn,423,157,960,1207
+WO-029,NONE,"{
+  ""title"": ""Immediate Maintenance Required for Machine L50769"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""tool wear"",
+  ""reason"": ""Tool wear has reached 149 minutes, exceeding the failure threshold of 200-240 minutes."",
+  ""steps"": [
+    ""Replace the worn tool immediately."",
+    ""Verify the new tool's specifications and compatibility."",
+    ""Test the machine to ensure proper operation post-replacement."",
+    ""Document the maintenance and tool replacement.""
+  ],
+  ""parts"": [""New machining tool (L variant)""],
+  ""safety"": [""Ensure machine is powered off before tool replacement."", ""Wear appropriate PPE.""],
+  ""estimated_minutes"": 45
+}",end_turn,421,161,974,1233
+WO-030,HDF,"{
+  ""title"": ""Immediate Maintenance Required for Machine L51780"",
+  ""priority"": ""P1"",
+  ""failure_mode"": ""overstrain"",
+  ""reason"": ""The calculated wear x torque of 5083 min*Nm exceeds the failure limit of 11,000 min*Nm for variant L."",
+  ""steps"": [
+    ""Inspect the current tool for signs of wear and damage."",
+    ""Calculate the new wear x torque value after any adjustments."",
+    ""Reduce the load or replace the tool if wear x torque remains above the limit."",
+    ""Verify that the machine settings are within operational parameters.""
+  ],
+  ""parts"": [""replacement tool""],
+  ""safety"": [""Ensure machine is powered off before inspection"", ""Wear protective gear""],
+  ""estimated_minutes"": 45
+}",end_turn,421,178,899,1265
