@@ -35,50 +35,6 @@
              payback: net > 0 ? c.months_to_deploy + c.deployment_cost / (net / 12) : null,
              three_year: net * live3 / 12 - c.deployment_cost };
   }
-  // The board: three executives react to the numbers. Plain rules, no live AI: each reaction names the number behind it.
-  // Thresholds are set for this plant: 18 months is the budget horizon; an alert level 10+ points above break-even
-  // that costs over $10k a year is accuracy bought with money; crews tune out when fewer than half the alerts are
-  // real or false alarms pass one a week (US-6.2 adoption risk); the COO also reads the Readiness gaps; a catch
-  // rate under 80% leaves 8+ surprise breakdowns a year; extra misses only count when a lower alert level would avoid them. Returns [{role, who, mood: "backs" | "concerns" | "blocks",
-  // say, fix}], where fix (optional) is {label, set: {cost: value}}, {label, level} or {label, href}: the change that
-  // would answer the concern. The board never changes anything itself; the page applies a fix only when clicked.
-  // How three executives react to the calculator's numbers: fixed rules, in their own words. A fix is applied only when clicked.
-  function board(c, r, level) {
-    const wk = r.false_alarms / 52, gross = r.net + c.running_cost, be = breakEven(c), atBe = value(c, be);
-    const lost = atBe.net - r.net;
-    const toBe = { label: `Apply: go back to the ${Math.round(be * 100)}% break-even level`, level: be };
-    // Lowest alert level that keeps false alarms to one a week and at least half the alerts real
-    const calm = [...Array(99).keys()].map(k => (k + 1) / 100).find(t => { const v = value(c, t); return v.false_alarms <= 52 && v.precision >= 0.5; });
-    const toCalm = calm && calm > level ? { label: `Apply: raise the alert level to ${Math.round(calm * 100)}%`, level: calm } : null;
-    const maxSetup = Math.floor((18 - c.months_to_deploy) * r.net / 12 / 5000) * 5000;
-    const cfo = r.net <= 0 ? ["blocks", `It loses ${usd(-r.net)} a year at these costs. I can't take that to the board.`, null]
-      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${usd(c.deployment_cost)} setup or show more savings.`,
-          maxSetup > 0 ? { label: `Apply: cap setup at ${usd(maxSetup)}`, set: { deployment_cost: maxSetup } } : null]
-      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${usd(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
-      : c.running_cost > 0.35 * gross ? ["concerns", `Running costs eat ${Math.round(c.running_cost / gross * 100)}% of the gross saving. I want a fixed-price contract before I sign.`,
-          { label: `Apply: negotiate running cost to ${usd(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
-      : r.payback > 12 ? ["concerns", `${r.payback.toFixed(1)} months to pay back. Fine, but release the money in stages: one production line first.`,
-          { label: "See the staged rollout in Decide →", href: "decide.html" }]
-      : ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. I'll still budget on the published studies, not the model test, and treat the rest as upside.`];
-    const coo = r.precision < 0.3 ? ["blocks", `Only ${Math.round(r.precision * 100)}% of alerts are real. My crew will stop answering them inside a month.`, toCalm]
-      : wk > 1 ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is more than one a week. Expect technicians to start ignoring it.`, toCalm]
-      : r.precision < 0.5 ? ["concerns", `Half the alerts are wrong (${Math.round(r.precision * 100)}% real). Show the reason with each one, or trust goes.`, toCalm]
-      : level > be && r.missed - atBe.missed >= 1 ? ["concerns", `This alert level lets through ${(r.missed - atBe.missed).toFixed(1)} more surprise breakdowns a year than break-even would. Those are the night-shift call-outs I wanted gone.`, toBe]
-      : ["backs", `About ${Math.round(r.false_alarms)} false alarms a year, one every ${Math.round(52 / Math.max(r.false_alarms, 0.1))} weeks. My crew can work with that if alerts land in the maintenance system.`];
-    const cto = r.recall < 0.6 ? ["blocks", `At a ${Math.round(level * 100)}% alert level it catches only ${Math.round(r.recall * 100)}% of breakdowns. We'd be paying for a model and still missing most failures.`, level > be ? toBe : null]
-      : r.recall < 0.8 ? ["concerns", `Tuned this cautiously, it misses ${Math.round((1 - r.recall) * 100)}% of breakdowns. Lower the alert level before go-live.`, level > be ? toBe : null]
-      : c.running_cost < 30000 ? ["concerns", `${usd(c.running_cost)} a year won't cover monitoring and retraining. The model will drift and nobody will notice.`,
-          { label: "Apply: budget $30,000 a year for monitoring", set: { running_cost: 30000 } }]
-      : ["backs", `Catches ${Math.round(r.recall * 100)}% on the test. The data is synthetic, so I want the 3-month catch rate monitored from day one.`];
-    const tests = {
-      CFO: [[r.net > 0, "Saves money"], [r.net > 0 && r.payback <= 12, "Pays back in 12 months"]],
-      COO: [[r.false_alarms <= 52, "≤ 1 false alarm a week"], [r.precision >= 0.5, "Half its alerts real"]],
-      CTO: [[r.recall >= 0.8, "Catches 80%"], [c.running_cost >= 30000, "$30k a year to run it"]],
-    };
-    return [["CFO", "Finance chief", ...cfo], ["COO", "Operations chief", ...coo], ["CTO", "Technology chief", ...cto]]
-      .map(([role, who, mood, say, fix]) => ({ role, who, mood, say, fix, tests: tests[role] }));
-  }
-
   // Break-even alert level, as src/value.py alert_threshold()
   const breakEven = c => (c.cost_missed > c.cost_caught
     ? Math.min(0.99, Math.max(0.01, Math.round(c.cost_false_alarm / (c.cost_missed - c.cost_caught + c.cost_false_alarm) * 100) / 100)) : 0.99);
@@ -106,6 +62,25 @@
     { slug: "measure", name: "Measure", q: "Did the savings show up?",
       from: "Deliver built Doc and ran the one-line pilot against its exit checks.", now: "A year after go-live, did the savings show up?",
       answer: `${money(D.tracking.delivered)} in year one against ${money(D.tracking.plan)} planned, and why it missed the model.`, made: "Monthly tracking, gap analysis by cause", gate: [`${money(D.tracking.delivered)} vs`, `${money(D.tracking.plan)} plan`] },
+  ];
+  // The short version of each phase, shown under the home staircase
+  const L = D.plant.losses;
+  const POINTS = [
+    [`Downtime ${money(L[0].cost)}, scrap and rework ${money(L[1].cost)}, shortages ${money(L[2].cost)} a year.`,
+      "Put a price on the problem before talking about any AI.", "Mapped who is affected and how a breakdown is handled today."],
+    ["Priced every AI in the provider's library against the plant's own losses. Three fit.",
+      "Judged each one on cautious figures too, and on how strong its evidence is.", "Every AI also had to beat the manual's rules and doing nothing."],
+    [`The model test said ${money(D.value.annual_net)} a year. Finance plans on ${money(D.published.net)}, from published studies.`,
+      `Still saves ${money(D.decision.worst_case)} a year if costs are worse than expected.`,
+      `The manual's rules save more on paper, but ${Math.round(D.rules.false_alarms)} false alarms a year wear a crew down.`],
+    ["Rated the team on ten questions about data, process and people.",
+      `Weakest: ${D.readiness.weakest.map(w => w.name.toLowerCase()).join(" and ")}.`, "Listed who changes how they work, and what they need first."],
+    ["The decision rule was agreed before the numbers came in.", "It saves money even in the worst case, but the team isn't ready yet.",
+      "Finance signs a two-page brief that also shows the options it turned down."],
+    ["36+ user stories and 13 acceptance tests, with every Must-have traced to code.",
+      "A working model, an S3 → Databricks data path, and two GenAI experiments on Amazon Bedrock.", "The pilot had to pass three exit checks before go-live."],
+    [`${money(D.tracking.delivered)} in year one: above the ${money(D.tracking.plan)} plan, ${Math.round(delivered * 100)}% of the model's estimate.`,
+      "Fewer breakdowns than assumed, a lower catch rate and skipped alerts explain the gap.", "Checked every month through the S3 → Databricks pipeline."],
   ];
   const href = p => `${ROOT}/phases/${p.slug}.html`;
 
@@ -141,7 +116,8 @@
     try { localStorage.setItem("roi-visited", JSON.stringify([...new Set([...visited(), i])])); } catch {}
   }
 
-  // The 3D staircase. opts: current (index to highlight), link (steps open their page), panel (element for details)
+  // The 3D staircase. opts: current (index to highlight), link (steps open their page), panel (element for details),
+  // tour (clicking a step opens its short version in the panel instead of leaving the page)
   function stairs(el, opts = {}) {
     const n = 7, w = 78, dx = 22, dy = 13, base = 250, rise = 24, ly = base + 60;
     let sel = opts.current ?? 0, s = "";
@@ -186,6 +162,7 @@
         g.querySelector(".top").style.fill = on ? "var(--teal)" : done ? "var(--done-top)" : "var(--step-top)";
         g.querySelector(".front").style.fill = on ? "var(--teal-dark)" : done ? "var(--done)" : "var(--step)";
       });
+      el.querySelectorAll(".stairs-v a").forEach((a, i) => { a.classList.toggle("on", i === sel); a.classList.toggle("done", i !== sel && seen.includes(i)); });
       // The climber stands on the selected step; the arrow shows the next step up
       const foot = i => [20 + i * w + w / 2 + dx / 2 - 6, base - (40 + i * rise) - dy / 2 + 1];
       const [cx, cy] = foot(sel);
@@ -202,25 +179,43 @@
       msg.innerHTML = top ? LIVE : "";
       msg.classList.toggle("show", top);
       el.classList.toggle("is-live", top);
-      if (opts.panel) {
+      if (opts.panel && opts.tour) {
+        const p = PHASES[sel];
+        opts.panel.innerHTML = `<div class="tour-head"><span class="label">Phase ${sel + 1} of 7 · ${p.name}</span>
+            <span class="tour-nav"><button class="chip" type="button" data-go="-1" ${sel ? "" : "disabled"}>← Back</button><button class="chip" type="button" data-go="1" ${sel < n - 1 ? "" : "disabled"}>Next step →</button></span></div>
+          <h3>${p.q}</h3><p class="tour-answer">${p.answer}</p>
+          <ul>${POINTS[sel].map(t => `<li>${t}</li>`).join("")}</ul>
+          <a class="tour-more" href="${href(p)}">Read the full ${p.name} page →</a>`;
+      } else if (opts.panel) {
         const p = PHASES[sel];
         opts.panel.innerHTML = `<div><span>Phase ${sel + 1} · ${p.name}</span>${p.q}</div>
-          <div><span>Deliverable</span>${p.made}</div><div><span>Gate passed</span>${p.gate.join(" ")}</div>`;
+          <div><span>The answer</span>${p.answer}</div><div><span>Deliverable</span>${p.made}</div>`;
       }
     }
-    let climbing = null;
+    let climbing = null, pinned = sel;
     const stop = () => { clearInterval(climbing); climbing = null; };
+    const go = i => { stop(); pinned = sel = Math.max(0, Math.min(n - 1, i)); paint(); };
     el.querySelectorAll(".step").forEach(g => {
       g.addEventListener("mouseenter", () => { stop(); sel = +g.dataset.i; paint(); });
-      if (!opts.link) g.addEventListener("click", e => e.preventDefault());
+      if (!opts.link || opts.tour) g.addEventListener("click", e => {
+        e.preventDefault();
+        if (opts.tour) { go(+g.dataset.i); opts.panel.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+      });
     });
-    if (!opts.link || opts.current === undefined) el.addEventListener("mouseleave", () => { sel = opts.current ?? sel; paint(); });
+    if (opts.tour) {
+      // Phones get the vertical list: it steps through the tour too, and brings the short version into view
+      el.querySelectorAll(".stairs-v a").forEach((a, i) => a.addEventListener("click", e => {
+        e.preventDefault(); go(i); opts.panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }));
+      opts.panel.addEventListener("click", e => { const d = e.target.dataset.go; if (d) go(sel + +d); });
+      el.addEventListener("mouseleave", () => { sel = pinned; paint(); });
+    } else if (!opts.link || opts.current === undefined) el.addEventListener("mouseleave", () => { sel = opts.current ?? sel; paint(); });
     paint();
     // opts.auto: climb from the first step to the top once the staircase is on screen
     function climb() {
-      stop(); sel = 0; paint();
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) { sel = n - 1; paint(); return; }
-      climbing = setInterval(() => { sel += 1; paint(); if (sel >= n - 1) stop(); }, 750);
+      stop(); pinned = sel = 0; paint();
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) { pinned = sel = n - 1; paint(); return; }
+      climbing = setInterval(() => { pinned = sel += 1; paint(); if (sel >= n - 1) stop(); }, 750);
     }
     if (opts.auto) {
       if (opts.replay) opts.replay.addEventListener("click", climb);
@@ -323,5 +318,5 @@
 
   nav(); footer(); fillValues();
   document.addEventListener("DOMContentLoaded", reveal);
-  window.Site = { D, PHASES, REPO, ESSAY, money, usd, pct, months, doc, value, rulesValue, breakEven, board, stairs, phaseHead, delivered };
+  window.Site = { D, PHASES, REPO, ESSAY, money, usd, pct, months, doc, value, rulesValue, breakEven, stairs, phaseHead, delivered };
 })();

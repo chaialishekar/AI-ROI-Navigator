@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css?v=20261029">
+  <link rel="stylesheet" href="assets/style.css?v=2026102903">
 </head>
 <body data-root=".">
 <nav class="nav" data-nav></nav>
@@ -38,15 +38,6 @@
     <a href="https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset" target="_blank" rel="noopener">UCI</a>
   </div>
 </div>
-
-<section id="short">
-  <div class="wrap">
-    <p class="eyebrow">Short on time?</p>
-    <h2>The whole case in seven lines.</h2>
-    <div class="shortlist" id="shortList"></div>
-    <p class="small" style="margin:14px 0 0">Each line opens that phase. Every phase page takes about two minutes, and its full working sits behind "Show the details".</p>
-  </div>
-</section>
 
 <section id="explore">
   <div class="wrap reveal">
@@ -93,10 +84,10 @@
   <div class="wrap reveal">
     <p class="eyebrow">How it ran</p>
     <h2>Seven phases. Each one had to pass a gate.</h2>
-    <p class="muted" style="margin:0">Watch the climber go from Discover to go-live. Each step had a gate to pass first; open any step to see the work.</p>
+    <p class="muted" style="margin:0">Watch the climber go from Discover to go-live. Click any step for the short version; the full page is one click further.</p>
     <div class="stairs" id="stairs" style="margin-top:22px"></div>
     <button class="linkbtn" type="button" id="climbAgain" style="margin-top:6px">Climb again</button>
-    <div class="card detail" id="stairsPanel"></div>
+    <div class="card detail tour" id="stairsPanel" aria-live="polite"></div>
   </div>
 </section>
 
@@ -111,10 +102,10 @@
 
 <footer data-footer></footer>
 
-<script src="assets/data.js?v=20261029"></script>
-<script src="assets/site.js?v=20261029"></script>
+<script src="assets/data.js?v=2026102903"></script>
+<script src="assets/site.js?v=2026102903"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/characters.js?v=20261029"></script>
+<script src="assets/characters.js?v=2026102903"></script>
 <script>
   const { D, money, pct, doc, stairs, delivered } = Site;
   const opt = Object.fromEntries(D.options.map(o => [o.key, o]));
@@ -130,10 +121,7 @@
   show("sentry");
   Characters.mountCast(document.getElementById("hero"), ["sentry", "lens", "foresight", "rulebook", "snooze"], { onSelect: show });
 
-  document.getElementById("shortList").innerHTML = Site.PHASES.map((p, i) =>
-    `<a href="phases/${p.slug}.html"><span class="n">0${i + 1}</span><span class="p">${p.name}</span><span class="a">${p.answer}</span><span class="arr">→</span></a>`).join("");
-
-  stairs(document.getElementById("stairs"), { link: true, auto: true, replay: document.getElementById("climbAgain"), panel: document.getElementById("stairsPanel") });
+  stairs(document.getElementById("stairs"), { link: true, tour: true, auto: true, replay: document.getElementById("climbAgain"), panel: document.getElementById("stairsPanel") });
 
   document.getElementById("decisionCards").innerHTML = [
     [`${money(D.value.annual_net)} → ${money(D.published.net)}`, "Planned on published studies, not the model test on synthetic data.", "business-case"],
