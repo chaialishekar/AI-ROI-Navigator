@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/style.css?v=2026102909">
+  <link rel="stylesheet" href="../assets/style.css?v=2026102911">
 </head>
 <body data-root="..">
 <nav class="nav" data-nav></nav>
@@ -89,21 +89,18 @@
 <section id="details" hidden>
   <div class="wrap">
     <p class="eyebrow">The details</p>
-    <h2>What if my guesses are wrong? Try it.</h2>
-    <p class="muted" style="margin:0 0 18px;max-width:680px">Everything on this page rests on my guesses about the plant's costs. Change one, and see whether the AI still pays and whether the board would still sign.</p>
+    <h2 style="margin-bottom:18px">What if my guesses are wrong? Try it.</h2>
     <div class="card">
-      <div class="step-h"><span class="num">1</span><div><b>Change an assumption</b><div class="small">Click any of these, one or several. Each changes one number and keeps your other changes.</div></div></div>
+      <div class="step-h"><span class="num">1</span><div><b>Change an assumption</b></div></div>
       <div class="try" id="dTry"></div>
       <div class="step-h"><span class="num">2</span><div><b>The result</b><div class="small" id="dNow"></div></div>
         <button class="linkbtn" type="button" id="dReset" style="margin-left:auto" hidden>Back to my assumptions</button></div>
-      <div class="out" id="dOut" style="margin-top:10px"></div>
-      <p class="muted" style="margin:16px 0 0" id="dSay"></p>
-      <div class="step-h"><span class="num">3</span><div><b>Would the board sign off?</b><div class="small">How three executives react to your numbers. A concern often comes with a fix you can try in one click.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
+      <div class="out three" id="dOut" style="margin-top:10px"></div>
+      <div class="step-h"><span class="num">3</span><div><b>Would the board sign off?</b></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
       <div class="callout" id="dVsRules" style="margin:0 0 12px"></div>
       <div class="board" id="dBoard" aria-live="polite"></div>
       <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
-      <p class="small" style="margin:6px 0 0">One worry is not a number here: the COO also wants the <span data-v="readiness.weakest.length"></span> readiness gaps closed before go-live. That is about people and process, so it is on the <a href="readiness.html">Readiness page</a>. The reactions are fixed rules, not a live AI. The ✓/✗ checks under each one are the same exit checks the pilot has to pass on <a href="deliver.html">Deliver</a>.</p>
-      <div class="step-h"><span class="num">4</span><div><b>Where does the winner flip?</b><div class="small">Net savings a year as the cost of a breakdown changes, everything else as set above. Doc uses its break-even alert level at each cost. Click the chart to try that cost.</div></div></div>
+      <div class="step-h"><span class="num">4</span><div><b>Where does the winner flip?</b></div></div>
       <div class="flip">
         <div class="flip-h"><label class="small flip-f"><span>Crew acts on <b id="dFollowTxt">100%</b> of the rules' alerts</span><input type="range" id="dFollow" min="50" max="100" step="5" value="100"></label></div>
         <div class="legend" style="margin-top:10px"><span><i class="sw" style="background:var(--teal)"></i>Doc (AI)</span><span><i class="sw" style="background:var(--warn)"></i>Manual's rules (no AI)</span></div>
@@ -135,10 +132,10 @@
 <section data-pager></section>
 <footer data-footer></footer>
 
-<script src="../assets/data.js?v=2026102909"></script>
-<script src="../assets/site.js?v=2026102909"></script>
+<script src="../assets/data.js?v=2026102911"></script>
+<script src="../assets/site.js?v=2026102911"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="../assets/characters.js?v=2026102909"></script>
+<script src="../assets/characters.js?v=2026102911"></script>
 <script>
   const { D, money, pct, months, phaseHead } = Site;
   phaseHead(2);
@@ -205,16 +202,16 @@
     const calm = [...Array(99).keys()].map(k => (k + 1) / 100).find(t => { const v = value(c, t); return v.false_alarms <= 52 && v.precision >= 0.5; });
     const toCalm = calm && calm > level ? { label: `Apply: raise the alert level to ${Math.round(calm * 100)}%`, level: calm } : null;
     const setup = c.deployment_cost + (c.change_cost || 0), maxSetup = Math.floor((18 - c.months_to_deploy) * r.net / 12 / 5000) * 5000;
-    const cfo = r.net <= 0 ? ["blocks", `It loses ${usd(-r.net)} a year at these costs. I can't take that to the board.`, null]
-      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${usd(setup)} one-time cost or show more savings.`,
-          maxSetup > (c.change_cost || 0) ? { label: `Apply: cap setup and integration at ${usd(maxSetup - (c.change_cost || 0))}`, set: { deployment_cost: maxSetup - (c.change_cost || 0) } } : null]
-      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${usd(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
+    const cfo = r.net <= 0 ? ["blocks", `It loses ${money(-r.net)} a year at these costs. I can't take that to the board.`, null]
+      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${money(setup)} one-time cost or show more savings.`,
+          maxSetup > (c.change_cost || 0) ? { label: `Apply: cap setup and integration at ${money(maxSetup - (c.change_cost || 0))}`, set: { deployment_cost: maxSetup - (c.change_cost || 0) } } : null]
+      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${money(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
       : c.running_cost > 0.35 * gross ? ["concerns", `Running costs eat ${Math.round(c.running_cost / gross * 100)}% of the gross saving. I want a fixed-price contract before I sign.`,
-          { label: `Apply: negotiate running cost to ${usd(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
+          { label: `Apply: negotiate running cost to ${money(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
       : r.payback > 12 ? ["concerns", `${r.payback.toFixed(1)} months to pay back. Fine, but release the money in stages: one production line first.`,
           { label: "See the staged rollout in Decide →", href: "decide.html" }]
-      : rv.net > r.net ? ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. The manual's rules would net ${usd(rv.net - r.net)} more on paper, so I'm backing Doc only on the COO's word that crews won't act on ${Math.round(rv.false_alarms)} false alarms a year.`]
-      : ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. I'll still budget on the published studies, not the model test, and treat the rest as upside.`];
+      : rv.net > r.net ? ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${money(r.net)} a year. The rules save ${money(rv.net - r.net)} more on paper. I back Doc only because crews would ignore ${Math.round(rv.false_alarms)} false alarms a year.`]
+      : ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${money(r.net)} a year. I'll still budget on the published studies, not the model test, and treat the rest as upside.`];
     const coo = r.precision < 0.3 ? ["blocks", `Only ${Math.round(r.precision * 100)}% of alerts are real. My crew will stop answering them inside a month.`, toCalm]
       : wk > 1 ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is more than one a week. Expect technicians to start ignoring it.`, toCalm]
       : r.precision < 0.5 ? ["concerns", `Half the alerts are wrong (${Math.round(r.precision * 100)}% real). Show the reason with each one, or trust goes.`, toCalm]
@@ -222,7 +219,7 @@
       : ["backs", `About ${Math.round(r.false_alarms)} false alarms a year, one every ${Math.round(52 / Math.max(r.false_alarms, 0.1))} weeks. My crew can work with that if alerts land in the maintenance system.`];
     const cto = r.recall < 0.6 ? ["blocks", `At a ${Math.round(level * 100)}% alert level it catches only ${Math.round(r.recall * 100)}% of breakdowns. We'd be paying for a model and still missing most failures.`, level > be ? toBe : null]
       : r.recall < 0.8 ? ["concerns", `Tuned this cautiously, it misses ${Math.round((1 - r.recall) * 100)}% of breakdowns. Lower the alert level before go-live.`, level > be ? toBe : null]
-      : c.running_cost < 30000 ? ["concerns", `${usd(c.running_cost)} a year won't cover monitoring and retraining. The model will drift and nobody will notice.`,
+      : c.running_cost < 30000 ? ["concerns", `${money(c.running_cost)} a year won't cover monitoring and retraining. The model will drift and nobody will notice.`,
           { label: "Apply: budget $30,000 a year for monitoring", set: { running_cost: 30000 } }]
       : ["backs", `Catches ${Math.round(r.recall * 100)}% on the test. The data is synthetic, so I want the 3-month catch rate monitored from day one.`];
     const tests = {
@@ -327,11 +324,9 @@
       <circle cx="${X(h[0])}" cy="${Y(h[2])}" r="4.5" class="dot rules"/><circle cx="${X(h[0])}" cy="${Y(h[1])}" r="4.5" class="dot doc"/>
     </svg>`;
     flipPts = pts; flipX = X;
-    const crew = follow < 1 ? ` if the crew acts on ${pct(follow)} of the rules' alerts` : " when the crew acts on every rule alert";
-    const at = `At ${money(h[0])} a breakdown${hover ? "" : " (your number)"}: Doc ${money(h[1])} a year, the rules ${money(h[2])}. <b>${h[1] >= h[2] ? "Doc saves more" : "The rules save more"}.</b>`;
-    const ends = pts[pts.length - 1][2] > pts[pts.length - 1][1];
-    const sum = !flips.length ? ` Across this whole range, ${ends ? "the rules" : "Doc"} wins${crew}.`
-      : ` Below ${money(flips[flips.length - 1])} a breakdown ${ends ? "Doc" : "the rules"} saves more; above it ${ends ? "the rules do" : "Doc does"}${crew}. Pricier breakdowns reward whichever catches more, and on paper the rules catch more; skipped alerts are what hand the win back to Doc.`;
+    const ends = pts[pts.length - 1][2] > pts[pts.length - 1][1], m = flips.length ? money(flips[flips.length - 1]) : "";
+    const at = `<b>At ${money(h[0])}: ${h[1] >= h[2] ? "Doc" : "the rules"} save${h[1] >= h[2] ? "s" : ""} more.</b> `;
+    const sum = !flips.length ? `${ends ? "The rules win" : "Doc wins"} at every cost shown.` : `Doc wins below ${m}, the rules above it.`;
     document.getElementById("dFlipTxt").innerHTML = at + sum;
   }
   const nearest = e => { const r = flipEl.getBoundingClientRect(), x = e.clientX - r.left;
@@ -347,21 +342,18 @@
     if (auto) lvl.value = Math.round(breakEven(c) * 100);
     const level = lvl.value / 100, r = value(c, level), diff = changes(c);
     document.querySelectorAll("#dTry .chip").forEach((b, i) => b.classList.toggle("on", isOn(TRY[i][1])));
-    document.getElementById("dNow").textContent = diff.length ? `Changed: ${diff.join("; ")}.` : "Using my assumptions. Click a what-if above to change one.";
+    document.getElementById("dNow").textContent = diff.length ? `Changed: ${diff.join("; ")}.` : "";
     document.getElementById("dReset").hidden = !diff.length;
     document.getElementById("dLevelTxt").textContent = `${lvl.value}%`;
     document.getElementById("dLevelNote").textContent = auto ? "Break-even: where the expected saving from an early catch outweighs the inspection." : `Break-even would be ${pct(breakEven(c))}.`;
     document.getElementById("dOut").innerHTML = [
-      ["Net savings a year", usd(r.net)], ["Pays for itself in", months(r.payback)], ["Net over 3 years", usd(r.three_year)],
-      ["Breakdowns caught", pct(r.recall), `${r.false_alarms.toFixed(1)} false alarms a year`]]
+      ["Net savings a year", money(r.net)], ["Pays for itself in", months(r.payback)],
+      ["Breakdowns caught", pct(r.recall), `about ${Math.round(r.false_alarms)} false alarms a year`]]
       .map(([a, b, n]) => `<div class="card tight" style="background:var(--page)"><div class="label">${a}</div><div class="stat sm">${b}</div>${n ? `<div class="small">${n}</div>` : ""}</div>`).join("");
-    document.getElementById("dSay").textContent = r.net > 0
-      ? `Catches ${r.caught.toFixed(1)} of ${c.failures_per_year} breakdowns a year and misses ${r.missed.toFixed(1)}; ${pct(r.precision)} of its alerts are real.`
-      : "At these costs the AI costs more than it saves.";
-    const rv = rulesNow(c), gap = rv.net - r.net, crew = follow < 1 ? `, with the crew acting on ${pct(follow)} of their alerts` : " on paper";
-    document.getElementById("dVsRules").innerHTML = `<div class="label">Against the option with no AI</div>` + (gap > 0
-      ? `<span class="tag warn" style="margin-top:8px">The no-AI option beat the AI</span><p style="margin:8px 0 0"><b>The manual's rules save ${usd(gap)} a year more${crew}</b> (${usd(rv.net)} against Doc's ${usd(r.net)}), charged the same running and setup costs. The catch: ${Math.round(rv.false_alarms)} false alarms a year against Doc's ${Math.round(r.false_alarms)}, and only ${pct(rv.precision)} of their alerts are real. The board below backs Doc because of that trade-off, not because Doc saves more.</p>`
-      : `<span class="tag good" style="margin-top:8px">The AI beat the no-AI option</span><p style="margin:8px 0 0"><b>Doc saves ${usd(-gap)} a year more than the manual's rules${crew}</b>, and raises ${Math.round(r.false_alarms)} false alarms a year against their ${Math.round(rv.false_alarms)}.</p>`);
+    const rv = rulesNow(c), gap = rv.net - r.net, crew = follow < 1 ? ` (crew acting on ${pct(follow)} of their alerts)` : "";
+    document.getElementById("dVsRules").innerHTML = gap > 0
+      ? `<span class="tag warn">No-AI option saves more</span> The rules save <b>${money(gap)} more</b>${crew}, but raise <b>${Math.round(rv.false_alarms)} false alarms</b> a year to Doc's ${Math.round(r.false_alarms)}.`
+      : `<span class="tag good">AI saves more</span> Doc saves <b>${money(-gap)} more</b> than the rules${crew}.`;
     const b = board(c, r, level), MOOD = { backs: ["good", "Backs it"], concerns: ["warn", "Has concerns"], blocks: ["bad", "Blocks it"] };
     document.getElementById("dBoard").innerHTML = b.map((p, i) => `<div class="seat ${p.mood}"><div class="who"><span class="av">${p.role}</span>
       <b>${p.who}</b><span class="tag ${MOOD[p.mood][0]}">${MOOD[p.mood][1]}</span></div>
