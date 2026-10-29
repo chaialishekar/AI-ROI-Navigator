@@ -38,6 +38,18 @@
   </div>
 </div>
 
+<section id="explore">
+  <div class="wrap reveal">
+    <p class="eyebrow">Explore it 3 ways</p>
+    <h2>Read the case, try the model, or check the evidence.</h2>
+    <div class="grid g3">
+      <a class="card" style="text-decoration:none" href="phases/discover.html"><h3>Explore the case</h3><p class="muted" style="margin:0">Seven short pages, one per phase: what I did, what I found, what was decided.</p></a>
+      <a class="card" style="text-decoration:none" id="appCard" target="_blank" rel="noopener"><h3>Try the decision model ↗</h3><p class="muted" style="margin:0">Change the plant's costs and watch the recommendation move.</p></a>
+      <a class="card" style="text-decoration:none" id="docsCard" target="_blank" rel="noopener"><h3>Inspect the evidence ↗</h3><p class="muted" style="margin:0">PRD, requirements, 13 acceptance tests, the two-page decision brief and the code.</p></a>
+    </div>
+  </div>
+</section>
+
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">Why it matters</p>
@@ -85,17 +97,6 @@
   </div>
 </section>
 
-<section>
-  <div class="wrap reveal">
-    <p class="eyebrow">Explore it 3 ways</p>
-    <h2>Read it, run it, or check the paperwork.</h2>
-    <div class="grid g3">
-      <a class="card" style="text-decoration:none" href="phases/discover.html"><h3>The story</h3><p class="muted" style="margin:0">Seven short pages, one per phase: what I did, what I found, what was decided.</p></a>
-      <a class="card" style="text-decoration:none" id="appCard" target="_blank" rel="noopener"><h3>The live analysis ↗</h3><p class="muted" style="margin:0">Change the plant's costs and watch the recommendation move.</p></a>
-      <a class="card" style="text-decoration:none" id="docsCard" target="_blank" rel="noopener"><h3>The documents ↗</h3><p class="muted" style="margin:0">PRD, requirements, 13 acceptance tests, two-page decision brief.</p></a>
-    </div>
-  </div>
-</section>
 
 <footer data-footer></footer>
 
@@ -109,14 +110,14 @@
   const HERO = {
     sentry: `Warns before a machine breaks. ${money(opt.sentry.net3)} over 3 years, ${opt.sentry.strength.toLowerCase()} evidence. Funded first, as a pilot.`,
     lens: `Looks like ${money(opt.lens.net3)}, but that's the vendor's own number. Falls to ${money(opt.lens.net3_cautious)} on cautious figures.`,
-    oracle: `Solid evidence, small payoff: ${money(opt.oracle.net3)} over 3 years. Loses money on cautious figures.`,
+    foresight: `Solid evidence, small payoff: ${money(opt.foresight.net3)} over 3 years. Loses money on cautious figures.`,
     rulebook: `No AI at all. Saves ${money(D.rules.annual_net)} a year, but raises ~${Math.round(D.rules.false_alarms)} false alarms a year.`,
     snooze: `Free today. Breakdowns keep costing the plant ${money(D.costs.failures_per_year * D.costs.cost_missed)} a year.`,
   };
   const pop = document.getElementById("heroPop");
   const show = k => { const c = Characters.DEFS[k]; pop.innerHTML = `<b>${c.name}</b> <span class="muted">· ${c.role}</span><div class="muted" style="font-size:15px;margin-top:4px">${HERO[k]}</div>`; };
   show("sentry");
-  Characters.mountCast(document.getElementById("hero"), ["sentry", "lens", "oracle", "rulebook", "snooze"], { onSelect: show });
+  Characters.mountCast(document.getElementById("hero"), ["sentry", "lens", "foresight", "rulebook", "snooze"], { onSelect: show });
 
   stairs(document.getElementById("stairs"), { link: true, panel: document.getElementById("stairsPanel") });
 

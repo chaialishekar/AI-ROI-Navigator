@@ -39,8 +39,8 @@ window.CASE = {
    "months": 2.0,
    "evidence": "Analyst research",
    "strength": "Medium",
-   "source": "McKinsey: 30-50% less downtime in mature programs (cited in Reliability Magazine's benchmark review); also tested on real machine data in the worked example",
-   "source_url": "https://reliamag.com/topics/guides/predictive-maintenance-roi-benchmarks-what-the-studies-show"
+   "source": "McKinsey (2017), Manufacturing: Analytics unleashes productivity and profitability: predictive maintenance typically cuts machine downtime 30-50%. 20% used as the cautious low end for a first-year program; also tested on public, synthetic machine data in the worked example",
+   "source_url": "https://www.mckinsey.com/capabilities/operations/our-insights/manufacturing-analytics-unleashes-productivity-and-profitability"
   },
   {
    "key": "lens",
@@ -61,11 +61,11 @@ window.CASE = {
    "months": 4.0,
    "evidence": "Vendor-reported",
    "strength": "Weaker",
-   "source": "BMW AIQX program: 30-40% fewer defects reported (vendor write-up, not BMW's own figures)",
+   "source": "BMW AIQX program: 30-40% fewer defects reported (vendor write-up, not BMW's own figures). McKinsey (2017) reports AI can raise defect detection by up to 90%, but that is detection, not scrap savings",
    "source_url": "https://tech-stack.com/blog/visual-ai-reduces-defects-boosts-manufacturing-yield/"
   },
   {
-   "key": "oracle",
+   "key": "foresight",
    "solution": "Demand and supply forecasting",
    "does": "Forecasts part demand to plan production and stock",
    "problem": "Shortages",
@@ -83,8 +83,8 @@ window.CASE = {
    "months": 4.0,
    "evidence": "Analyst research",
    "strength": "Medium",
-   "source": "McKinsey: forecast errors 20-50% lower (secondary citation); costs assumed to fall about half as much",
-   "source_url": "https://spd.tech/artificial-intelligence/ai-demand-forecasting/"
+   "source": "McKinsey (2017), Smartening up with artificial intelligence, p. 9: forecasting errors 20-50% lower; costs assumed to fall about half as much",
+   "source_url": "https://www.mckinsey.com/industries/semiconductors/our-insights/smartening-up-with-artificial-intelligence"
   }
  ],
  "costs": {

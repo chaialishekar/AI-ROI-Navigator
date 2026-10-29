@@ -74,14 +74,14 @@
   const SHORT = {
     sentry: "Predictive maintenance. Chosen: pilot on one line once the readiness gaps are closed.",
     lens: "Visual inspection. Second on value, but resting on a vendor's claim. Revisit after the pilot.",
-    oracle: "Demand forecasting. Loses money on cautious figures. Not now.",
+    foresight: "Demand forecasting. Loses money on cautious figures. Not now.",
     rulebook: `The manual's rules. Kept alongside the AI to explain each warning, not instead of it.`,
     snooze: "Do nothing. Rejected: it keeps the plant's losses exactly where they are.",
   };
   const pop = document.getElementById("pop");
   const show = k => { pop.innerHTML = `<b>${Characters.DEFS[k].name}</b> <span class="muted">· ${SHORT[k]}</span>`; };
   show("sentry");
-  Characters.mountCast(document.getElementById("all"), ["sentry", "lens", "oracle", "rulebook", "snooze"], { onSelect: show });
+  Characters.mountCast(document.getElementById("all"), ["sentry", "lens", "foresight", "rulebook", "snooze"], { onSelect: show });
 
   const RULES = [["Stop", "Expected savings are not positive"],
     ["Revise", "Savings turn negative if costs are worse than expected, or the team is not ready"],

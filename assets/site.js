@@ -4,6 +4,8 @@
   const REPO = "https://github.com/chaialishekar/AI-ROI-Navigator";
   // Public URL of the Streamlit app. Until it is set, "live analysis" links go to the repository.
   const APP_URL = "https://ai-roi-navigator-lwqttyuudthdtcwenmycja.streamlit.app";
+  // Chaitali's Substack post on revisiting AI decisions. Links to it stay hidden until it is set.
+  const ESSAY = { url: null, title: "AI's Hidden Problem: Nobody Revisits the Original Decision" };
   const ROOT = document.body.dataset.root || ".";
 
   const money = (x, digits) => {
@@ -59,6 +61,7 @@
         <p class="muted" style="margin:6px 0 0">AI business systems analysis, end to end.</p>
         <p class="small" style="margin:10px 0 0">Client costs and provider prices are estimates. The model is tested on a public, synthetic dataset. The year after launch is simulated.</p></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${ESSAY.url ? `<a class="btn ghost" href="${ESSAY.url}" target="_blank" rel="noopener">Read my writing ↗</a>` : ""}
         <a class="btn ghost" href="${REPO}" target="_blank" rel="noopener">View the code</a>
         <a class="btn" href="${app("")}" target="_blank" rel="noopener">Open the live analysis ↗</a></div></div>`;
   }
@@ -183,5 +186,5 @@
 
   nav(); footer(); fillValues();
   document.addEventListener("DOMContentLoaded", reveal);
-  window.Site = { D, PHASES, REPO, money, pct, months, doc, app, stairs, phaseHead, delivered };
+  window.Site = { D, PHASES, REPO, ESSAY, money, pct, months, doc, app, stairs, phaseHead, delivered };
 })();

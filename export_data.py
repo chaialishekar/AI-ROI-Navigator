@@ -30,7 +30,7 @@ EXAMPLE_PILOT = {"Data": [4, 4], "Fits how people work": [2, 2], "Clear payoff":
 LEAK_SHORT = {"Unplanned machine downtime": "Downtime", "Scrap, rework and warranty defects": "Scrap and rework",
               "Shortages, expediting and excess inventory": "Shortages"}
 CHARACTER = {"Predictive maintenance": "sentry", "Visual defect inspection": "lens",
-             "Demand and supply forecasting": "oracle"}
+             "Demand and supply forecasting": "foresight"}
 
 
 def num(x):
