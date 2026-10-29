@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css?v=2026102904">
+  <link rel="stylesheet" href="assets/style.css?v=2026102909">
 </head>
 <body data-root=".">
 <nav class="nav" data-nav></nav>
@@ -17,96 +17,92 @@
   <div class="wrap">
     <p class="eyebrow">The ROI Compass · an AI business case, end to end</p>
     <h1>Should we invest in AI,<br class="br-lg"> or is there a better way?</h1>
-    <p class="lead">In recent conversations with people in the industry, one topic kept coming up: AI libraries, the
-      tools companies build, sell and buy to automate work. We all know AI makes automation easier. I kept wondering
-      whether it pays, and whether <em>not</em> automating is sometimes the cheaper choice. So I took one plant and
-      found out.</p>
+    <p class="lead">Every AI business case is written before the real data exists. This one shows how to decide
+      anyway: price the guesses, test them against a no-AI option, plan on published results, and check a year later.
+      One example factory, losing $3.7M a year, worked through end to end.</p>
   </div>
   <div class="cast hero" id="hero"></div>
   <div class="wrap"><div class="pop" id="heroPop"></div>
     <p class="small" style="margin:8px 0 0">Five ways to deal with the plant's losses. Tap or hover the contenders.</p></div>
 </header>
 
-<div class="wrap">
-  <div class="sources" style="margin-top:40px;border-top:1px solid var(--line)">
-    <span class="small" style="letter-spacing:.09em;text-transform:uppercase">Grounded in</span>
-    <a href="https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles" target="_blank" rel="noopener">IBM</a>
-    <a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-2025" target="_blank" rel="noopener">McKinsey</a>
-    <a href="https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value" target="_blank" rel="noopener">BCG</a>
-    <a href="https://www.gartner.com/en/newsroom/press-releases/gartner-survey-finds-only-22-percent-of-organizations-have-successfully-scaled-ai-across-multiple-business-units" target="_blank" rel="noopener">Gartner</a>
-    <a href="https://www.pwc.com/gx/en/issues/c-suite-insights/ceo-survey.html" target="_blank" rel="noopener">PwC</a>
-    <a href="https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset" target="_blank" rel="noopener">UCI</a>
-  </div>
-</div>
-
-<section id="explore">
+<section class="tight-top">
   <div class="wrap reveal">
-    <p class="eyebrow">Explore it 3 ways</p>
-    <h2>Read the case, try the model, or check the evidence.</h2>
-    <div class="grid g3">
-      <a class="card" style="text-decoration:none" href="phases/discover.html"><h3>Explore the case</h3><p class="muted" style="margin:0">Seven short pages, one per phase: what I did, what I found, what was decided.</p></a>
-      <a class="card" style="text-decoration:none" href="phases/business-case.html#details"><h3>Try the model</h3><p class="muted" style="margin:0">Change the plant's costs and the alert level; savings update and the CFO, COO and CTO react.</p></a>
-      <a class="card" style="text-decoration:none" id="docsCard" target="_blank" rel="noopener"><h3>Inspect the evidence ↗</h3><p class="muted" style="margin:0">PRD, requirements, 13 acceptance tests, the two-page decision brief and the code.</p></a>
+    <div class="trio">
+      <div><div class="stat" data-v="value.annual_net" data-f="money"></div><p>a year, what the AI model predicted on 3,000 test records</p></div>
+      <div><div class="stat" data-v="published.net" data-f="money"></div><p>a year, what finance planned on, from published studies</p></div>
+      <div><div class="stat accent" data-v="tracking.delivered" data-f="money"></div><p>delivered in the first year (simulated): the plan was beaten, the model wasn't</p></div>
+    </div>
+    <div class="cta-row">
+      <a class="btn" href="phases/discover.html">Read the case: 7 short pages</a>
+      <a class="btn ghost" href="phases/business-case.html#details">Try the calculator</a>
+      <a class="btn ghost" id="repoLink" target="_blank" rel="noopener">Code and documents ↗</a>
+    </div>
+    <p class="small context">An example plant: public machine data (synthetic), costs anchored to public sources, a simulated first year.
+      <a href="phases/business-case.html#sources">Where the numbers come from →</a></p>
+  </div>
+</section>
+
+<section id="where">
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this problem shows up</p>
+    <h2>Machines break without warning everywhere. Alarms get ignored too.</h2>
+    <p class="body">Spending on AI keeps rising, yet <a href="https://www.pwc.com/gx/en/issues/c-suite-insights/the-leadership-agenda/ceo-survey-ai.html" target="_blank" rel="noopener">56% of CEOs</a> saw no significant financial benefit from it last year (PwC, 2026), and
+      <a href="https://www.deloitte.com/global/en/issues/ai/ai-roi-the-paradox-of-rising-investment-and-elusive-returns.html" target="_blank" rel="noopener">a typical AI project takes 2–4 years to pay back</a> (Deloitte, 2025). Unplanned breakdowns are one of the places companies are betting it will.</p>
+    <div class="where">
+      <div><div class="label">Car plants</div><p>An hour of unplanned downtime in a large automotive plant costs <b>$2.3M</b>.</p><span class="small"><a href="https://assets.new.siemens.com/siemens/assets/api/uuid:1b43afb5-2d07-47f7-9eb7-893fe7d0bc59/TCOD-2024_original.pdf" target="_blank" rel="noopener">Siemens, True Cost of Downtime 2024</a></span></div>
+      <div><div class="label">Food plants</div><p>Purina reported avoiding <b>277 hours</b> of unplanned downtime in 2024 with machine monitoring.</p><span class="small"><a href="https://www.augury.com/blog/asset-care/predictive-maintenance-in-manufacturing/" target="_blank" rel="noopener">Augury, the vendor</a></span></div>
+      <div><div class="label">Heavy industry</div><p>Researchers monitoring a coal plant and a steelworks built a way to cut false alarms by <b>90%</b>, then ran it in the real plants.</p><span class="small"><a href="https://www.mdpi.com/1424-8220/22/1/226" target="_blank" rel="noopener">Sensors journal, 2022</a></span></div>
+      <div><div class="label">Rail</div><p>Porto's metro had train air compressors fail in service, and published the sensor data with failures confirmed by its own maintenance reports.</p><span class="small"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9747912" target="_blank" rel="noopener">Scientific Data, 2022</a></span></div>
+      <div><div class="label">Hospitals: ignored alarms</div><p><b>80 deaths</b> in alarm-related events (2009–2012); alarm fatigue was the most common factor.</p><span class="small"><a href="https://digitalassets.jointcommission.org/api/public/content/f65e5c9df2b94000a99445e0a7877007" target="_blank" rel="noopener">The Joint Commission, 2013</a></span></div>
+      <div><div class="label">All US manufacturing</div><p><b>$119B</b> lost in 2016 to maintenance problems that were preventable.</p><span class="small"><a href="https://www.nist.gov/el/applied-economics-office/manufacturing-machinery-maintenance" target="_blank" rel="noopener">NIST, 2020</a></span></div>
     </div>
   </div>
 </section>
 
-<section>
-  <div class="wrap reveal">
-    <p class="eyebrow">Why it matters</p>
-    <h2>Most AI spending can't show a return yet.</h2>
-    <p class="muted" style="margin:-6px 0 18px;max-width:680px">Background, not inputs: these surveys explain why the question matters. None of their numbers go into the model; every figure in the case is priced for one plant.</p>
-    <div class="grid g3">
-      <div class="card"><div class="stat">25%</div><p class="muted" style="margin:0">of AI initiatives delivered the return expected of them.</p><p class="small" style="margin:8px 0 0">IBM CEO Study, 2,000 CEOs, 2025</p></div>
-      <div class="card"><div class="stat">39%</div><p class="muted" style="margin:0">of organisations report any profit impact from AI at all.</p><p class="small" style="margin:8px 0 0">McKinsey, The State of AI, 2025</p></div>
-      <div class="card"><div class="stat">70%</div><p class="muted" style="margin:0">of AI leaders' effort goes into people and process, not algorithms.</p><p class="small" style="margin:8px 0 0">BCG, Where's the Value in AI?, 2024</p></div>
+<section id="twist">
+  <div class="wrap reveal narrow">
+    <p class="eyebrow">The twist</p>
+    <h2>The simple rules saved more on paper. The AI still won.</h2>
+    <p class="body">The maintenance manual's rules, with no AI at all, save <b id="twRules"></b> a year on paper, a little more than the AI's
+      <b id="twAi"></b>. But they raise far more false alarms, and crews stop answering alarms that are usually wrong.</p>
+    <div class="vs">
+      <div><div class="label">Manual's rules</div><div class="stat sm" id="twRulesFa"></div><p>false alarms a year · <span id="twRulesReal"></span> of alerts real</p></div>
+      <div><div class="label">The AI (Doc)</div><div class="stat sm accent" id="twAiFa"></div><p>false alarms a year · <span id="twAiReal"></span> of alerts real</p></div>
     </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap reveal">
-    <p class="eyebrow">The setup</p>
-    <h2>One plant. One AI funded first. Checked a year later.</h2>
-    <div class="grid g3">
-      <div class="card"><div class="label">At stake</div><div class="stat" data-v="plant.total" data-f="money"></div><div class="small">a year in losses · <span class="tag warn">estimated</span></div></div>
-      <div class="card"><div class="label">Planned savings</div><div class="stat" data-v="published.net" data-f="money"></div><div class="small">a year, from published studies · <span class="tag good">published</span></div></div>
-      <div class="card"><div class="label">Delivered in year 1</div><div class="stat" data-v="tracking.delivered" data-f="money"></div><div class="small">against the <span data-v="tracking.plan" data-f="money"></span> plan · <span class="tag warn">simulated</span></div></div>
-    </div>
-    <div class="grid g3" style="margin-top:14px">
-      <div class="card tight"><div class="label">Provider</div><b>An AI vendor selling 9 tools to manufacturers, telecoms and banks</b> <span class="tag warn">example</span></div>
-      <div class="card tight"><div class="label">Client</div><b>One machining plant of a tier-1 auto-parts supplier</b> <span class="tag warn">example</span></div>
-      <div class="card tight"><div class="label">Data</div><b>UCI AI4I 2020, 10,000 machine records</b> <span class="tag good">public · synthetic</span></div>
-    </div>
+    <p class="body">If the crew skips even a few of the rules' alerts, the AI comes out ahead. <a href="phases/business-case.html#details">See where it flips →</a></p>
   </div>
 </section>
 
 <section id="phases">
   <div class="wrap reveal">
     <p class="eyebrow">How it ran</p>
-    <h2>Seven phases. Each one had to pass a gate.</h2>
-    <p class="muted" style="margin:0">Watch the climber go from Discover to go-live. Click any step for the short version; the full page is one click further.</p>
-    <div class="stairs" id="stairs" style="margin-top:22px"></div>
+    <h2>Seven phases, one answer each.</h2>
+    <div class="stairs" id="stairs" style="margin-top:18px"></div>
     <button class="linkbtn" type="button" id="climbAgain" style="margin-top:6px">Climb again</button>
-    <div class="card detail tour" id="stairsPanel" aria-live="polite"></div>
+    <ol class="answers" id="answers"></ol>
   </div>
 </section>
 
-<section id="decisions">
+<section id="built">
   <div class="wrap reveal">
-    <p class="eyebrow">Key decisions</p>
-    <h2>Where the analysis changed the answer.</h2>
-    <div class="grid g3" id="decisionCards"></div>
+    <p class="eyebrow">What I built</p>
+    <h2>Real data, a working model, documents a team could use.</h2>
+    <div class="built">
+      <div><h3>The model</h3><p>Gradient-boosted trees trained on 10,000 public machine records (UCI AI4I 2020), priced through a cost matrix of catches, misses and false alarms.</p></div>
+      <div><h3>The data path</h3><p>Monthly results land in Amazon S3 and flow through Databricks tables, so savings are tracked after launch.</p></div>
+      <div><h3>Two GenAI tests</h3><p>Drafting repair orders and reviewing a business case on Amazon Bedrock, each graded against known answers.</p></div>
+      <div><h3>The documents</h3><p>A PRD, requirements with 13 acceptance tests, and a two-page decision brief for finance. <a id="docsLink" target="_blank" rel="noopener">Read the PRD ↗</a></p></div>
+    </div>
   </div>
 </section>
-
 
 <footer data-footer></footer>
 
-<script src="assets/data.js?v=2026102904"></script>
-<script src="assets/site.js?v=2026102904"></script>
+<script src="assets/data.js?v=2026102909"></script>
+<script src="assets/site.js?v=2026102909"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/characters.js?v=2026102904"></script>
+<script src="assets/characters.js?v=2026102909"></script>
 <script>
   const { D, money, pct, doc, stairs, delivered } = Site;
   const opt = Object.fromEntries(D.options.map(o => [o.key, o]));
@@ -122,14 +118,15 @@
   show("sentry");
   Characters.mountCast(document.getElementById("hero"), ["sentry", "lens", "foresight", "rulebook", "snooze"], { onSelect: show });
 
-  stairs(document.getElementById("stairs"), { link: true, tour: true, auto: true, replay: document.getElementById("climbAgain"), panel: document.getElementById("stairsPanel") });
-
-  document.getElementById("decisionCards").innerHTML = [
-    [`${money(D.value.annual_net)} → ${money(D.published.net)}`, "Planned on published studies, not the model test on synthetic data.", "business-case"],
-    [`${money(opt.lens.net3)} → ${money(opt.lens.net3_cautious)}`, "The vendor's number for visual inspection, on cautious figures.", "evaluate"],
-    [`${Math.round(D.rules.false_alarms)} vs ${Math.round(D.value.false_alarms)}`, "False alarms a year: the manual's rules against the AI. Why the rules lost.", "decide"],
-  ].map(([n, t, p]) => `<a class="card" style="text-decoration:none" href="phases/${p}.html"><div class="stat sm">${n}</div><p class="muted" style="margin:6px 0 0">${t}</p></a>`).join("");
-  document.getElementById("docsCard").href = doc("docs/prd.md");
+  stairs(document.getElementById("stairs"), { link: true, auto: true, list: false, replay: document.getElementById("climbAgain") });
+  document.getElementById("answers").innerHTML = Site.PHASES.map((p, i) =>
+    `<li><a href="phases/${p.slug}.html"><span class="n">0${i + 1}</span><span><b>${p.name}</b><span class="q">${p.q}</span></span><span class="a">${p.answer}</span></a></li>`).join("");
+  const set = (id, t) => (document.getElementById(id).textContent = t);
+  set("twRules", money(D.rules.annual_net)); set("twAi", money(D.value.annual_net));
+  set("twRulesFa", Math.round(D.rules.false_alarms)); set("twAiFa", Math.round(D.value.false_alarms));
+  set("twRulesReal", pct(D.rules.precision)); set("twAiReal", pct(D.value.precision));
+  document.getElementById("docsLink").href = doc("docs/prd.md");
+  document.getElementById("repoLink").href = Site.REPO;
 </script>
 </body>
 </html>
