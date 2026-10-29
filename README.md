@@ -2,7 +2,19 @@
 
 > Which AI should a business buy first, and will it pay off?
 
-**See it:** [chaialishekar.github.io/AI-ROI-Navigator](https://chaialishekar.github.io/AI-ROI-Navigator/): seven short phase pages; "Show the details" on each opens the full working, and the Business case and Readiness pages let you change the inputs.
+[![Live site](https://img.shields.io/badge/Live_site-GitHub_Pages-0f6d74)](https://chaialishekar.github.io/AI-ROI-Navigator/)
+![Python](https://img.shields.io/badge/Python-3.12-111111)
+![Data](https://img.shields.io/badge/Data-UCI_AI4I_2020-6b6b6b)
+![GenAI](https://img.shields.io/badge/GenAI-Amazon_Bedrock-6b6b6b)
+
+**[Open the website](https://chaialishekar.github.io/AI-ROI-Navigator/)** · **[Try the model](https://chaialishekar.github.io/AI-ROI-Navigator/phases/business-case.html#details)** · **[Read the 2-page decision brief](docs/decision_brief_sample.pdf)** · **[PRD](docs/prd.md)** · **[Architecture](ARCHITECTURE.md)**
+
+**In one minute**
+- Prices every AI tool in a provider's library for one client in dollars, with the source and strength of each number, and checks whether the order holds on cautious figures.
+- Takes the top pick (predictive maintenance) through seven gated phases, from the problem to a year after go-live.
+- Tests it on 10,000 public machine records: **$658k a year** on the model test, **$290k** planned on published studies, **$464k** delivered in a simulated first year.
+- Compares the AI with doing nothing and with the maintenance manual's rules; the rules save more on paper but raise **~85 false alarms a year against ~13**.
+- On the website, change the plant's costs and see the savings update, compare options side by side, and watch a CFO, COO and CTO react, each concern with a fix you can apply.
 
 An end-to-end case study in **AI business systems analysis**: *should we invest in AI, or is there a better way?*
 
@@ -10,7 +22,7 @@ In recent conversations with people in the industry, one topic kept coming up: A
 
 **Why this matters:** in [IBM's 2025 CEO Study](https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles), only 25% of AI initiatives delivered the expected ROI, yet 65% of CEOs now pick AI use cases by ROI. [Gartner](https://www.gartner.com/en/newsroom/press-releases/gartner-survey-finds-only-22-percent-of-organizations-have-successfully-scaled-ai-across-multiple-business-units) (September 2026) found that firms which track AI ROI and drop weak projects saw positive returns on 81% of their AI initiatives. [BCG](https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value) found AI leaders put 70% of their effort into people and processes and only 10% into algorithms. More: [PwC 2026](https://www.pwc.com/gx/en/issues/c-suite-insights/ceo-survey.html) (56% of CEOs saw no revenue or cost benefit), [McKinsey 2025](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-2025) (39% report any profit impact). So the question is not whether to buy AI, but which tool first, how sure the numbers are, and how to prove it paid off.
 
-**My role:** independent project, built end to end by me: the business analysis, the financial model, the data pipeline, the AI tests and the app.
+**My role:** independent project, built end to end by me: the business analysis, the financial model, the data pipeline, the AI tests and the website.
 
 **The library:** 9 AI tools offered across 4 industries (`data/ai_library.csv`); the case covers its manufacturing clients, an auto-parts plant and a chip fab. For each tool: how much of a problem it removed elsewhere (low to high, with the source and how strong that evidence is), the provider's price, and the data it needs. Tools are compared only for one client, on the same rules, with a cautious view that shows when a tool wins only on optimistic numbers.
 
@@ -79,27 +91,25 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 - **Simple rules look as good as the AI here, and the reason matters.** Alerts built from the maintenance manual's limits catch 98% of breakdowns and save ~$721K, more than the AI's $658K, because AI4I 2020 is synthetic and its failures were generated from those same limits. They also raise **~85 false alarms a year against the AI's ~13** (31% of their alerts are real vs 73%), and crew trust is already the weakest readiness area. The case recommends the AI, keeps the manual's limits to explain each warning, and makes "pilot on one line and measure false alarms" a gate before scaling.
 - **The most accurate setting is not the most profitable.** Alerting at the cost break-even level instead of the usual 50% cut-off saves **~$20K more per year**, because a missed failure ($25K) costs far more than a false alarm ($500).
 
-**Overview** (the landing page)
+**The website** ([open it](https://chaialishekar.github.io/AI-ROI-Navigator/))
 
-![](docs/overview.png)
+![Home page](docs/site_home.png)
 
-| Evaluate options | Business case |
+| Seven phases, one gate each | Every option priced for one plant |
 |---|---|
-| ![](docs/tab1_compare.png) | ![](docs/tab2_prove_value.png) |
-| **Readiness** | **Decide** |
-| ![](docs/tab3_readiness.png) | ![](docs/tab4_business_case.png) |
+| ![Staircase](docs/site_staircase.png) | ![Evaluate options](docs/site_evaluate.png) |
 
-**Measure** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
+**The model you can change**, with the options side by side and the board's reactions (Business case → Show the details)
 
-![](docs/tab5_track_value.png)
+![Calculator](docs/site_calculator.png)
 
-**Experiment A · GenAI work orders** (measured on Amazon Bedrock)
+| Readiness, rated live | A year after go-live |
+|---|---|
+| ![Readiness](docs/site_readiness.png) | ![Measure](docs/site_measure.png) |
 
-![](docs/tab6_genai_pilot.png)
+**The GenAI experiments, scored** (Deliver → Show the details)
 
-**Experiment B · GenAI business-case review** (tested on Amazon Bedrock)
-
-![](docs/tab7_agents.png)
+![GenAI results](docs/site_genai.png)
 
 ## How it works
 - **Library ranking:** value a year = client's problem cost × published improvement (low / middle / high); net = value − running cost; 3-year net value = net × live months ÷ 12 − setup; each point of missing data quality adds 20% to setup and 2 months. Ranked on the middle (expected) or low end (cautious); a runner-up within 25% is flagged as a close call. Code: `src/library.py`.

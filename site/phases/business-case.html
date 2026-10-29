@@ -76,6 +76,9 @@
         <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button></div>
       <div class="out" id="dOut"></div>
       <p class="muted" style="margin:16px 0 0" id="dSay"></p>
+      <div class="board-head"><div><div class="label">Side by side</div><div class="small">The same costs applied to every option. Pin a setup to keep it while you try another.</div></div>
+        <button class="chip" type="button" id="dPin">Pin these settings</button></div>
+      <div class="tscroll"><table class="t cmp" id="dCmp"></table></div>
       <div class="board-head"><div><div class="label">The board reacts</div><div class="small">How three executives would respond to these numbers. A concern often comes with a fix you can apply in one click.</div></div><div class="small" id="dBoardSum"></div></div>
       <div class="board" id="dBoard" aria-live="polite"></div>
       <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
@@ -135,7 +138,7 @@
 </script>
 <script>
 (() => {
-  const { D, usd, pct, months, value, breakEven, board } = Site;
+  const { D, usd, pct, months, value, rulesValue, breakEven, board } = Site;
   const FIELDS = [["failures_per_year", "Breakdowns a year, no AI", 1], ["cost_missed", "Cost of a breakdown ($)", 500],
     ["cost_caught", "Planned repair when caught early ($)", 250], ["cost_false_alarm", "Inspection on a false alarm ($)", 50],
     ["running_cost", "Running the AI, a year ($)", 1000], ["deployment_cost", "One-time setup ($)", 5000], ["months_to_deploy", "Months to go live", 1]];
@@ -146,7 +149,19 @@
   const setTo = obj => Object.entries(obj).forEach(([k, v]) => { const i = box.querySelector(`[data-k=${k}]`); i.value = v; i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); });
   const applied = t => (document.getElementById("dApplied").textContent = t);
   function reset(redraw = true) { FIELDS.forEach(([k]) => (box.querySelector(`[data-k=${k}]`).value = D.costs[k])); auto = true; applied(""); if (redraw) draw(); }
-  let fixes = [];
+  let fixes = [], pins = [], lastTry = "";
+  // Side by side: do nothing, the manual's rules and the AI at today's settings, plus up to two pinned setups
+  function compare(c, level) {
+    const none = { net: 0, payback: null, three_year: 0, recall: 0, false_alarms: 0, precision: null, none: true };
+    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`AI, these settings`, value(c, level), `alert at ${Math.round(level * 100)}%`],
+      ...pins.map((p, k) => [p.label, value(p.c, p.level), `alert at ${Math.round(p.level * 100)}% <button class="linkbtn" type="button" data-unpin="${k}">remove</button>`])];
+    const best = Math.max(...cols.map(x => x[1].net));
+    const rows = [["Net savings a year", r => usd(r.net)], ["Pays for itself in", r => (r.none ? "–" : months(r.payback))],
+      ["Net over 3 years", r => usd(r.three_year)], ["Breakdowns caught", r => pct(r.recall)],
+      ["False alarms a year", r => r.false_alarms.toFixed(1)], ["Alerts that are real", r => (r.precision == null ? "–" : pct(r.precision))]];
+    document.getElementById("dCmp").innerHTML = `<tr><th></th>${cols.map(([t, , n], k) => `<th class="${k === 2 ? "now" : ""}">${t}<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">${n || "&nbsp;"}</div></th>`).join("")}</tr>`
+      + rows.map(([n, f], j) => `<tr><td>${n}</td>${cols.map(([, r], k) => `<td class="${k === 2 ? "now" : ""}">${j === 0 && r.net === best ? `<b>${f(r)}</b>` : f(r)}</td>`).join("")}</tr>`).join("");
+  }
   // Scenarios: each starts from my assumptions and changes one thing
   const TRY = [["Breakdowns cost less ($10k)", () => setTo({ cost_missed: 10000 })],
     ["Setup costs 4× more", () => setTo({ deployment_cost: D.costs.deployment_cost * 4 })],
@@ -155,7 +170,7 @@
   document.getElementById("dTry").innerHTML = TRY.map(([t], i) => `<button class="chip" type="button" data-try="${i}">${t}</button>`).join("");
   document.getElementById("dTry").addEventListener("click", e => {
     const i = e.target.dataset.try; if (i === undefined) return;
-    reset(false); TRY[i][1](); draw(); applied(`Scenario: ${TRY[i][0]}. Everything else is back to my assumptions.`);
+    reset(false); TRY[i][1](); lastTry = TRY[i][0]; draw(); applied(`Scenario: ${TRY[i][0]}. Everything else is back to my assumptions.`);
   });
   function draw() {
     const c = costs();
@@ -175,13 +190,24 @@
       <b>${p.who}</b><span class="tag ${MOOD[p.mood][0]}">${MOOD[p.mood][1]}</span></div>
       <p>“${p.say}”</p>${p.fix ? (p.fix.href ? `<a class="fix" href="${p.fix.href}">${p.fix.label}</a>` : `<button class="fix" type="button" data-fix="${b.indexOf(p)}">${p.fix.label}</button>`) : ""}</div>`).join("");
     fixes = b;
+    compare(c, level);
     const yes = b.filter(p => p.mood === "backs").length, no = b.filter(p => p.mood === "blocks").length;
     document.getElementById("dBoardSum").textContent = no ? `${no} of 3 would block it` : yes === 3 ? "All 3 back it" : yes ? `${yes} of 3 back it; the rest want changes` : "None back it yet: all want changes";
   }
   box.addEventListener("input", draw);
   lvl.addEventListener("input", () => { auto = false; draw(); });
   document.getElementById("dAuto").addEventListener("click", () => { auto = true; draw(); });
-  document.getElementById("dReset").addEventListener("click", () => reset());
+  document.getElementById("dReset").addEventListener("click", () => { lastTry = ""; reset(); });
+  box.addEventListener("input", () => (lastTry = ""));
+  document.getElementById("dPin").addEventListener("click", () => {
+    const c = costs(), level = lvl.value / 100;
+    pins = [...pins, { c, level, label: lastTry || (FIELDS.every(([k]) => c[k] === D.costs[k]) && auto ? "My assumptions" : `Your setup ${pins.length + 1}`) }].slice(-2);
+    draw(); applied(`Pinned. Change the inputs or pick a scenario; the pinned column stays.`);
+  });
+  document.getElementById("dCmp").addEventListener("click", e => {
+    if (e.target.dataset.unpin === undefined) return;
+    pins.splice(+e.target.dataset.unpin, 1); draw();
+  });
   document.getElementById("dBoard").addEventListener("click", e => {
     const i = e.target.dataset.fix; if (i === undefined) return;
     const p = fixes[i], f = p.fix;
