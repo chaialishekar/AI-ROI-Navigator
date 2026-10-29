@@ -1746,6 +1746,7 @@ def case_and_data() -> str:
 
 
 # The problem, what works, and why it takes analysis, not only technology (each checked against the publisher's page)
+CASE_STUDY_SITE = "https://chaialishekar.github.io/AI-ROI-Navigator/"
 WHY_IT_MATTERS_IBM = "https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles"
 WHY_IT_MATTERS = [
     ("39%", "of organisations report any profit (EBIT) impact from AI at all",
@@ -1980,7 +1981,9 @@ def page_home():
             'the savings after launch.</div>'
             '<div class="hero-stat">It\'s a live question. In IBM\'s 2025 study of 2,000 CEOs, only <b>25% of AI '
             'initiatives</b> had delivered the return expected of them (<a href="' + WHY_IT_MATTERS_IBM + '" '
-            'target="_blank">source</a>).</div>' + setup_strip(),
+            'target="_blank">source</a>).</div>'
+            '<div class="hero-stat">Prefer a guided tour? <a href="' + CASE_STUDY_SITE + '" target="_blank">'
+            'Read the case study as a website ↗</a></div>' + setup_strip(),
             unsafe_allow_html=True)
         st.markdown('<div class="case-label">The case</div><div class="case-title">An example plant loses $3.7M a '
                     'year. Which leak should AI fix first?</div>', unsafe_allow_html=True)
