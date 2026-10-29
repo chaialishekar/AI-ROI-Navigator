@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Readiness · AI ROI Navigator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="..">
+<nav class="nav" data-nav></nav>
+
+<section class="first">
+  <div class="wrap phase-head">
+    <div data-phase-head></div>
+    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Rate the team live ↗</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">What I did</p>
+    <h2>Checked whether people will actually use it.</h2>
+    <div class="prose">
+      <p>A model that works on a laptop can still fail on the shop floor. BCG found AI leaders spend about 70% of their
+        effort on people and process. So before any money was approved, two raters scored the plant on five areas,
+        from 1 (not ready) to 5 (ready).</p>
+    </div>
+    <div class="grid g2" style="align-items:start">
+      <div class="card"><div class="bars" id="dims"></div>
+        <p class="small" style="margin:14px 0 0">Average of two raters. Below 2.5 in any area means "fix first". Example ratings.</p></div>
+      <div class="card"><div class="label">Verdict</div><div class="stat sm" data-v="readiness.verdict"></div>
+        <p class="muted" style="margin:0">The money case is strong, but the team isn't ready to act on warnings yet.
+          These are the gaps to close before go-live:</p>
+        <div id="gaps" style="margin-top:12px;display:grid;gap:10px"></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Change impact</p>
+    <h2>Who changes how they work.</h2>
+    <div class="tscroll"><table class="t">
+      <tr><th>Who</th><th>What changes</th><th>Their worry</th><th>How it's handled</th></tr>
+      <tr><td>Maintenance planner</td><td>Checks AI warnings and draft work orders instead of writing orders after a breakdown</td><td class="muted">Will it bury us in false alarms?</td><td>Alert level set to keep false alarms rare; the planner approves every order</td></tr>
+      <tr><td>Technicians</td><td>Planned repairs at the next stop instead of emergency call-outs</td><td class="muted">Will the warnings be right?</td><td>Every warning gives its reason in plain words; outcomes are logged each month</td></tr>
+      <tr><td>Operations director</td><td>Owns the savings target and the go / no-go at each gate</td><td class="muted">Is this worth the disruption?</td><td>Pilot on one line first, with a monthly check against the forecast</td></tr>
+      <tr><td>Finance partner</td><td>Approves the budget on the published figure, not the model's</td><td class="muted">Are these numbers real?</td><td>Every number labelled as published, estimated or simulated</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this sits</p>
+    <div class="stairs" data-stairs></div>
+  </div>
+</section>
+<section data-pager></section>
+<footer data-footer></footer>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/site.js"></script>
+<script>
+  const { D, app, phaseHead } = Site;
+  phaseHead(3);
+  document.getElementById("appLink").href = app("readiness");
+  document.getElementById("dims").innerHTML = Object.entries(D.readiness.dims).map(([n, s]) =>
+    `<div class="bar"><span>${n}</span><div class="track"><div class="fill ${s < 2.5 ? "bad" : s < 3.5 ? "warn" : ""}" style="width:${s / 5 * 100}%"></div></div><b>${s.toFixed(1)} / 5</b></div>`).join("");
+  document.getElementById("gaps").innerHTML = D.readiness.weakest.map(w =>
+    `<div style="background:var(--page);border-radius:10px;padding:10px 12px"><b>${w.name}</b> <span class="small">(${w.score.toFixed(1)})</span><div class="muted" style="font-size:14px">${w.action}</div></div>`).join("");
+</script>
+</body>
+</html>

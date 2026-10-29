@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Discover · AI ROI Navigator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="..">
+<nav class="nav" data-nav></nav>
+
+<section class="first">
+  <div class="wrap phase-head">
+    <div data-phase-head></div>
+    <div class="head-cta"><a class="btn" id="docLink" target="_blank" rel="noopener">Process maps and requirements ↗</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">What I did</p>
+    <h2>Put a price on the problem before talking about AI.</h2>
+    <div class="prose">
+      <p>The plant asked for "an AI solution". Before comparing any tools, I wrote down what was actually going wrong
+        and what each problem costs in a year, because an AI can only be worth what the problem it fixes is worth.</p>
+      <ul>
+        <li>Listed the three losses the plant reports, and estimated each one in dollars a year.</li>
+        <li>Mapped how a breakdown is handled today (the as-is process), from the machine stopping to the repair.</li>
+        <li>Named who is affected and what each of them needs: operations, finance, maintenance planners,
+          technicians, and data / IT.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">What I found</p>
+    <h2>Three leaks, <span data-v="plant.total" data-f="money"></span> a year.</h2>
+    <div class="grid g2" style="align-items:center">
+      <div class="card"><div class="bars" id="losses"></div>
+        <p class="small" style="margin:14px 0 0">Estimated yearly cost of each problem. My figures, editable in the live analysis.</p></div>
+      <div>
+        <div class="cast sm" id="snooze" style="height:220px"></div>
+        <div class="callout"><b>The cost of doing nothing.</b> <span class="muted">Snooze is the option every
+          comparison has to beat: leave things as they are and keep losing <span data-v="plant.total" data-f="money"></span> a year.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">The machine data</p>
+    <h2>What breaks, and why.</h2>
+    <p class="muted" style="max-width:640px;margin:0">To see whether breakdowns can be predicted at all, I used the
+      public AI4I 2020 dataset: <b><span data-v="model.records" data-f="int"></span> machine records</b>, of which
+      <b><span data-v="model.failures" data-f="int"></span></b> end in a breakdown. It's synthetic, built to look like
+      real factory data, so it shows the method rather than proving results for a real plant.</p>
+    <div class="card" style="margin-top:22px"><div class="bars" id="causes"></div>
+      <p class="small" style="margin:14px 0 0">Breakdowns by cause. A breakdown can have more than one cause.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this sits</p>
+    <div class="stairs" data-stairs></div>
+  </div>
+</section>
+<section data-pager></section>
+<footer data-footer></footer>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/site.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../assets/characters.js"></script>
+<script>
+  const { D, money, doc, phaseHead } = Site;
+  phaseHead(0);
+  document.getElementById("docLink").href = doc("docs/requirements.md");
+  const maxLoss = Math.max(...D.plant.losses.map(l => l.cost));
+  document.getElementById("losses").innerHTML = [...D.plant.losses].sort((a, b) => b.cost - a.cost).map(l =>
+    `<div class="bar"><span>${l.name}</span><div class="track"><div class="fill bad" style="width:${l.cost / maxLoss * 100}%"></div></div><b>${money(l.cost)}</b></div>`).join("");
+  const causes = Object.entries(D.model.causes).sort((a, b) => b[1] - a[1]), maxC = causes[0][1];
+  document.getElementById("causes").innerHTML = causes.map(([n, v]) =>
+    `<div class="bar"><span>${n}</span><div class="track"><div class="fill" style="width:${v / maxC * 100}%"></div></div><b>${v}</b></div>`).join("");
+  Characters.mountCast(document.getElementById("snooze"), ["snooze"], { scale: 1.2, sink: 0.1 });
+</script>
+</body>
+</html>

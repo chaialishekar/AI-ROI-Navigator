@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Measure · AI ROI Navigator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="..">
+<nav class="nav" data-nav></nav>
+
+<section class="first">
+  <div class="wrap phase-head">
+    <div data-phase-head></div>
+    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Upload a month live ↗</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">A year after go-live</p>
+    <h2>Sentry delivered <span id="pctBig"></span> of what it promised.</h2>
+    <div class="grid g2" style="align-items:center">
+      <div class="cast" id="sentry" style="height:240px"></div>
+      <div class="grid g2" style="margin:0">
+        <div class="card"><div class="label">Delivered</div><div class="stat sm" data-v="tracking.delivered" data-f="money"></div><div class="small">net savings, 12 months</div></div>
+        <div class="card"><div class="label">Forecast</div><div class="stat sm" data-v="tracking.promised" data-f="money"></div><div class="small">from the business case</div></div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:8px"><b>Simulated, through a real pipeline.</b> <span class="muted">The twelve months are simulated, then loaded through the real S3 → Databricks pipeline. They show how the check works, not proof of real savings.</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Month by month</p>
+    <h2>Checked against the forecast every month.</h2>
+    <div class="card" style="padding-bottom:34px"><div class="months" id="months"></div></div>
+    <div class="legend"><span><i style="background:var(--teal)"></i>Actual savings</span><span><i style="background:#d4644a"></i>Model getting weaker, or a month that lost money</span><span><i style="border-top:2px dashed #111;height:0;width:14px;border-radius:0"></i>Forecast</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Why the gap</p>
+    <h2>Most of the shortfall wasn't the AI's fault.</h2>
+    <div class="card"><div class="bars" id="gap"></div>
+      <p class="small" style="margin:14px 0 0">Each cause changed one at a time, so they add up exactly to the total gap.</p></div>
+    <div class="grid g3" id="next" style="margin-top:14px"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this sits</p>
+    <div class="stairs" data-stairs></div>
+  </div>
+</section>
+<section data-pager></section>
+<footer data-footer></footer>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/site.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../assets/characters.js"></script>
+<script>
+  const { D, money, pct, app, phaseHead, delivered } = Site;
+  phaseHead(6);
+  const T = D.tracking;
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthName = m => MON[+m.slice(5, 7) - 1];
+  document.getElementById("appLink").href = app("track");
+  document.getElementById("pctBig").textContent = pct(delivered);
+  Characters.mountCast(document.getElementById("sentry"), ["sentry"], { scale: 1.2, sink: 0.1 });
+
+  const peak = Math.max(...T.actual, ...T.forecast) * 1.1;
+  document.getElementById("months").innerHTML = T.months.map((m, i) => {
+    // A month that lost money gets a small red stub rather than no bar at all
+    const loss = T.actual[i] < 0, a = loss ? peak * 0.03 : T.actual[i], alert = loss || T.drift_months.includes(m);
+    return `<div title="${m}: ${money(T.actual[i])} vs ${money(T.forecast[i])} forecast">
+      <div class="f" style="bottom:${T.forecast[i] / peak * 100}%"></div>
+      <div class="a ${alert ? "alert" : ""}" style="height:${a / peak * 100}%"></div>
+      <small>${monthName(m)}</small></div>`;
+  }).join("");
+
+  const NAMES = { "Failures (volume)": "Fewer breakdowns than assumed", "Model recall": "Model caught fewer",
+                  "Flagged failures acted on": "Crew ignored correct alerts", "False alarms": "False alarms" };
+  const maxGap = Math.max(...T.gap.map(g => Math.abs(g.effect)));
+  document.getElementById("gap").innerHTML = T.gap.map(g =>
+    `<div class="bar"><span>${NAMES[g.cause]}</span><div class="track"><div class="fill ${g.effect < 0 ? "bad" : ""}" style="width:${Math.abs(g.effect) / maxGap * 100}%"></div></div><b>${money(g.effect)}</b></div>`).join("");
+  document.getElementById("next").innerHTML = [
+    ["Update the forecast", "The plant had fewer breakdowns than the business case assumed. That's good news, not the model's fault."],
+    ["Fix the workflow", `The crew acted on too few warnings in ${T.low_adoption_months.length} months. Send warnings straight into the maintenance system.`],
+    ["Retrain the model", `Its catch rate dropped in ${T.drift_months.map(monthName).join(" and ")}. Retrain it on recent data.`],
+  ].map(([h, t]) => `<div class="card"><h3>${h}</h3><p class="muted" style="margin:0">${t}</p></div>`).join("");
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decide · AI ROI Navigator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="..">
+<nav class="nav" data-nav></nav>
+
+<section class="first">
+  <div class="wrap phase-head">
+    <div data-phase-head></div>
+    <div class="head-cta"><a class="btn" id="briefLink" target="_blank" rel="noopener">The decision brief (PDF) ↗</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Five options, AI or not</p>
+    <h2>The answer wasn't "buy the AI". It was "pilot it, after fixes".</h2>
+    <div class="cast" id="all" style="height:260px"></div>
+    <div class="pop" id="pop"></div>
+    <div class="tscroll" style="margin-top:24px"><table class="t" id="options"></table></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">The decision rule</p>
+    <h2>Agreed before the numbers came in.</h2>
+    <p class="muted" style="max-width:640px;margin:0 0 18px">Writing the rule down first stops the decision bending to fit the
+      result. The recommendation is whichever line the numbers land on.</p>
+    <div class="tscroll"><table class="t" id="rule"></table></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this sits</p>
+    <div class="stairs" data-stairs></div>
+  </div>
+</section>
+<section data-pager></section>
+<footer data-footer></footer>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/site.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../assets/characters.js"></script>
+<script>
+  const { D, money, doc, phaseHead } = Site;
+  phaseHead(4);
+  document.getElementById("briefLink").href = doc("docs/decision_brief_sample.pdf");
+  const v = D.value, c = D.costs, weakest = D.readiness.weakest[0].name.toLowerCase();
+  // Which option each decision-rule outcome stands for (mirrors OPTION_FOR_LABEL in app.py)
+  const CHOSEN = { "Proceed": "sentry-now", "Proceed after fixes": "sentry", "Revise": "wait", "Stop": "snooze" };
+  const OPTIONS = [
+    ["sentry-now", "sentry", "Buy the AI and roll it out", `Saves ${money(v.annual_net)} a year as planned, but the team check says "${D.readiness.verdict.toLowerCase()}" (weakest area: ${weakest}).`],
+    ["sentry", "sentry", "Pilot on one line after fixes", "Close the readiness gaps, then prove the savings and the false-alarm rate on one line before scaling."],
+    ["rulebook", "rulebook", "Use the manual's rules instead", `No AI needed and saves ${money(D.rules.annual_net)} a year, but raises ~${Math.round(D.rules.false_alarms)} false alarms a year against the AI's ~${Math.round(v.false_alarms)}. The rules stay, to explain each AI warning.`],
+    ["wait", "snooze", "Wait until the team is ready", `Still saves ${money(D.decision.worst_case)} a year in the worst case, so waiting forgoes about ${money(v.annual_net / 12)} a month.`],
+    ["snooze", "snooze", "Don't buy it", `Breakdowns keep costing the plant ${money(c.failures_per_year * c.cost_missed)} a year, and the evidence for the AI is medium, not weak.`],
+  ];
+  const chosen = CHOSEN[D.decision.label];
+  document.getElementById("options").innerHTML = `<tr><th>Option</th><th>Who</th><th>Verdict</th><th>Why</th></tr>` + OPTIONS.map(([id, k, name, why]) =>
+    `<tr class="${id === chosen ? "chosen" : ""}"><td><b>${name}</b></td><td class="muted">${Characters.DEFS[k].name}</td>
+     <td>${id === chosen ? '<span class="tag good">Chosen</span>' : '<span class="tag" style="background:#ecebe7;color:#555">Not chosen</span>'}</td><td>${why}</td></tr>`).join("");
+
+  const SHORT = {
+    sentry: "Predictive maintenance. Chosen: pilot on one line once the readiness gaps are closed.",
+    lens: "Visual inspection. Second on value, but resting on a vendor's claim. Revisit after the pilot.",
+    oracle: "Demand forecasting. Loses money on cautious figures. Not now.",
+    rulebook: `The manual's rules. Kept alongside the AI to explain each warning, not instead of it.`,
+    snooze: "Do nothing. Rejected: it keeps the plant's losses exactly where they are.",
+  };
+  const pop = document.getElementById("pop");
+  const show = k => { pop.innerHTML = `<b>${Characters.DEFS[k].name}</b> <span class="muted">· ${SHORT[k]}</span>`; };
+  show("sentry");
+  Characters.mountCast(document.getElementById("all"), ["sentry", "lens", "oracle", "rulebook", "snooze"], { onSelect: show });
+
+  const RULES = [["Stop", "Expected savings are not positive"],
+    ["Revise", "Savings turn negative if costs are worse than expected, or the team is not ready"],
+    ["Proceed after fixes", "Savings stay positive in the worst case, but the team check says fix first"],
+    ["Proceed", "Savings stay positive in the worst case and the team is ready"]];
+  document.getElementById("rule").innerHTML = `<tr><th>Recommendation</th><th>When</th></tr>` + RULES.map(([l, w]) =>
+    `<tr class="${l === D.decision.label ? "chosen" : ""}"><td><b>${l}</b>${l === D.decision.label ? ' <span class="tag good">this case</span>' : ""}</td><td>${w}</td></tr>`).join("");
+</script>
+</body>
+</html>

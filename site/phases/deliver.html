@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deliver · AI ROI Navigator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="..">
+<nav class="nav" data-nav></nav>
+
+<section class="first">
+  <div class="wrap phase-head">
+    <div data-phase-head></div>
+    <div class="head-cta"><a class="btn" id="docLink" target="_blank" rel="noopener">The requirements pack ↗</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">The analyst's paperwork</p>
+    <h2>From "the AI warns" to "a technician gets a work order".</h2>
+    <div class="grid g3">
+      <div class="card"><div class="stat sm">36+</div><h3>User stories</h3><p class="muted" style="margin:0">Each with acceptance criteria and a MoSCoW priority.</p></div>
+      <div class="card"><div class="stat sm">As-is / to-be</div><h3>Process maps</h3><p class="muted" style="margin:0">How a breakdown is handled today, and with the AI in the loop.</p></div>
+      <div class="card"><div class="stat sm">1 spec</div><h3>Integration</h3><p class="muted" style="margin:0">How a warning becomes a work order in the maintenance system, field by field.</p></div>
+      <div class="card"><div class="stat sm">Data dictionary</div><h3>Every field defined</h3><p class="muted" style="margin:0">Sensor readings, alerts and monthly results, with types and owners.</p></div>
+      <div class="card"><div class="stat sm">13 UATs</div><h3>Acceptance tests</h3><p class="muted" style="margin:0">Written as given / when / then, by role, all passing.</p></div>
+      <div class="card"><div class="stat sm">Traceability</div><h3>Matrix</h3><p class="muted" style="margin:0">Every Must-have story traced to code and a passing test.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">What got built</p>
+    <h2>A working model, a real data path, and two GenAI experiments.</h2>
+    <div class="grid g3">
+      <div class="card"><div class="label">The model</div><h3>Gradient boosting</h3>
+        <p class="muted" style="margin:0 0 10px">Trained on <span data-v="model.train" data-f="int"></span> records, tested on <span data-v="model.test" data-f="int"></span> it never saw. Compared with a simpler, explainable baseline.</p>
+        <div class="bars" id="auc"></div></div>
+      <div class="card"><div class="label">The data path</div><h3>S3 → Databricks</h3>
+        <p class="muted" style="margin:0">Monthly results land in Amazon S3 and flow through bronze, silver and gold tables in Databricks.
+          Bad files are quarantined, and a re-run loads nothing twice.</p></div>
+      <div class="card"><div class="label">Side experiments</div><h3>GenAI on Amazon Bedrock</h3>
+        <p class="muted" style="margin:0">Drafting work orders from warnings (30 cases) and reviewing a business case for mistakes (19 cases), each graded against known answers.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this sits</p>
+    <div class="stairs" data-stairs></div>
+  </div>
+</section>
+<section data-pager></section>
+<footer data-footer></footer>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/site.js"></script>
+<script>
+  const { D, doc, phaseHead } = Site;
+  phaseHead(5);
+  document.getElementById("docLink").href = doc("docs/requirements.md");
+  document.getElementById("auc").innerHTML = Object.entries(D.model.auc).map(([n, a]) =>
+    `<div class="bar" style="grid-template-columns:110px minmax(0,1fr) 44px"><span>${n.replace(" (baseline)", "")}</span><div class="track"><div class="fill ${a < 0.95 ? "grey" : ""}" style="width:${a * 100}%"></div></div><b>${a.toFixed(2)}</b></div>`).join("")
+    + `<p class="small" style="margin:6px 0 0">AUC: how well each model ranks risky machines above safe ones (1.0 is perfect).</p>`;
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Business case · AI ROI Navigator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="..">
+<nav class="nav" data-nav></nav>
+
+<section class="first">
+  <div class="wrap phase-head">
+    <div data-phase-head></div>
+    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Change the costs live ↗</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Two numbers, one plan</p>
+    <h2>The model said <span data-v="value.annual_net" data-f="money"></span>. I planned on <span data-v="published.net" data-f="money"></span>.</h2>
+    <div class="grid g2">
+      <div class="card"><div class="label">Model test, on synthetic data</div><div class="stat" data-v="value.annual_net" data-f="money"></div>
+        <p class="muted" style="margin:0">Net savings a year when the model I built is run on 3,000 machine records it never saw.
+          The data is synthetic, so breakdowns are easier to predict than in a real plant.</p></div>
+      <div class="card" style="box-shadow:inset 0 0 0 2px var(--teal)"><div class="label">Published studies · what finance plans on</div><div class="stat" data-v="published.net" data-f="money"></div>
+        <p class="muted" style="margin:0" id="pubText"></p></div>
+    </div>
+    <p class="muted" style="margin:16px 0 0;max-width:680px">The budget is approved on the lower figure. The difference is upside, to be proven in a pilot on one production line.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">How the savings add up</p>
+    <h2>Every dollar, line by line.</h2>
+    <div class="tscroll"><table class="t" id="calc"></table></div>
+    <p class="small" style="margin:12px 0 0">Per year, for a plant with <span data-v="costs.failures_per_year" data-f="int"></span> breakdowns. Costs are estimates; the catch rate and false alarms come from the model test.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">How sure are we</p>
+    <h2>It still pays if the costs are worse than expected.</h2>
+    <div class="card"><div class="bars" id="cases"></div>
+      <p class="small" style="margin:14px 0 0">Net savings a year when every cost assumption is set to its worst, expected and best value.</p></div>
+    <div class="callout" style="margin-top:16px"><b>Tuned for dollars, not accuracy.</b> <span class="muted" id="accText"></span></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Against the options without AI</p>
+    <h2>The rules saved more on paper. Here's why they lost.</h2>
+    <div class="cast" id="trio" style="height:230px"></div>
+    <div class="grid g3" id="trioCards" style="margin-top:6px"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this sits</p>
+    <div class="stairs" data-stairs></div>
+  </div>
+</section>
+<section data-pager></section>
+<footer data-footer></footer>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/site.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../assets/characters.js"></script>
+<script>
+  const { D, money, pct, months, app, phaseHead } = Site;
+  phaseHead(2);
+  document.getElementById("appLink").href = app("value");
+  const c = D.costs, v = D.value;
+  document.getElementById("pubText").textContent =
+    `Published programs cut downtime by ${pct(D.published.low_pct)}–${pct(D.published.high_pct)}. The middle of that range, applied to this plant's ${money(c.failures_per_year * c.cost_missed)} of downtime, minus running costs.`;
+
+  const rows = [
+    ["Breakdowns caught early", `${v.caught.toFixed(0)} × (${money(c.cost_missed)} − ${money(c.cost_caught)})`, v.caught * (c.cost_missed - c.cost_caught)],
+    ["Breakdowns still missed", `${v.missed.toFixed(0)} a year`, 0],
+    ["False alarms checked", `${v.false_alarms.toFixed(0)} × ${money(c.cost_false_alarm)}`, -v.false_alarms * c.cost_false_alarm],
+    ["Running cost", "licence, compute, support", -c.running_cost],
+  ];
+  document.getElementById("calc").innerHTML = `<tr><th>Line</th><th>How</th><th style="text-align:right">A year</th></tr>`
+    + rows.map(([a, b, x]) => `<tr><td>${a}</td><td class="muted">${b}</td><td style="text-align:right">${x ? money(x) : "–"}</td></tr>`).join("")
+    + `<tr><td><b>Net savings</b></td><td class="muted">pays back the ${money(c.deployment_cost)} setup in ${months(v.payback)}</td><td style="text-align:right"><b>${money(v.annual_net)}</b></td></tr>`;
+
+  const cases = [["Worst case", v.cases.Low, "warn"], ["Expected", v.cases.Base, ""], ["Best case", v.cases.High, "grey"]];
+  const maxCase = Math.max(...cases.map(x => x[1]));
+  document.getElementById("cases").innerHTML = cases.map(([n, x, k]) =>
+    `<div class="bar"><span>${n}</span><div class="track"><div class="fill ${k}" style="width:${x / maxCase * 100}%"></div></div><b>${money(x)}</b></div>`).join("");
+  document.getElementById("accText").textContent =
+    `Setting the alert level for the highest accuracy would save ${money(v.accurate_net)} a year. Setting it for the most money saves ${money(v.annual_net)}. A missed breakdown costs far more than a wasted inspection, so the model is allowed a few more false alarms.`;
+
+  const trio = {
+    rulebook: ["Rulebook · the manual's rules", `${money(D.rules.annual_net)} a year`, `Catches ${pct(D.rules.recall)} of breakdowns, but raises ~${Math.round(D.rules.false_alarms)} false alarms a year. Only ${pct(D.rules.precision)} of its alerts are real: the kind of noise a crew learns to ignore.`],
+    sentry: ["Sentry · predictive maintenance", `${money(v.annual_net)} a year`, `Catches ${pct(v.recall)} of breakdowns with ~${Math.round(v.false_alarms)} false alarms a year. ${pct(v.precision)} of its alerts are real. Recommended, with the manual's limits shown to explain each warning.`],
+    snooze: ["Snooze · do nothing", "$0 saved", `Every breakdown stays unplanned: ${money(c.failures_per_year * c.cost_missed)} a year in downtime and emergency repairs.`],
+  };
+  document.getElementById("trioCards").innerHTML = Object.entries(trio).map(([k, [t, n, d]]) =>
+    `<div class="card ${k === "sentry" ? "opt-card top" : ""}" data-k="${k}"><div class="label">${t}</div><div class="stat sm">${n}</div><p class="muted" style="margin:0;font-size:14px">${d}</p></div>`).join("");
+  Characters.mountCast(document.getElementById("trio"), ["rulebook", "sentry", "snooze"], { scale: 1.05, spacing: 3.2 });
+</script>
+</body>
+</html>
