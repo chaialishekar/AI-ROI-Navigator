@@ -21,7 +21,12 @@
   // Same formula as src/value.py evaluate(): the test-set counts at an alert level, scaled to the plant's breakdowns
   function value(c, level) {
     const i = Math.min(99, Math.max(1, Math.round(level * 100))) - 1;
-    const [tp, fp] = D.curve.levels[i], scale = c.failures_per_year / D.curve.failures;
+    return priced(c, ...D.curve.levels[i]);
+  }
+  // The maintenance manual's rules, priced the same way (same test records, same costs)
+  const rulesValue = c => priced(c, D.rules.tp, D.rules.fp);
+  function priced(c, tp, fp) {
+    const scale = c.failures_per_year / D.curve.failures;
     const caught = tp * scale, missed = (D.curve.failures - tp) * scale, false_alarms = fp * scale;
     const net = c.failures_per_year * c.cost_missed
       - (caught * c.cost_caught + missed * c.cost_missed + false_alarms * c.cost_false_alarm + c.running_cost);
@@ -296,5 +301,5 @@
 
   nav(); footer(); fillValues();
   document.addEventListener("DOMContentLoaded", reveal);
-  window.Site = { D, PHASES, REPO, ESSAY, money, usd, pct, months, doc, value, breakEven, board, stairs, phaseHead, delivered };
+  window.Site = { D, PHASES, REPO, ESSAY, money, usd, pct, months, doc, value, rulesValue, breakEven, board, stairs, phaseHead, delivered };
 })();
