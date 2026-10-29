@@ -21,7 +21,7 @@ from src.library import EXAMPLE_CLIENTS, evidence_strength, load_library, rank  
 from src.model import load_data, train_and_score  # noqa: E402
 from src.readiness import ACTIONS, verdict  # noqa: E402
 from src.tracking import COLUMNS, explain_gap, track  # noqa: E402
-from src.value import Costs, default_ranges, evaluate, payback, scenarios, sweep  # noqa: E402
+from src.value import ACCURACY_THRESHOLD, Costs, alert_threshold, default_ranges, evaluate, payback, scenarios  # noqa: E402
 from src.workorder import rule_alerts  # noqa: E402
 
 # Same example readiness ratings as the app's Readiness page (two raters per dimension)
@@ -56,14 +56,12 @@ def library_options(client) -> list[dict]:
 
 
 def model_value(res: dict, costs: Costs) -> dict:
-    """The business-case result: gradient boosting at its most profitable alert threshold (as in the app)."""
+    """The business-case result: gradient boosting at the break-even alert level (as in the app)."""
     y, proba = res["y_test"], res["models"]["Gradient boosting"]["proba"]
-    curve = sweep(y, proba, costs)
-    thr = float(round(curve.loc[curve["annual_net"].idxmax(), "threshold"], 2))
+    thr = alert_threshold(costs)
     r = evaluate(y, proba, thr, costs)
-    acc = curve.loc[curve["accuracy"].idxmax()]
     cases = scenarios(y, proba, thr, costs, default_ranges(costs))
-    return {**r, "cases": cases, "accurate_net": float(acc["annual_net"])}
+    return {**r, "cases": cases, "accurate_net": evaluate(y, proba, ACCURACY_THRESHOLD, costs)["annual_net"]}
 
 
 def decision_rule(val: dict, rd: dict) -> tuple[str, str]:
@@ -123,11 +121,12 @@ def main():
         "model": {"records": len(df), "failures": int(df["Machine failure"].sum()), "train": res["n_train"],
                   "test": res["n_test"], "causes": {causes[k]: int(df[k].sum()) for k in causes},
                   "auc": {n: num(m["auc"]) for n, m in res["models"].items()}},
-        "tracking": {"source": source, "months": t["month"].tolist(),
+        "tracking": {"source": source, "months": t["label"].tolist(),
                      "forecast": [num(x) for x in t["forecast"]], "actual": [num(x) for x in t["actual"]],
                      "delivered": num(t["cum_actual"].iloc[-1]), "promised": num(t["cum_forecast"].iloc[-1]),
-                     "drift_months": t.loc[t["drift_alert"], "month"].tolist(),
-                     "low_adoption_months": t.loc[t["adoption_alert"], "month"].tolist(),
+                     "plan": num(published * len(t) / 12),
+                     "drift_months": t.loc[t["drift_alert"], "label"].tolist(),
+                     "low_adoption_months": t.loc[t["adoption_alert"], "label"].tolist(),
                      "gap": [{"cause": g["cause"], "effect": num(g["effect"])} for _, g in gap.iterrows()]},
     }
     out = os.path.join(ROOT, "site", "assets", "data.js")

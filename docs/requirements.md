@@ -18,7 +18,7 @@ this pack adds what a delivery team needs to build and test it.
 ```mermaid
 flowchart LR
     N([Business need:<br/>40 breakdowns a year,<br/>$1.0M lost]) --> A[1 Compare the AI library<br/>tools priced for the client]
-    A --> B[2 Build the business case<br/>$660k a year projected]
+    A --> B[2 Build the business case<br/>$658k a year projected]
     B --> C[3 Assess readiness<br/>10-question check]
     C --> D[4 Prepare the decision<br/>proceed after fixes]
     D --> L{{Launch}}

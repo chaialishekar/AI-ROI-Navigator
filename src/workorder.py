@@ -19,7 +19,7 @@ from src.model import RANDOM_STATE, TARGET, build_features, load_data
 MODEL_ID = "us.amazon.nova-micro-v1:0"       # US inference profile: requests stay in US Regions
 PRICE_PER_1K = {"input": 0.000035, "output": 0.00014}   # USD, us-east-2 on-demand (AWS Price List)
 MAX_TOKENS = 500
-ALERT_THRESHOLD = 0.05                       # dollar-optimal threshold from the Prove value tab
+ALERT_THRESHOLD = 0.05                       # pilot samples alerts at 5%+ risk; all are above the 2% break-even level
 
 MODES = {
     "TWF": "tool wear",

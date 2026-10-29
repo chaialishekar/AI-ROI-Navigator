@@ -18,7 +18,7 @@
   const doc = path => `${REPO}/blob/main/${path}`;
   const app = page => (APP_URL ? `${APP_URL.replace(/\/$/, "")}/${page}` : REPO);
 
-  const delivered = D.tracking.delivered / D.tracking.promised;
+  const delivered = D.tracking.delivered / D.tracking.promised;   // share of the model's estimate
   const PHASES = [
     { slug: "discover", name: "Discover", q: "What's going wrong, and what does it cost?",
       made: "Problem statement, stakeholders, as-is process", gate: [money(D.plant.total), "a year at stake"] },
@@ -34,7 +34,7 @@
     { slug: "deliver", name: "Deliver", q: "What gets built, and how do we know it works?",
       made: "Requirements, integration spec, 13 UATs, traceability", gate: ["13 tests", "pass"] },
     { slug: "measure", name: "Measure", q: "Did the savings show up?",
-      made: "Monthly tracking, gap analysis by cause", gate: [`${pct(delivered)} of`, "year-1 target"] },
+      made: "Monthly tracking, gap analysis by cause", gate: [`${money(D.tracking.delivered)} vs`, `${money(D.tracking.plan)} plan`] },
   ];
   const href = p => `${ROOT}/phases/${p.slug}.html`;
 

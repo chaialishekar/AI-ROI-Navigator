@@ -167,7 +167,7 @@ v1 is a case study, so these are the targets a provider would track in a pilot w
 |---|---|---|
 | Published improvement ranges come from mixed sources (one peer-reviewed field study, several vendor claims) | Risk | Evidence label on every number; cautious view; pilot first when the top pick rests on a vendor claim |
 | Provider prices and client costs are examples | Assumption | Editable; replaced with the client's own figures in a real session |
-| The deep-dive dataset is synthetic, so the model looks better than it would in a plant | Risk | The case plans on the published figure ($290k a year), not the test ($660k); a pilot gate measures the real rate |
+| The deep-dive dataset is synthetic, so the model looks better than it would in a plant | Risk | The case plans on the published figure ($290k a year), not the test ($658k); a pilot gate measures the real rate |
 | Tools are ranked as alternatives but may be bought together | Risk | Framed as an order of priority, not a winner |
 | Should budget limits be an input (best set of tools within $X)? | Open question | Candidate for v2 |
 | Which tool gets the second deep dive? | Open question | Visual inspection (close runner-up) or yield optimization (to test the vendor claim) |

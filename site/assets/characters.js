@@ -73,9 +73,27 @@
     return cache[key];
   }
 
+  // Flat stand-ins for browsers without WebGL (or when three.js fails to load), so the page never shows a gap
+  const FLAT = { sentry: "#1f8f86", lens: "#e2603f", oracle: "#6b5fd8", rulebook: "#f2b33d", snooze: "#9fb3c8" };
+  function flatCast(el, keys, opts) {
+    el.classList.add("flat");
+    el.innerHTML = keys.map(k => `<button type="button" data-k="${k}" style="--c:${FLAT[k]}" aria-label="${DEFS[k].name}: ${DEFS[k].role}">
+      <span class="eyes${DEFS[k].sleepy ? " sleepy" : ""}"><i></i><i></i></span><b>${DEFS[k].name}</b></button>`).join("");
+    if (opts.onSelect) el.querySelectorAll("button").forEach(b => {
+      b.addEventListener("mouseenter", () => opts.onSelect(b.dataset.k));
+      b.addEventListener("click", () => opts.onSelect(b.dataset.k));
+    });
+  }
+
   // Mount a row of characters into el. opts: scale, spacing, sink (how far they sit below the frame), onSelect(key)
   function mountCast(el, keys, opts = {}) {
-    if (!window.THREE) return;
+    try { mount3d(el, keys, opts); } catch (e) { el.innerHTML = ""; flatCast(el, keys, opts); }
+  }
+
+  function mount3d(el, keys, opts) {
+    if (!window.THREE) throw new Error("three.js not loaded");
+    const probe = document.createElement("canvas");
+    if (!(probe.getContext("webgl2") || probe.getContext("webgl"))) throw new Error("WebGL unavailable");
     const scale = opts.scale || 1.1, spacing = opts.spacing || 2.45, sink = opts.sink ?? 0.3;
     weave = weave || tex(g => { fill(g, "#808080"); let s = 3; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280; for (let y = 0; y < 256; y += 4) for (let x = 0; x < 256; x += 4) { const v = 100 + rnd() * 80; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x, y, 3, 3); } }, 6);
 

@@ -105,7 +105,7 @@ def footer(canvas, doc):
     canvas.setFont("Helvetica", 7)
     canvas.setFillColor(MUTED)
     canvas.drawString(0.65 * inch, 0.45 * inch,
-                      "Illustrative case. Model results measured on real machine data (AI4I 2020, UCI); plant costs "
+                      "Illustrative case. Model results measured on public, synthetic machine data (AI4I 2020, UCI); plant costs "
                       "are assumptions; results after launch are simulated.")
     canvas.drawRightString(letter[0] - 0.65 * inch, 0.45 * inch, f"Page {doc.page}")
     canvas.restoreState()

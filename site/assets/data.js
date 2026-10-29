@@ -97,21 +97,21 @@ window.CASE = {
   "months_to_deploy": 2.0
  },
  "value": {
-  "annual_net": 660392.1569,
-  "threshold": 0.05,
+  "annual_net": 658431.3725,
+  "threshold": 0.02,
   "recall": 0.8627,
-  "precision": 0.8,
-  "accuracy": 0.988,
+  "precision": 0.7333,
+  "accuracy": 0.9847,
   "caught": 34.5098,
   "missed": 5.4902,
-  "false_alarms": 8.6275,
-  "roi_3y": 11.4741,
-  "accurate_net": 630980.3922,
-  "payback": 4.7257,
+  "false_alarms": 12.549,
+  "roi_3y": 11.437,
+  "accurate_net": 638431.3725,
+  "payback": 4.7338,
   "cases": {
-   "Low": 163970.5882,
-   "Base": 660392.1569,
-   "High": 1332696.0784
+   "Low": 161764.7059,
+   "Base": 658431.3725,
+   "High": 1331470.5882
   }
  },
  "published": {
@@ -151,7 +151,7 @@ window.CASE = {
  "decision": {
   "label": "Proceed after fixes",
   "reason": "Close the readiness gaps first. It saves money even in the worst case.",
-  "worst_case": 163970.5882
+  "worst_case": 161764.7059
  },
  "model": {
   "records": 10000,
@@ -166,39 +166,39 @@ window.CASE = {
    "Random": 19
   },
   "auc": {
-   "Logistic regression (baseline)": 0.9204,
+   "Logistic regression (baseline)": 0.9096,
    "Gradient boosting": 0.9867
   }
  },
  "tracking": {
   "source": "S3 \u2192 Databricks pipeline",
   "months": [
-   "2026-01",
-   "2026-02",
-   "2026-03",
-   "2026-04",
-   "2026-05",
-   "2026-06",
-   "2026-07",
-   "2026-08",
-   "2026-09",
-   "2026-10",
-   "2026-11",
-   "2026-12"
+   "Month 1",
+   "Month 2",
+   "Month 3",
+   "Month 4",
+   "Month 5",
+   "Month 6",
+   "Month 7",
+   "Month 8",
+   "Month 9",
+   "Month 10",
+   "Month 11",
+   "Month 12"
   ],
   "forecast": [
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797,
-   55032.6797
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281,
+   54869.281
   ],
   "actual": [
    37000.0,
@@ -215,15 +215,16 @@ window.CASE = {
    -5500.0
   ],
   "delivered": 463500.0,
-  "promised": 660392.1569,
+  "promised": 658431.3725,
+  "plan": 290000.0,
   "drift_months": [
-   "2026-11",
-   "2026-12"
+   "Month 11",
+   "Month 12"
   ],
   "low_adoption_months": [
-   "2026-01",
-   "2026-02",
-   "2026-03"
+   "Month 1",
+   "Month 2",
+   "Month 3"
   ],
   "gap": [
    {
@@ -240,7 +241,7 @@ window.CASE = {
    },
    {
     "cause": "False alarms",
-    "effect": 2813.7255
+    "effect": 4774.5098
    }
   ]
  }

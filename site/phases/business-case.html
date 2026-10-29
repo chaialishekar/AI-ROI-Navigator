@@ -39,7 +39,7 @@
     <p class="eyebrow">How the savings add up</p>
     <h2>Every dollar, line by line.</h2>
     <div class="tscroll"><table class="t" id="calc"></table></div>
-    <p class="small" style="margin:12px 0 0">Per year, for a plant with <span data-v="costs.failures_per_year" data-f="int"></span> breakdowns. Costs are estimates; the catch rate and false alarms come from the model test.</p>
+    <p class="small" style="margin:12px 0 0">Per year, for a plant with <span data-v="costs.failures_per_year" data-f="int"></span> breakdowns. Counts are yearly averages (86% of 40 breakdowns is 34.5), so they can have decimals. Costs are estimates; the catch rate and false alarms come from the model test.</p>
   </div>
 </section>
 
@@ -83,22 +83,24 @@
   document.getElementById("pubText").textContent =
     `Published programs cut downtime by ${pct(D.published.low_pct)}–${pct(D.published.high_pct)}. The middle of that range, applied to this plant's ${money(c.failures_per_year * c.cost_missed)} of downtime, minus running costs.`;
 
+  // Full dollars and one-decimal counts, so every line can be checked by hand and the lines add up to the total
+  const usd = x => `${x < 0 ? "−" : ""}$${Math.round(Math.abs(x)).toLocaleString("en-US")}`;
   const rows = [
-    ["Breakdowns caught early", `${v.caught.toFixed(0)} × (${money(c.cost_missed)} − ${money(c.cost_caught)})`, v.caught * (c.cost_missed - c.cost_caught)],
-    ["Breakdowns still missed", `${v.missed.toFixed(0)} a year`, 0],
-    ["False alarms checked", `${v.false_alarms.toFixed(0)} × ${money(c.cost_false_alarm)}`, -v.false_alarms * c.cost_false_alarm],
+    ["Breakdowns caught early", `${v.caught.toFixed(1)} × (${usd(c.cost_missed)} − ${usd(c.cost_caught)})`, v.caught * (c.cost_missed - c.cost_caught)],
+    ["Breakdowns still missed", `${v.missed.toFixed(1)} a year, no saving`, 0],
+    ["False alarms checked", `${v.false_alarms.toFixed(1)} × ${usd(c.cost_false_alarm)}`, -v.false_alarms * c.cost_false_alarm],
     ["Running cost", "licence, compute, support", -c.running_cost],
   ];
   document.getElementById("calc").innerHTML = `<tr><th>Line</th><th>How</th><th style="text-align:right">A year</th></tr>`
-    + rows.map(([a, b, x]) => `<tr><td>${a}</td><td class="muted">${b}</td><td style="text-align:right">${x ? money(x) : "–"}</td></tr>`).join("")
-    + `<tr><td><b>Net savings</b></td><td class="muted">pays back the ${money(c.deployment_cost)} setup in ${months(v.payback)}</td><td style="text-align:right"><b>${money(v.annual_net)}</b></td></tr>`;
+    + rows.map(([a, b, x]) => `<tr><td>${a}</td><td class="muted">${b}</td><td style="text-align:right">${x ? usd(x) : "–"}</td></tr>`).join("")
+    + `<tr><td><b>Net savings</b></td><td class="muted">pays back the ${money(c.deployment_cost)} setup in ${months(v.payback)}</td><td style="text-align:right"><b>${usd(v.annual_net)}</b></td></tr>`;
 
   const cases = [["Worst case", v.cases.Low, "warn"], ["Expected", v.cases.Base, ""], ["Best case", v.cases.High, "grey"]];
   const maxCase = Math.max(...cases.map(x => x[1]));
   document.getElementById("cases").innerHTML = cases.map(([n, x, k]) =>
     `<div class="bar"><span>${n}</span><div class="track"><div class="fill ${k}" style="width:${x / maxCase * 100}%"></div></div><b>${money(x)}</b></div>`).join("");
   document.getElementById("accText").textContent =
-    `Setting the alert level for the highest accuracy would save ${money(v.accurate_net)} a year. Setting it for the most money saves ${money(v.annual_net)}. A missed breakdown costs far more than a wasted inspection, so the model is allowed a few more false alarms.`;
+    `The usual 50% cut-off would save ${money(v.accurate_net)} a year. Instead, the AI alerts whenever the chance of a breakdown is above ${pct(v.threshold)}: the ${money(c.cost_false_alarm)} inspection divided by the ${money(c.cost_missed - c.cost_caught)} an early catch saves. Below that, checking costs more than it's expected to save. The level comes from the costs, not from tuning on the test data, so the results above are an honest test.`;
 
   const trio = {
     rulebook: ["Rulebook · the manual's rules", `${money(D.rules.annual_net)} a year`, `Catches ${pct(D.rules.recall)} of breakdowns, but raises ~${Math.round(D.rules.false_alarms)} false alarms a year. Only ${pct(D.rules.precision)} of its alerts are real: the kind of noise a crew learns to ignore.`],

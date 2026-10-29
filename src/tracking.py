@@ -51,12 +51,18 @@ def validate(df: pd.DataFrame) -> list[str]:
     return errors
 
 
+def month_label(month: str, first: str) -> str:
+    """'Month 3' for the third month after go-live. Simulated data is dated, but shown relative to go-live."""
+    return f"Month {(pd.Period(month, 'M') - pd.Period(first, 'M')).n + 1}"
+
+
 def track(actuals: pd.DataFrame, r: dict, c: Costs) -> pd.DataFrame:
     """Monthly forecast vs actual savings, adoption and drift flags.
 
     r is the evaluate() result the business case was approved on; its recall is the launch level.
     """
     df = actuals[COLUMNS].copy().reset_index(drop=True)
+    df["label"] = [month_label(m, df["month"].iloc[0]) for m in df["month"]]
     df["failures"] = df["failures_prevented"] + df["failures_missed"]
     df["acted_on"] = df["failures_prevented"] + df["false_alarms"]
     df["recall"] = df["failures_flagged"] / df["failures"].replace(0, np.nan)

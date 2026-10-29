@@ -236,7 +236,7 @@ How a typical 30-minute session runs:
 
 ### 6.1 Why value falls short: fishbone
 
-After launch the plant banked 70% of the forecast. Before measuring anything, these are all the causes that could explain a shortfall, grouped the usual six ways. The right column says which ones the app measures today.
+After the plant-wide rollout the AI beat the approved plan but banked 70% of the model's estimate. Before measuring anything, these are all the causes that could explain a shortfall, grouped the usual six ways. The right column says which ones the app measures today.
 
 ```
   PEOPLE                     PROCESS                    MODEL
@@ -306,15 +306,15 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Dollar-optimal threshold differs from accuracy-optimal | US-2.3 | Compare both on the test set (default costs) | Passed: 0.05 vs 0.90; dollar-optimal saves $29k/year more |
 | Verdict rules give the expected result for 3 sample checklists | US-3.2 | Unit tests (`tests/test_core.py`) | Passed |
 | Dollar math matches hand calculation | US-2.2 | Unit test on a 4-record example | Passed |
-| Uncertainty range contains the point estimate | US-2.7 | Unit test (`tests/test_core.py`) | Passed: default case $660k, range $611k–$704k |
+| Uncertainty range contains the point estimate | US-2.7 | Unit test (`tests/test_core.py`) | Passed: default case $658k, range $609k–$703k |
 | Scenarios are ordered low ≤ base ≤ high; tornado sorted by impact | US-2.8 | Unit test (`tests/test_core.py`) | Passed: low case $164k/year, 20.5-month payback |
 | Actual savings match hand calculation; adoption and drift alerts fire on the right months | US-6.1, US-6.2, US-6.3 | Unit test on a 4-month example | Passed |
-| Gap causes add up exactly to actual − forecast; actuals equal to the forecast give no gap | US-6.1 | Unit tests (5 simulated rollouts + exact-match case) | Passed: sample rollout $464k vs $660k forecast, gap −$197k |
+| Gap causes add up exactly to actual − forecast; actuals equal to the forecast give no gap | US-6.1 | Unit tests (5 simulated rollouts + exact-match case) | Passed: sample rollout $464k vs $658k model estimate, gap −$195k |
 | Bad actuals files are rejected with a clear message | US-6.1 | Unit test (missing column, impossible counts) | Passed |
 | GenAI ROI reproduces the Forbes bookkeeping example | US-7.1 | Unit test | Passed: cost $6,350, gain $16,640, ROI 162% |
 | Cash + capacity = total gain; break-even review gives zero net value | US-7.2, US-7.5 | Unit tests | Passed |
-| Pilot v1 (model diagnoses and writes) | US-7.3 | 30 Bedrock calls, graded against true cause | Failed: 33% right cause (42% on real failures, 0 of 6 false alarms); $0.000038 per draft, 0.9 s |
-| Pilot v2 (rule check diagnoses, model writes) | US-7.4 | Same 30 alerts | Passed: 100% right cause on real failures (83% overall), diagnosis kept in 30/30 drafts; 4 drafts mention PC parts, so review stays |
+| Pilot v1 (model diagnoses and writes) | US-7.3 | 30 Bedrock calls, graded against true cause | Failed: 33% right cause (42% on true failures, 0 of 6 false alarms); $0.000038 per draft, 0.9 s |
+| Pilot v2 (rule check diagnoses, model writes) | US-7.4 | Same 30 alerts | Passed on these 30 synthetic examples: 100% right cause on true failures (83% overall), diagnosis kept in 30/30 drafts; 4 drafts mention PC parts, so review stays |
 | Rule check matches the manual and every real failure in the pilot set | US-7.4 | Unit test | Passed |
 | Agents v1 (model does everything) | US-8.1–8.3 | 17 Bedrock calls (Nova Lite), graded in code | Failed: Intake 42% fields right (arithmetic inside JSON); 1 of 2 memos invented a number; red team caught 3 of 6 planted flaws |
 | Agents v2 (model quotes, code converts and fills in numbers) | US-8.1, US-8.2 | 19 calls, same graders | Passed: Intake 100%, nothing invented; 2 of 2 memos faithful. Failed: Red team still 2 of 6, even when given the ratios |
@@ -323,7 +323,7 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Live mode hidden without AWS credentials | US-8.5 | Manual test with credentials removed | Passed |
 | Bucket controls in place | US-9.1 | Read back every setting after creation | Passed: public access blocked, ACLs disabled, versioning on, SSE-S3 with SSE-C blocked, HTTPS-only policy, logs to CloudWatch, us-east-2 |
 | Planted bad file is quarantined | US-9.2 | 13 files landed, one with prevented > flagged | Passed: 12 months in silver, `month=2027-01/actuals.csv` quarantined with both reasons |
-| Gold table equals the app's formula | US-9.3 | Unit test on the exported gold table | Passed: identical savings, adoption, recall and flags; $463,500 delivered vs $660,392 forecast |
+| Gold table equals the app's formula | US-9.3 | Unit test on the exported gold table | Passed: identical savings, adoption, recall and flags; $463,500 delivered (the gold table's own forecast column was computed at the earlier $660,392 estimate; the app recomputes it) |
 | Re-run does not double-count | US-9.4 | Run the job twice | Passed: second run loaded 0 rows |
 
 ---

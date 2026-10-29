@@ -57,7 +57,7 @@
     <div class="grid g3">
       <div class="card"><div class="label">At stake</div><div class="stat" data-v="plant.total" data-f="money"></div><div class="small">a year in losses · <span class="tag warn">estimated</span></div></div>
       <div class="card"><div class="label">Planned savings</div><div class="stat" data-v="published.net" data-f="money"></div><div class="small">a year, from published studies · <span class="tag good">published</span></div></div>
-      <div class="card"><div class="label">Delivered in year 1</div><div class="stat" id="deliveredPct"></div><div class="small">of the forecast · <span class="tag warn">simulated</span></div></div>
+      <div class="card"><div class="label">Delivered in year 1</div><div class="stat" data-v="tracking.delivered" data-f="money"></div><div class="small">against the <span data-v="tracking.plan" data-f="money"></span> plan · <span class="tag warn">simulated</span></div></div>
     </div>
     <div class="grid g3" style="margin-top:14px">
       <div class="card tight"><div class="label">Provider</div><b>An AI vendor selling 9 tools to manufacturers, telecoms and banks</b> <span class="tag warn">example</span></div>
@@ -118,7 +118,6 @@
   show("sentry");
   Characters.mountCast(document.getElementById("hero"), ["sentry", "lens", "oracle", "rulebook", "snooze"], { onSelect: show });
 
-  document.getElementById("deliveredPct").textContent = pct(delivered);
   stairs(document.getElementById("stairs"), { link: true, panel: document.getElementById("stairsPanel") });
 
   document.getElementById("decisionCards").innerHTML = [

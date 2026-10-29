@@ -1,7 +1,7 @@
 """Predictive maintenance model on the AI4I 2020 dataset (UCI, CC BY 4.0).
 
 Trains two models and returns their predicted failure probabilities on a held-out test set:
-  - Logistic regression: simple, explainable baseline
+  - Logistic regression: simple, explainable baseline (unweighted, so its probabilities stay realistic)
   - Gradient boosting:   stronger model for tabular data
 
 Failure-mode columns (TWF, HDF, PWF, OSF, RNF) are excluded because they describe the
@@ -53,7 +53,7 @@ def train_and_score(df: pd.DataFrame | None = None, test_size: float = 0.3) -> d
 
     models = {
         "Logistic regression (baseline)": make_pipeline(
-            StandardScaler(), LogisticRegression(max_iter=2000, class_weight="balanced")
+            StandardScaler(), LogisticRegression(max_iter=2000)
         ),
         "Gradient boosting": HistGradientBoostingClassifier(
             max_iter=300, learning_rate=0.05, random_state=RANDOM_STATE

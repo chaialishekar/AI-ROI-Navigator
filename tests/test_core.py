@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 
 from src.readiness import verdict
-from src.tracking import explain_gap, simulate, track, validate
-from src.value import Costs, bootstrap, default_ranges, evaluate, scenarios, sensitivity
+from src.tracking import explain_gap, month_label, simulate, track, validate
+from src.value import Costs, alert_threshold, bootstrap, default_ranges, evaluate, scenarios, sensitivity
 
 
 def test_library_ranking_matches_hand_calculation():
@@ -279,4 +279,21 @@ def test_rule_alerts_align_with_test_set():
     assert len(rules) == len(res["y_test"])
     r = evaluate(res["y_test"], rules, 0.5, Costs())
     assert r["recall"] > 0.9          # failures were generated from these limits
-    assert r["false_alarms"] > 5 * evaluate(res["y_test"], res["models"]["Gradient boosting"]["proba"], 0.05, Costs())["false_alarms"]
+    ai = evaluate(res["y_test"], res["models"]["Gradient boosting"]["proba"], alert_threshold(Costs()), Costs())
+    assert r["false_alarms"] > 5 * ai["false_alarms"]
+
+
+def test_alert_threshold_is_break_even_from_costs():
+    # alert when chance x ($25k - $4k) > $500: 500 / 21,000 = 2.4%, rounded to the slider's 0.01 step
+    assert alert_threshold(Costs()) == 0.02
+    assert alert_threshold(Costs(cost_false_alarm=5_000)) == 0.24
+    assert alert_threshold(Costs(cost_missed=4_000)) == 0.99     # catching early saves nothing: never alert
+
+
+def test_months_are_counted_from_go_live():
+    assert month_label("2026-01", "2026-01") == "Month 1"
+    assert month_label("2027-01", "2026-01") == "Month 13"
+    t = track(pd.DataFrame({"month": ["2025-11", "2025-12"], "alerts_raised": [2, 2], "failures_flagged": [1, 1],
+                            "failures_prevented": [1, 1], "failures_missed": [0, 1], "false_alarms": [1, 0]}),
+              {"annual_net": 120_000, "recall": 0.9}, Costs())
+    assert t["label"].tolist() == ["Month 1", "Month 2"]
