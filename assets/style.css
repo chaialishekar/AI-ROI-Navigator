@@ -301,3 +301,8 @@ a.upnext:hover .go { background: #fff; }
 .shortlist .arr { color: var(--teal); }
 @media (max-width: 640px) { .shortlist a { grid-template-columns: 26px 1fr; } .shortlist .a { grid-column: 2; } .shortlist .arr { display: none; } }
 @media (max-width: 640px) { .shortlist a { row-gap: 4px; padding: 12px 2px; } }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+.checks span { font-size: 12px; padding: 3px 8px; border-radius: 999px; }
+.checks .ok { background: var(--good-bg); color: var(--good); }
+.checks .no { background: var(--warn-bg); color: var(--warn); }
+.seat .fix { margin-top: 12px; }

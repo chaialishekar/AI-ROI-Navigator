@@ -8,7 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=20261029">
 </head>
 <body data-root=".">
 <nav class="nav" data-nav></nav>
@@ -40,7 +40,7 @@
 </div>
 
 <section id="short">
-  <div class="wrap reveal">
+  <div class="wrap">
     <p class="eyebrow">Short on time?</p>
     <h2>The whole case in seven lines.</h2>
     <div class="shortlist" id="shortList"></div>
@@ -54,7 +54,7 @@
     <h2>Read the case, try the model, or check the evidence.</h2>
     <div class="grid g3">
       <a class="card" style="text-decoration:none" href="phases/discover.html"><h3>Explore the case</h3><p class="muted" style="margin:0">Seven short pages, one per phase: what I did, what I found, what was decided.</p></a>
-      <a class="card" style="text-decoration:none" href="phases/business-case.html#details"><h3>Try the model</h3><p class="muted" style="margin:0">Change the plant's costs and the alert level; see the savings, and whether the CFO, COO and CTO would sign.</p></a>
+      <a class="card" style="text-decoration:none" href="phases/business-case.html#details"><h3>Try the model</h3><p class="muted" style="margin:0">Change the plant's costs and the alert level; savings update and the CFO, COO and CTO react.</p></a>
       <a class="card" style="text-decoration:none" id="docsCard" target="_blank" rel="noopener"><h3>Inspect the evidence ↗</h3><p class="muted" style="margin:0">PRD, requirements, 13 acceptance tests, the two-page decision brief and the code.</p></a>
     </div>
   </div>
@@ -111,10 +111,10 @@
 
 <footer data-footer></footer>
 
-<script src="assets/data.js"></script>
-<script src="assets/site.js"></script>
+<script src="assets/data.js?v=20261029"></script>
+<script src="assets/site.js?v=20261029"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="assets/characters.js"></script>
+<script src="assets/characters.js?v=20261029"></script>
 <script>
   const { D, money, pct, doc, stairs, delivered } = Site;
   const opt = Object.fromEntries(D.options.map(o => [o.key, o]));
