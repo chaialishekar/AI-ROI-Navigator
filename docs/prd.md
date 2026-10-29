@@ -34,10 +34,9 @@ An AI provider sells a library of AI tools. Its clients keep asking two question
 
 | Source | Finding |
 |---|---|
-| [IBM CEO Study, 2025](https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles) (2,000 CEOs) | Only 25% of AI initiatives delivered the expected ROI; 65% of CEOs now pick AI use cases based on ROI |
-| [PwC 29th Global CEO Survey, 2026](https://www.pwc.com/gx/en/issues/c-suite-insights/ceo-survey.html) (4,454 CEOs) | 56% saw neither higher revenue nor lower costs from AI |
-| [McKinsey State of AI, 2025](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-2025) | 39% report any profit (EBIT) impact from AI |
-| [BCG, Where's the Value in AI?, 2024](https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value) (1,000 executives) | 74% have yet to show tangible value; leaders put 70% of effort into people and processes, 10% into algorithms |
+| [PwC 29th Global CEO Survey, January 2026](https://www.pwc.com/gx/en/issues/c-suite-insights/the-leadership-agenda/ceo-survey-ai.html) (4,454 CEOs) | 56% saw no significant financial benefit from AI in the past 12 months; only 12% saw both higher revenue and lower costs |
+| [McKinsey, The State of AI, August 2026](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai) (1,719 respondents) | 37% attribute any EBIT impact to AI; 6% are high performers (5%+ of EBIT from AI), unchanged from 2025 |
+| [Deloitte, AI ROI: the paradox of rising investment and elusive returns, October 2025](https://www.deloitte.com/global/en/issues/ai/ai-roi-the-paradox-of-rising-investment-and-elusive-returns.html) (1,854 executives, Europe and Middle East) | 85% raised AI investment, yet a typical use case pays back in 2–4 years against 7–12 months for other technology; 6% paid back within a year |
 | [Gartner, September 2026](https://www.gartner.com/en/newsroom/press-releases/gartner-survey-finds-only-22-percent-of-organizations-have-successfully-scaled-ai-across-multiple-business-units) (1,303 leaders) | Firms that track AI ROI and drop weak projects see positive returns on 81% of initiatives; the most popular AI uses rarely return the most |
 
 **Why now:** AI budgets keep growing while most buyers cannot show a return. The firms that do well are the ones that measure, which is a process and analysis gap more than a technology gap.
@@ -156,7 +155,7 @@ v1 is a case study, so these are the targets a provider would track in a pilot w
 | Time from a vendor pitch to a priced shortlist | Speed | Under 1 hour (today: weeks of back-and-forth) |
 | Share of first picks whose evidence is "medium" or stronger | Quality | 80%+ |
 | Business cases approved without a request for more numbers | Adoption | 70%+ |
-| Projects reaching at least 90% of forecast savings by month 6 | Outcome | 60%+, against the 25% in IBM's study |
+| Projects reaching at least 90% of forecast savings by month 6 | Outcome | 60%+, where most AI projects today cannot show a return at all (PwC 2026, McKinsey 2026) |
 | Projects stopped or fixed within 3 months of falling behind | Outcome | 100% flagged by the monthly check |
 
 ---

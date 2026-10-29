@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/style.css?v=2026102904">
+  <link rel="stylesheet" href="../assets/style.css?v=2026102909">
 </head>
 <body data-root="..">
 <nav class="nav" data-nav></nav>
@@ -43,6 +43,25 @@
   </div>
 </section>
 
+<section id="sources">
+  <div class="wrap reveal">
+    <p class="eyebrow">Where the numbers come from</p>
+    <h2>Example costs, checked against public figures.</h2>
+    <p class="muted" style="margin:0 0 18px;max-width:680px">No company publishes its breakdown costs, so the plant is an example. Where a public figure exists, the assumption is set against it, and on the cautious side.</p>
+    <div class="tscroll"><table class="t">
+      <tr><th>Assumption</th><th>Value</th><th>Checked against</th></tr>
+      <tr><td>Cost of a breakdown</td><td><span data-v="costs.cost_missed" data-f="money"></span></td><td>Below one hour of downtime at the lowest sector rate Siemens reports ($36k an hour, consumer goods), and close to Purina's 2024 figures ($11M avoided over 277 hours, about $40k an hour). Far below the $2.3M an hour of a car assembly plant: this is one machining cell at a parts supplier.
+        <div class="small"><a href="https://assets.new.siemens.com/siemens/assets/api/uuid:1b43afb5-2d07-47f7-9eb7-893fe7d0bc59/TCOD-2024_original.pdf" target="_blank" rel="noopener">Siemens 2024</a> · <a href="https://www.augury.com/blog/asset-care/predictive-maintenance-in-manufacturing/" target="_blank" rel="noopener">Augury, on Purina</a></div></td></tr>
+      <tr><td>Inspection on a false alarm</td><td><span data-v="costs.cost_false_alarm" data-f="money"></span></td><td>A miss costs 50 times a false alarm here. A 2025 research benchmark on what appears to be the same dataset uses the same ratio.
+        <div class="small"><a href="https://arxiv.org/abs/2512.01149" target="_blank" rel="noopener">Dhande et al., arXiv preprint, 2025</a> (not peer-reviewed)</div></td></tr>
+      <tr><td>Breakdowns a year</td><td><span data-v="costs.failures_per_year" data-f="int"></span></td><td>My estimate for the example plant. Try "Twice as many breakdowns" in the calculator.</td></tr>
+      <tr><td>Planned repair when caught early</td><td><span data-v="costs.cost_caught" data-f="money"></span></td><td>My estimate: parts and labour, done at the next scheduled stop.</td></tr>
+      <tr><td>Running cost, setup, training</td><td><span data-v="costs.running_cost" data-f="money"></span> a year · <span data-v="costs.deployment_cost" data-f="money"></span> · <span data-v="costs.change_cost" data-f="money"></span></td><td>My estimates. The calculator's "Setup costs 4× more" and "People costs double" show the case survives both.</td></tr>
+      <tr><td>Savings finance plans on</td><td><span data-v="published.net" data-f="money"></span> a year</td><td>Published results for predictive maintenance, not my model. <a href="evaluate.html">See the sources on Evaluate</a>.</td></tr>
+    </table></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">How sure are we</p>
@@ -75,29 +94,38 @@
     <div class="card">
       <div class="step-h"><span class="num">1</span><div><b>Change an assumption</b><div class="small">Click any of these, one or several. Each changes one number and keeps your other changes.</div></div></div>
       <div class="try" id="dTry"></div>
-      <details class="adv" id="dAdv"><summary>See and edit every number</summary>
+      <div class="step-h"><span class="num">2</span><div><b>The result</b><div class="small" id="dNow"></div></div>
+        <button class="linkbtn" type="button" id="dReset" style="margin-left:auto" hidden>Back to my assumptions</button></div>
+      <div class="out" id="dOut" style="margin-top:10px"></div>
+      <p class="muted" style="margin:16px 0 0" id="dSay"></p>
+      <div class="step-h"><span class="num">3</span><div><b>Would the board sign off?</b><div class="small">How three executives react to your numbers. A concern often comes with a fix you can try in one click.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
+      <div class="callout" id="dVsRules" style="margin:0 0 12px"></div>
+      <div class="board" id="dBoard" aria-live="polite"></div>
+      <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
+      <p class="small" style="margin:6px 0 0">One worry is not a number here: the COO also wants the <span data-v="readiness.weakest.length"></span> readiness gaps closed before go-live. That is about people and process, so it is on the <a href="readiness.html">Readiness page</a>. The reactions are fixed rules, not a live AI. The ✓/✗ checks under each one are the same exit checks the pilot has to pass on <a href="deliver.html">Deliver</a>.</p>
+      <div class="step-h"><span class="num">4</span><div><b>Where does the winner flip?</b><div class="small">Net savings a year as the cost of a breakdown changes, everything else as set above. Doc uses its break-even alert level at each cost. Click the chart to try that cost.</div></div></div>
+      <div class="flip">
+        <div class="flip-h"><label class="small flip-f"><span>Crew acts on <b id="dFollowTxt">100%</b> of the rules' alerts</span><input type="range" id="dFollow" min="50" max="100" step="5" value="100"></label></div>
+        <div class="legend" style="margin-top:10px"><span><i class="sw" style="background:var(--teal)"></i>Doc (AI)</span><span><i class="sw" style="background:var(--warn)"></i>Manual's rules (no AI)</span></div>
+        <div id="dFlip" class="flip-c"></div>
+        <p class="muted" id="dFlipTxt" style="margin:8px 0 0" aria-live="polite"></p>
+      </div>
+      <details class="adv" id="dAdv"><summary>Edit every number, and compare every option side by side</summary>
       <div class="inputs" id="dIn" style="margin-top:14px"></div>
       <div style="margin-top:18px"><label class="small" for="dLevel">How sure should the AI be before it warns? <b id="dLevelTxt"></b></label>
         <input id="dLevel" type="range" min="1" max="99" step="1" style="width:100%;accent-color:var(--teal)">
         <div class="slider-hint small"><span>← warns early: catches more, more false alarms</span><span>warns late: fewer false alarms, misses more →</span></div>
         <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button></div>
-      </details>
-      <div class="step-h"><span class="num">2</span><div><b>The result</b><div class="small" id="dNow"></div></div>
-        <button class="linkbtn" type="button" id="dReset" style="margin-left:auto" hidden>Back to my assumptions</button></div>
-      <div class="out" id="dOut" style="margin-top:10px"></div>
-      <p class="muted" style="margin:16px 0 0" id="dSay"></p>
-      <div class="step-h"><span class="num">3</span><div><b>Against the options without AI</b><div class="small">The same costs applied to every option. Pin your setup to keep it as a column while you try another.</div></div>
+      <div class="step-h"><div><b>Every option side by side</b><div class="small">The same costs applied to every option. Pin your setup to keep it as a column while you try another.</div></div>
         <button class="chip" type="button" id="dPin">Pin this setup</button></div>
       <div class="tscroll"><table class="t cmp" id="dCmp"></table></div>
-      <div class="step-h"><span class="num">4</span><div><b>Would the board sign off?</b><div class="small">How three executives react to your numbers. A concern often comes with a fix you can try in one click.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
-      <div class="board" id="dBoard" aria-live="polite"></div>
-      <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
-      <p class="small" style="margin:6px 0 0">One worry is not a number here: the COO also wants the <span data-v="readiness.weakest.length"></span> readiness gaps closed before go-live. That is about people and process, so it is on the <a href="readiness.html">Readiness page</a>. The reactions are fixed rules, not a live AI. The ✓/✗ checks under each one are the same exit checks the pilot has to pass on <a href="deliver.html">Deliver</a>.</p>
+      </details>
     </div>
     <details class="tech"><summary>For the technical reader</summary>
     <div class="grid g2" style="margin-top:14px">
       <div class="card"><div class="label">Models compared on the same 3,000 test records</div><div class="tscroll"><table class="t" id="dAuc"></table></div>
-        <p class="small" style="margin:12px 0 0">AUC: how well a model ranks risky machines above safe ones (1.0 is perfect, 0.5 is a coin flip).</p></div>
+        <p class="small" style="margin:12px 0 0">AUC: how well a model ranks risky machines above safe ones (1.0 is perfect, 0.5 is a coin flip).</p>
+        <p class="small" style="margin:8px 0 0">Standard methods on purpose: gradient-boosted decision trees (the family XGBoost and LightGBM belong to) against a logistic regression baseline. The dollars come from a cost matrix: each catch, miss and false alarm is priced, and the alert level is swept from 1% to 99% to find where net savings peak. Change a cost and that break-even level moves with it.</p></div>
       <div class="card"><div class="label">What changing the inputs does not do</div>
         <p class="muted" style="margin:6px 0 0">The model is not retrained. Its tested results at each alert level (what share of breakdowns it catches, how many false alarms it raises) are fixed; your costs turn them into dollars, with the same formula as the Python code.</p></div>
     </div></details>
@@ -107,10 +135,10 @@
 <section data-pager></section>
 <footer data-footer></footer>
 
-<script src="../assets/data.js?v=2026102904"></script>
-<script src="../assets/site.js?v=2026102904"></script>
+<script src="../assets/data.js?v=2026102909"></script>
+<script src="../assets/site.js?v=2026102909"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="../assets/characters.js?v=2026102904"></script>
+<script src="../assets/characters.js?v=2026102909"></script>
 <script>
   const { D, money, pct, months, phaseHead } = Site;
   phaseHead(2);
@@ -157,6 +185,7 @@
   document.getElementById("rulesWin").innerHTML = lead > 0
     ? `On paper the manual's rules save <b>${money(lead)} a year more</b> than Doc, because they catch slightly more breakdowns. But they raise about ${Math.round(rv.caught + rv.false_alarms)} alerts a year and ${Math.round(rv.false_alarms)} of them are false. Each real alert the crew skips turns a ${money(c.cost_caught)} repair back into a ${money(c.cost_missed)} breakdown. If the crew ignores more than <b>${pct(share)}</b> of the rules' real alerts (about 1 in ${Math.round(1 / share)}), Doc comes out ahead. In the simulated rollout on Measure, crews acted on only 50–67% of alerts in the first three months, so I planned for alert fatigue. If your crew reliably acts on every alert, the rules are the better buy.`
     : `At these costs Doc saves more than the manual's rules even if the crew acts on every rule alert.`;
+  document.getElementById("rulesWin").innerHTML += ` <span class="muted">One more caution: this dataset's breakdowns were generated from limits close to the manual's, which flatters the rules. On a real plant's sensor data they would likely do worse.</span>`;
 </script>
 <script>
 (() => {
@@ -169,7 +198,7 @@
   // say, fix, tests}], where tests are the pilot's exit checks as [passed, label] and fix (optional) is {label, set: {cost: value}}, {label, level} or {label, href}: the change that
   // would answer the concern. The board never changes anything itself; the page applies a fix only when clicked.
   function board(c, r, level) {
-    const wk = r.false_alarms / 52, gross = r.net + c.running_cost, be = breakEven(c), atBe = value(c, be);
+    const rv = rulesNow(c), wk = r.false_alarms / 52, gross = r.net + c.running_cost, be = breakEven(c), atBe = value(c, be);
     const lost = atBe.net - r.net;
     const toBe = { label: `Apply: go back to the ${Math.round(be * 100)}% break-even level`, level: be };
     // Lowest alert level that keeps false alarms to one a week and at least half the alerts real
@@ -184,6 +213,7 @@
           { label: `Apply: negotiate running cost to ${usd(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
       : r.payback > 12 ? ["concerns", `${r.payback.toFixed(1)} months to pay back. Fine, but release the money in stages: one production line first.`,
           { label: "See the staged rollout in Decide →", href: "decide.html" }]
+      : rv.net > r.net ? ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. The manual's rules would net ${usd(rv.net - r.net)} more on paper, so I'm backing Doc only on the COO's word that crews won't act on ${Math.round(rv.false_alarms)} false alarms a year.`]
       : ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. I'll still budget on the published studies, not the model test, and treat the rest as upside.`];
     const coo = r.precision < 0.3 ? ["blocks", `Only ${Math.round(r.precision * 100)}% of alerts are real. My crew will stop answering them inside a month.`, toCalm]
       : wk > 1 ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is more than one a week. Expect technicians to start ignoring it.`, toCalm]
@@ -212,7 +242,14 @@
   const box = document.getElementById("dIn"), lvl = document.getElementById("dLevel");
   box.innerHTML = FIELDS.map(([k, t, step]) => `<label>${t}<input type="number" min="0" step="${step}" data-k="${k}"></label>`).join("");
   const input = k => box.querySelector(`[data-k=${k}]`);
-  let auto = true, pins = [], fixes = [], undo = null;
+  let auto = true, pins = [], fixes = [], undo = null, follow = 1;
+  // The rules if the crew acts on only part of their alerts: each skipped real alert turns a planned repair back into a breakdown
+  function rulesNow(c) {
+    const r = rulesValue(c), skipped = (1 - follow) * r.caught, net = r.net - skipped * (c.cost_missed - c.cost_caught);
+    const live3 = Math.max(0, 36 - c.months_to_deploy), setup = c.deployment_cost + (c.change_cost || 0);
+    return { ...r, caught: r.caught - skipped, missed: r.missed + skipped, recall: r.recall * follow, net,
+             payback: net > 0 ? c.months_to_deploy + setup / (net / 12) : null, three_year: net * live3 / 12 - setup };
+  }
   const costs = () => Object.fromEntries(FIELDS.map(([k]) => [k, +input(k).value || 0]));
   const setTo = obj => Object.entries(obj).forEach(([k, v]) => { const i = input(k); i.value = v; i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); });
 
@@ -248,15 +285,62 @@
 
   function compare(c, level, label) {
     const none = { net: 0, payback: null, three_year: 0, recall: 0, false_alarms: 0, precision: null, none: true };
-    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`Doc · ${label}`, value(c, level), `alert at ${Math.round(level * 100)}%`],
+    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesNow(c), follow < 1 ? `no AI · crew acts on ${pct(follow)}` : "no AI"], [`Doc · ${label}`, value(c, level), `alert at ${Math.round(level * 100)}%`],
       ...pins.map((p, k) => [`Pinned · ${p.label}`, value(p.c, p.level), `alert at ${Math.round(p.level * 100)}% <button class="linkbtn" type="button" data-unpin="${k}">remove</button>`])];
     const best = Math.max(...cols.map(x => x[1].net));
     const rows = [["Net savings a year", r => usd(r.net)], ["Pays for itself in", r => (r.none ? "–" : months(r.payback))],
       ["Net over 3 years", r => usd(r.three_year)], ["Breakdowns caught", r => pct(r.recall)],
       ["False alarms a year", r => r.false_alarms.toFixed(1)], ["Alerts that are real", r => (r.precision == null ? "–" : pct(r.precision))]];
-    document.getElementById("dCmp").innerHTML = `<tr><th></th>${cols.map(([t, , n], k) => `<th class="${k === 2 ? "now" : ""}">${t}<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">${n || "&nbsp;"}</div></th>`).join("")}</tr>`
+    document.getElementById("dCmp").innerHTML = `<tr><th></th>${cols.map(([t, r, n], k) => `<th class="${k === 2 ? "now" : ""}">${t}${r.net === best && best > 0 ? ` <span class="tag good" style="text-transform:none;letter-spacing:0">Saves most</span>` : ""}<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">${n || "&nbsp;"}</div></th>`).join("")}</tr>`
       + rows.map(([n, f], j) => `<tr><td>${n}</td>${cols.map(([, r], k) => `<td class="${k === 2 ? "now" : ""}">${j === 0 && r.net === best ? `<b>${f(r)}</b>` : f(r)}</td>`).join("")}</tr>`).join("");
   }
+
+  // Where does the winner flip? Doc against the rules across breakdown costs, as an inline chart
+  const flipEl = document.getElementById("dFlip");
+  let flipPts = [], flipX = null;
+  function flip(c, hover) {
+    const W = Math.max(300, flipEl.clientWidth || 700), H = W < 500 ? 220 : 260, L = 52, R = 12, T = 18, Bm = 30;
+    const M0 = c.cost_missed, xmin = Math.max(1000, Math.ceil(c.cost_caught / 1000) * 1000);
+    const xmax = Math.max(60000, Math.ceil(M0 * 1.3 / 5000) * 5000);
+    const pts = [...Array(121).keys()].map(i => {
+      const m = xmin + (xmax - xmin) * i / 120, k = { ...c, cost_missed: m };
+      return [m, value(k, breakEven(k)).net, rulesNow(k).net];
+    });
+    const ys = pts.flatMap(p => [p[1], p[2]]), ymin = Math.min(0, ...ys), ymax = Math.max(1, ...ys);
+    const X = m => L + (m - xmin) / (xmax - xmin) * (W - L - R), Y = v => T + (ymax - v) / (ymax - ymin) * (H - T - Bm);
+    const line = j => pts.map((p, i) => `${i ? "L" : "M"}${X(p[0]).toFixed(1)},${Y(p[j]).toFixed(1)}`).join("");
+    const flips = [];
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1][1] - pts[i - 1][2], b = pts[i][1] - pts[i][2];
+      if ((a > 0) !== (b > 0)) flips.push(pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * a / (a - b));
+    }
+    const tick = (lo, hi, n) => { const step = Math.pow(10, Math.floor(Math.log10((hi - lo) / n))), s = [1, 2, 5, 10].map(k => k * step).find(k => (hi - lo) / k <= n);
+      const out = []; for (let v = Math.ceil(lo / s) * s; v <= hi; v += s) out.push(v); return out; };
+    const xt = tick(xmin, xmax, W < 500 ? 4 : 6), yt = tick(ymin, ymax, 4);
+    const h = hover ?? pts.reduce((best, p) => (Math.abs(p[0] - M0) < Math.abs(best[0] - M0) ? p : best));
+    flipEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Net savings a year for Doc and for the manual's rules as the cost of a breakdown changes">
+      ${yt.map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" class="${v === 0 ? "zero" : "grid"}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${money(v)}</text>`).join("")}
+      ${xt.map(v => `<text x="${X(v)}" y="${H - 10}" text-anchor="${X(v) > W - R - 20 ? "end" : "middle"}">${money(v)}</text>`).join("")}
+      ${flips.map(m => `<line x1="${X(m)}" x2="${X(m)}" y1="${T}" y2="${H - Bm}" class="flipline"/><text x="${X(m) + (X(m) > W - 120 ? -6 : 6)}" y="${T + 10}" text-anchor="${X(m) > W - 120 ? "end" : "start"}" class="flipt">Flips at ${money(m)}</text>`).join("")}
+      <path d="${line(2)}" class="ln rules"/><path d="${line(1)}" class="ln doc"/>
+      <line x1="${X(h[0])}" x2="${X(h[0])}" y1="${T}" y2="${H - Bm}" class="guide"/>
+      <circle cx="${X(h[0])}" cy="${Y(h[2])}" r="4.5" class="dot rules"/><circle cx="${X(h[0])}" cy="${Y(h[1])}" r="4.5" class="dot doc"/>
+    </svg>`;
+    flipPts = pts; flipX = X;
+    const crew = follow < 1 ? ` if the crew acts on ${pct(follow)} of the rules' alerts` : " when the crew acts on every rule alert";
+    const at = `At ${money(h[0])} a breakdown${hover ? "" : " (your number)"}: Doc ${money(h[1])} a year, the rules ${money(h[2])}. <b>${h[1] >= h[2] ? "Doc saves more" : "The rules save more"}.</b>`;
+    const ends = pts[pts.length - 1][2] > pts[pts.length - 1][1];
+    const sum = !flips.length ? ` Across this whole range, ${ends ? "the rules" : "Doc"} wins${crew}.`
+      : ` Below ${money(flips[flips.length - 1])} a breakdown ${ends ? "Doc" : "the rules"} saves more; above it ${ends ? "the rules do" : "Doc does"}${crew}. Pricier breakdowns reward whichever catches more, and on paper the rules catch more; skipped alerts are what hand the win back to Doc.`;
+    document.getElementById("dFlipTxt").innerHTML = at + sum;
+  }
+  const nearest = e => { const r = flipEl.getBoundingClientRect(), x = e.clientX - r.left;
+    return flipPts.reduce((best, p) => (Math.abs(flipX(p[0]) - x) < Math.abs(flipX(best[0]) - x) ? p : best)); };
+  flipEl.addEventListener("mousemove", e => flipPts.length && flip(costs(), nearest(e)));
+  flipEl.addEventListener("mouseleave", () => flip(costs()));
+  flipEl.addEventListener("click", e => { if (!flipPts.length) return; setTo({ cost_missed: Math.round(nearest(e)[0] / 500) * 500 }); document.getElementById("dApplied").textContent = ""; draw(); });
+  if (window.ResizeObserver) new ResizeObserver(() => flipPts.length && flip(costs())).observe(flipEl);
+  document.getElementById("dFollow").addEventListener("input", e => { follow = e.target.value / 100; document.getElementById("dFollowTxt").textContent = `${e.target.value}%`; draw(); });
 
   function draw() {
     const c = costs();
@@ -274,6 +358,10 @@
     document.getElementById("dSay").textContent = r.net > 0
       ? `Catches ${r.caught.toFixed(1)} of ${c.failures_per_year} breakdowns a year and misses ${r.missed.toFixed(1)}; ${pct(r.precision)} of its alerts are real.`
       : "At these costs the AI costs more than it saves.";
+    const rv = rulesNow(c), gap = rv.net - r.net, crew = follow < 1 ? `, with the crew acting on ${pct(follow)} of their alerts` : " on paper";
+    document.getElementById("dVsRules").innerHTML = `<div class="label">Against the option with no AI</div>` + (gap > 0
+      ? `<span class="tag warn" style="margin-top:8px">The no-AI option beat the AI</span><p style="margin:8px 0 0"><b>The manual's rules save ${usd(gap)} a year more${crew}</b> (${usd(rv.net)} against Doc's ${usd(r.net)}), charged the same running and setup costs. The catch: ${Math.round(rv.false_alarms)} false alarms a year against Doc's ${Math.round(r.false_alarms)}, and only ${pct(rv.precision)} of their alerts are real. The board below backs Doc because of that trade-off, not because Doc saves more.</p>`
+      : `<span class="tag good" style="margin-top:8px">The AI beat the no-AI option</span><p style="margin:8px 0 0"><b>Doc saves ${usd(-gap)} a year more than the manual's rules${crew}</b>, and raises ${Math.round(r.false_alarms)} false alarms a year against their ${Math.round(rv.false_alarms)}.</p>`);
     const b = board(c, r, level), MOOD = { backs: ["good", "Backs it"], concerns: ["warn", "Has concerns"], blocks: ["bad", "Blocks it"] };
     document.getElementById("dBoard").innerHTML = b.map((p, i) => `<div class="seat ${p.mood}"><div class="who"><span class="av">${p.role}</span>
       <b>${p.who}</b><span class="tag ${MOOD[p.mood][0]}">${MOOD[p.mood][1]}</span></div>
@@ -282,6 +370,7 @@
       ${p.fix ? (p.fix.href ? `<a class="fix" href="${p.fix.href}">${p.fix.label}</a>` : `<button class="fix" type="button" data-fix="${i}">${p.fix.label.replace("Apply: ", "Try it: ")}</button>`) : ""}</div>`).join("");
     fixes = b;
     compare(c, level, diff.length ? "your setup" : "my assumptions");
+    flip(c);
     const yes = b.filter(p => p.mood === "backs").length, no = b.filter(p => p.mood === "blocks").length;
     document.getElementById("dBoardSum").textContent = no ? `${no} of 3 would block it` : yes === 3 ? "All 3 back it" : `${yes} of 3 back it; the rest want changes`;
     save();

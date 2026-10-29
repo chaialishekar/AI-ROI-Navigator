@@ -91,7 +91,7 @@
       <a class="logo" href="${ROOT}/index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="15" width="5" height="7" rx="1" fill="#111"/><rect x="9.5" y="10" width="5" height="12" rx="1" fill="#111"/><rect x="17" y="4" width="5" height="18" rx="1" fill="#0f6d74"/></svg>The ROI Compass</a>
       <div class="nav-links">
         <a class="hide-sm" href="${ROOT}/index.html#phases">Phases</a>
-        <a class="hide-sm" href="${ROOT}/index.html#decisions">Decisions</a>
+        <a class="hide-sm" href="${ROOT}/index.html#built">What I built</a>
         <a class="hide-sm" href="${REPO}" target="_blank" rel="noopener">GitHub</a>
         <a class="btn" href="${ROOT}/phases/business-case.html#details">Try the model</a>
       </div></div>`;
@@ -152,7 +152,7 @@
     const LIVE = `<b>Go-live!</b> Doc is now watching every machine on the floor. Next question: did the savings show up?`;
     el.innerHTML = `<svg viewBox="0 0 ${20 + 7 * w + dx + 10} ${ly + 60}" role="img" aria-label="Seven phases drawn as a rising staircase, each with its gate, and a person climbing it">
       <defs><marker id="arTeal" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#0f6d74" stroke-width="1.8" stroke-linecap="round"/></marker><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8a8a85" stroke-width="1.5"/></marker></defs>${s}</svg>
-      <div class="stairs-v">${vertical}</div>
+      ${opts.list === false ? "" : `<div class="stairs-v">${vertical}</div>`}
       <div class="golive-msg" role="status" aria-live="polite"></div>`;
 
     function paint() {
@@ -255,7 +255,7 @@
       ${next ? `<a href="${href(next)}" class="upnext"><div class="label">Up next · Phase ${i + 2} of 7 · ${next.name}</div>
         <h3>${next.q}</h3><span class="go">Continue →</span></a>` : `<div class="upnext done"><div class="label">That's the whole case</div>
         <h3>Seven phases, from ${money(D.plant.total)} of losses to ${money(D.tracking.delivered)} delivered.</h3>
-        <a class="btn" href="${ROOT}/index.html#decisions">See the key decisions</a> <a class="btn ghost" href="${REPO}" target="_blank" rel="noopener">View the code ↗</a></div>`}
+        <a class="btn" href="${ROOT}/index.html#twist">See the twist</a> <a class="btn ghost" href="${REPO}" target="_blank" rel="noopener">View the code ↗</a></div>`}
       <div class="pager-links small">${prev ? `<a href="${href(prev)}">← ${prev.name}</a>` : `<a href="${ROOT}/index.html">← Home</a>`}
         ${i < n - 2 ? `<a href="${href(last)}">Skip to the ending: ${last.q.toLowerCase().replace("?", "")} →</a>` : ""}</div></div>`;
     // A small "next" button once the reader is most of the way down, hidden when the card above is on screen

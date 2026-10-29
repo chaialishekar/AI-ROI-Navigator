@@ -9,7 +9,7 @@
 
 **[Open the website](https://chaialishekar.github.io/AI-ROI-Navigator/)** · **[Try the calculator](https://chaialishekar.github.io/AI-ROI-Navigator/phases/business-case.html#details)** · **[2-page decision brief](docs/decision_brief_sample.pdf)** · **[PRD](docs/prd.md)** · **[Architecture](ARCHITECTURE.md)**
 
-Most companies buying AI can't say whether it paid off. In [IBM's 2025 CEO Study](https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles), only 25% of AI projects delivered the return expected. So I took one factory and worked the question through from start to finish: which AI tool to buy first, whether it beats a simple rule or doing nothing, and whether the savings actually showed up a year later.
+Most companies buying AI can't say whether it paid off. Spending keeps rising, yet in [PwC's January 2026 survey of 4,454 CEOs](https://www.pwc.com/gx/en/issues/c-suite-insights/the-leadership-agenda/ceo-survey-ai.html), 56% had seen no significant financial benefit from AI, and [Deloitte](https://www.deloitte.com/global/en/issues/ai/ai-roi-the-paradox-of-rising-investment-and-elusive-returns.html) found a typical AI use case takes 2–4 years to pay back. So I took one factory and worked the question through from start to finish: which AI tool to buy first, whether it beats a simple rule or doing nothing, and whether the savings actually showed up a year later.
 
 ![Home page](docs/site_home.png)
 
@@ -39,9 +39,9 @@ One honest twist: the maintenance manual's simple rules save slightly more on pa
 
 ## What's real and what's illustrative
 
-- **Real:** the machine data ([AI4I 2020](https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset), 10,000 records), the model trained on it, the S3 → Databricks data pipeline, and two generative AI tests on Amazon Bedrock.
+- **Real:** the machine data ([AI4I 2020](https://archive.ics.uci.edu/dataset/601/ai4i+2020+predictive+maintenance+dataset), 10,000 records), the model trained on it (gradient-boosted decision trees, the family XGBoost belongs to, priced through a cost matrix of catches, misses and false alarms), the S3 → Databricks data pipeline, and two generative AI tests on Amazon Bedrock.
 - **Published, with sources:** how much each AI tool improved results elsewhere, labelled by how strong the evidence is.
-- **Illustrative:** the factory's costs, the vendor's prices and the team ratings (all editable on the website), and the year after launch (simulated).
+- **Illustrative:** the factory's costs, the vendor's prices and the team ratings (all editable on the website), and the year after launch (simulated). Where a public figure exists, the costs are checked against it: a breakdown is priced at $25k, below the $36k an hour Siemens reports for the lowest-cost sector in its [2024 downtime study](https://assets.new.siemens.com/siemens/assets/api/uuid:1b43afb5-2d07-47f7-9eb7-893fe7d0bc59/TCOD-2024_original.pdf). The full list is on the [business case page](https://chaialishekar.github.io/AI-ROI-Navigator/phases/business-case.html#sources).
 - **A caution:** the dataset is synthetic, so breakdowns are easier to predict than in a real plant. That's why the budget is set on the published $290k, not the model's $658k.
 
 ## On the website
@@ -82,7 +82,7 @@ One honest twist: the maintenance manual's simple rules save slightly more on pa
 pip install -r requirements.txt
 python -m http.server -d site 8000   # the website, at localhost:8000
 streamlit run app.py                 # the analyst workbench, including live Bedrock runs
-pytest                               # 23 tests
+pytest                               # 24 tests
 ```
 
 After changing anything in `src/` or `data/`, refresh the website's numbers with `python site/export_data.py`.

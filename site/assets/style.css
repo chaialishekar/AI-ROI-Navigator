@@ -1,5 +1,5 @@
 :root {
-  --page: #f7f7f5; --card: #ffffff; --ink: #111111; --muted: #6b6b6b; --faint: #8a8a85; --line: #e6e4df;
+  --page: #f7f7f5; --card: #ffffff; --ink: #111111; --muted: #55554f; --faint: #73736d; --line: #e6e4df;
   --teal: #0f6d74; --teal-dark: #16494d; --step: #1d2521; --step-top: #d7d4cc; --step-side: #bdb9af;
   --done: #2f7a3a; --done-top: #a8d58a;
   --good: #2f6b1f; --good-bg: #e6f2c8; --warn: #7a4700; --warn-bg: #f6e3c8;
@@ -8,7 +8,7 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--page); color: var(--ink); font-family: "Inter", system-ui, sans-serif;
-       font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+       font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
 a { color: inherit; }
 img { max-width: 100%; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
@@ -33,14 +33,14 @@ img { max-width: 100%; }
 h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 400; letter-spacing: -0.035em; line-height: 1.04; margin: 0; }
 h2 { font-size: clamp(26px, 3.4vw, 38px); font-weight: 400; letter-spacing: -0.025em; line-height: 1.15; margin: 0 0 12px; }
 h3 { font-size: 18px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
-.lead { font-size: 18px; color: var(--muted); max-width: 620px; margin: 16px 0 0; }
+.lead { font-size: 19px; color: var(--muted); max-width: 640px; margin: 16px 0 0; }
 .center { text-align: center; }
 .center .lead { margin-left: auto; margin-right: auto; }
 .muted { color: var(--muted); }
-.small { font-size: 13px; color: var(--faint); }
+.small { font-size: 14px; color: var(--faint); }
 
 /* Sections */
-section { padding: 72px 0; border-top: 1px solid var(--line); }
+section { padding: 80px 0; border-top: 1px solid var(--line); }
 section.first { border-top: 0; padding-top: 48px; }
 .grid { display: grid; gap: 14px; margin-top: 28px; }
 .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -307,3 +307,60 @@ a.upnext:hover .go { background: #fff; }
 .tour-more { font-size: 14px; font-weight: 500; color: var(--teal); }
 .detail.tour .tour-nav { display: flex; font-size: inherit; letter-spacing: normal; text-transform: none; color: inherit; margin: 0; }
 .detail.tour .tour-head .label { display: inline; margin: 0; }
+
+/* Where does the winner flip? (business case calculator) */
+.flip { margin-top: 18px; background: var(--page); border-radius: 12px; padding: 16px; }
+.flip-h { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; }
+.flip-h > div { flex: 1 1 320px; }
+.flip-f { display: flex; flex-direction: column; gap: 6px; min-width: 220px; }
+.flip-f input { width: 100%; accent-color: var(--teal); }
+.flip .legend { margin-top: 10px; }
+.flip .sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.flip-c { margin-top: 6px; cursor: crosshair; }
+.flip-c svg { display: block; max-width: 100%; height: auto; }
+.flip-c text { font-size: 11px; fill: var(--muted); font-family: inherit; }
+.flip-c .grid { stroke: var(--line); }
+.flip-c .zero { stroke: var(--faint); }
+.flip-c .ln { fill: none; stroke-width: 2.5; }
+.flip-c .ln.doc { stroke: var(--teal); }
+.flip-c .ln.rules { stroke: var(--warn); stroke-dasharray: 6 4; }
+.flip-c .dot.doc { fill: var(--teal); }
+.flip-c .dot.rules { fill: var(--warn); }
+.flip-c .guide { stroke: var(--ink); stroke-opacity: .25; }
+.flip-c .flipline { stroke: var(--ink); stroke-dasharray: 3 3; }
+.flip-c .flipt { fill: var(--ink); font-weight: 600; }
+
+/* Home: one-scroll story */
+section.tight-top { border-top: 0; padding-top: 24px; }
+.narrow { max-width: 760px; }
+.body { font-size: 18px; color: var(--ink); max-width: 680px; margin: 0 0 16px; }
+.accent { color: var(--teal); }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 28px 0; }
+.trio p { margin: 2px 0 0; color: var(--muted); font-size: 16px; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 28px; }
+.context { max-width: 680px; margin: 22px auto 0; text-align: center; line-height: 1.6; }
+.vs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 8px 0 22px; }
+.vs > div { background: var(--card); border-radius: var(--radius); padding: 18px 20px; }
+.vs p { margin: 0; color: var(--muted); font-size: 15px; }
+.answers { list-style: none; margin: 18px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.answers li a { display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1.3fr); gap: 18px; align-items: baseline;
+                padding: 16px 4px; border-bottom: 1px solid var(--line); text-decoration: none; transition: background .15s; }
+.answers li a:hover { background: var(--card); }
+.answers .n { font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.answers .q { display: block; color: var(--muted); font-size: 15px; margin-top: 2px; }
+.answers .a { color: var(--ink); }
+.built { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; margin-top: 28px; }
+.built p { margin: 0; color: var(--muted); font-size: 15px; }
+@media (max-width: 860px) { .built { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .trio { grid-template-columns: 1fr; gap: 18px; text-align: left; }
+  .vs, .built { grid-template-columns: 1fr; }
+  .answers li a { grid-template-columns: 32px minmax(0, 1fr); }
+  .answers .a { grid-column: 2; }
+  #climbAgain { display: none; }
+}
+.where { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+.where > div { background: var(--card); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; }
+.where p { margin: 6px 0 10px; font-size: 16px; flex: 1; }
+@media (max-width: 860px) { .where { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .where { grid-template-columns: 1fr; } }
