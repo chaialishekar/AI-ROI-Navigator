@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evaluate options · AI ROI Navigator</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-root="..">
+<nav class="nav" data-nav></nav>
+
+<section class="first">
+  <div class="wrap phase-head">
+    <div data-phase-head></div>
+    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Compare the library live ↗</a></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">What I did</p>
+    <h2>Priced every AI in the library against this plant's losses.</h2>
+    <div class="prose">
+      <p>The provider's library has nine AI tools. Three fit this plant. For each one I took the improvement it
+        achieved elsewhere, from a published source, and applied it to the plant's own loss. Then I subtracted what the
+        tool costs to set up and run, over three years.</p>
+      <ul>
+        <li><b>Expected view:</b> the middle of each published range.</li>
+        <li><b>Cautious view:</b> the low end. An option that only wins on the expected view is a risk, not a pick.</li>
+        <li>Every source is labelled by how strong its evidence is, from independent study to vendor claim.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+      <div><p class="eyebrow">The three AI options</p><h2 style="margin:0">Same plant, same rules, three answers.</h2></div>
+      <div class="toggle" role="group" aria-label="View"><button class="on" data-view="expected">Expected</button><button data-view="cautious">Cautious</button></div>
+    </div>
+    <div class="grid g3" id="options"></div>
+    <div class="callout" style="margin-top:18px" id="insight"></div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">The baselines</p>
+    <h2>Every AI also had to beat two options without AI.</h2>
+    <div class="grid g2">
+      <div class="card opt-card"><div class="cast" id="c-rulebook"></div><h3>Rulebook · the manual's rules</h3>
+        <p class="muted" style="margin:0">Alerts whenever a reading breaks the limits in the maintenance manual. No AI, no licence.
+          Priced in the business case against the AI.</p></div>
+      <div class="card opt-card"><div class="cast" id="c-snooze"></div><h3>Snooze · do nothing</h3>
+        <p class="muted" style="margin:0">Keep running as today. Free, but the plant keeps losing
+          <span data-v="plant.total" data-f="money"></span> a year.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap reveal">
+    <p class="eyebrow">Where this sits</p>
+    <div class="stairs" data-stairs></div>
+  </div>
+</section>
+<section data-pager></section>
+<footer data-footer></footer>
+
+<script src="../assets/data.js"></script>
+<script src="../assets/site.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../assets/characters.js"></script>
+<script>
+  const { D, money, pct, months, app, phaseHead } = Site;
+  phaseHead(1);
+  document.getElementById("appLink").href = app("compare");
+  const strengthTag = s => `<span class="tag ${s === "Stronger" ? "good" : s === "Medium" ? "warn" : "bad"}">${s} evidence</span>`;
+  const box = document.getElementById("options");
+  box.innerHTML = D.options.map(o => `
+    <div class="card opt-card" data-key="${o.key}">
+      <div class="cast" id="c-${o.key}"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="label" data-rank></span>${strengthTag(o.strength)}</div>
+      <h3 style="margin:0">${Characters.DEFS[o.key].name} · ${o.solution}</h3>
+      <p class="muted" style="margin:0;font-size:14px">${o.does}. Targets ${o.problem.toLowerCase()} (${money(o.problem_cost)} a year).</p>
+      <div><div class="label">3-year net value</div><div class="stat sm" data-net></div></div>
+      <div class="grid g2" style="margin:0;gap:8px">
+        <div style="background:var(--page);border-radius:10px;padding:8px 10px"><div class="label">Payback</div><b data-payback></b></div>
+        <div style="background:var(--page);border-radius:10px;padding:8px 10px"><div class="label">Improvement</div><b data-improve></b></div>
+      </div>
+      <a class="small" href="${o.source_url}" target="_blank" rel="noopener">Source: ${o.evidence} ↗</a>
+    </div>`).join("");
+  D.options.forEach(o => Characters.mountCast(document.getElementById(`c-${o.key}`), [o.key], { scale: 1.05, sink: 0.05 }));
+  Characters.mountCast(document.getElementById("c-rulebook"), ["rulebook"], { scale: 1.05, sink: 0.05 });
+  Characters.mountCast(document.getElementById("c-snooze"), ["snooze"], { scale: 1.05, sink: 0.05 });
+
+  function render(view) {
+    const cautious = view === "cautious";
+    const order = [...D.options].sort((a, b) => (cautious ? a.rank_cautious - b.rank_cautious : a.rank - b.rank));
+    order.forEach((o, i) => {
+      const card = box.querySelector(`[data-key="${o.key}"]`);
+      card.style.order = i;
+      card.classList.toggle("top", i === 0);
+      const net = cautious ? o.net3_cautious : o.net3;
+      card.querySelector("[data-rank]").textContent = i === 0 ? "#1 · buy first" : `#${i + 1}`;
+      card.querySelector("[data-net]").textContent = money(net);
+      card.querySelector("[data-net]").style.color = net < 0 ? "var(--bad)" : "";
+      card.querySelector("[data-payback]").textContent = months(cautious ? o.payback_cautious : o.payback);
+      card.querySelector("[data-improve]").textContent = pct(cautious ? o.improve_low : (o.improve_low + o.improve_high) / 2, 1).replace(".0%", "%");
+    });
+    const lens = D.options.find(o => o.key === "lens"), oracle = D.options.find(o => o.key === "oracle");
+    document.getElementById("insight").innerHTML = cautious
+      ? `<b>On cautious figures the order holds, but the gap opens.</b> <span class="muted">Visual inspection drops from ${money(lens.net3)} to ${money(lens.net3_cautious)}, and forecasting loses money over three years (${money(oracle.net3_cautious)}). Predictive maintenance stays first.</span>`
+      : `<b>Visual inspection looks close to the leader.</b> <span class="muted">But its ${money(lens.net3)} rests on a vendor write-up, the weakest kind of evidence. Flip to the cautious view to see what happens to it.</span>`;
+  }
+  document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-view]").forEach(x => x.classList.toggle("on", x === b));
+    render(b.dataset.view);
+  }));
+  render("expected");
+</script>
+</body>
+</html>
