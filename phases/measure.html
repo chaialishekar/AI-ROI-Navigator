@@ -22,12 +22,16 @@
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">A year after go-live</p>
-    <h2>Sentry delivered <span id="pctBig"></span> of what it promised.</h2>
+    <h2>Sentry beat the plan, but not the model.</h2>
+    <p class="muted" style="max-width:680px;margin:0">The one-line pilot passed its checks, so Sentry went live across the
+      plant. A year later it had saved more than finance planned on, and <span id="pctBig"></span> of what the model
+      test suggested. That's why the budget was set on the lower figure.</p>
     <div class="grid g2" style="align-items:center">
       <div class="cast" id="sentry" style="height:240px"></div>
       <div class="grid g2" style="margin:0">
-        <div class="card"><div class="label">Delivered</div><div class="stat sm" data-v="tracking.delivered" data-f="money"></div><div class="small">net savings, 12 months</div></div>
-        <div class="card"><div class="label">Forecast</div><div class="stat sm" data-v="tracking.promised" data-f="money"></div><div class="small">from the business case</div></div>
+        <div class="card" style="grid-column:1 / -1"><div class="label">Delivered</div><div class="stat sm" data-v="tracking.delivered" data-f="money"></div><div class="small">net savings, first 12 months</div></div>
+        <div class="card"><div class="label">Approved plan</div><div class="stat sm" data-v="tracking.plan" data-f="money"></div><div class="small">from published studies</div></div>
+        <div class="card"><div class="label">Model estimate</div><div class="stat sm" data-v="tracking.promised" data-f="money"></div><div class="small">from the model test</div></div>
       </div>
     </div>
     <div class="callout" style="margin-top:8px"><b>Simulated, through a real pipeline.</b> <span class="muted">The twelve months are simulated, then loaded through the real S3 → Databricks pipeline. They show how the check works, not proof of real savings.</span></div>
@@ -37,16 +41,16 @@
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">Month by month</p>
-    <h2>Checked against the forecast every month.</h2>
+    <h2>Checked against both figures every month.</h2>
     <div class="card" style="padding-bottom:34px"><div class="months" id="months"></div></div>
-    <div class="legend"><span><i style="background:var(--teal)"></i>Actual savings</span><span><i style="background:#d4644a"></i>Model getting weaker, or a month that lost money</span><span><i style="border-top:2px dashed #111;height:0;width:14px;border-radius:0"></i>Forecast</span></div>
+    <div class="legend"><span><i style="background:var(--teal)"></i>Actual savings</span><span><i style="background:#d4644a"></i>Model getting weaker, or a month that lost money</span><span><i style="border-top:2px dashed #111;height:0;width:14px;border-radius:0"></i>Model estimate</span><span><i style="border-top:2px dotted #8a8a85;height:0;width:14px;border-radius:0"></i>Approved plan</span></div>
   </div>
 </section>
 
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">Why the gap</p>
-    <h2>Most of the shortfall wasn't the AI's fault.</h2>
+    <h2>Why it fell short of the model's estimate.</h2>
     <div class="card"><div class="bars" id="gap"></div>
       <p class="small" style="margin:14px 0 0">Each cause changed one at a time, so they add up exactly to the total gap.</p></div>
     <div class="grid g3" id="next" style="margin-top:14px"></div>
@@ -70,20 +74,20 @@
   const { D, money, pct, app, phaseHead, delivered } = Site;
   phaseHead(6);
   const T = D.tracking;
-  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const monthName = m => MON[+m.slice(5, 7) - 1];
+  const short = m => m.replace("Month ", "M");   // months are counted from go-live
   document.getElementById("appLink").href = app("track");
   document.getElementById("pctBig").textContent = pct(delivered);
   Characters.mountCast(document.getElementById("sentry"), ["sentry"], { scale: 1.2, sink: 0.1 });
 
-  const peak = Math.max(...T.actual, ...T.forecast) * 1.1;
+  const plan = T.plan / T.months.length, peak = Math.max(...T.actual, ...T.forecast, plan) * 1.1;
   document.getElementById("months").innerHTML = T.months.map((m, i) => {
     // A month that lost money gets a small red stub rather than no bar at all
     const loss = T.actual[i] < 0, a = loss ? peak * 0.03 : T.actual[i], alert = loss || T.drift_months.includes(m);
-    return `<div title="${m}: ${money(T.actual[i])} vs ${money(T.forecast[i])} forecast">
+    return `<div title="${m}: ${money(T.actual[i])} saved; plan ${money(plan)}, model estimate ${money(T.forecast[i])}">
       <div class="f" style="bottom:${T.forecast[i] / peak * 100}%"></div>
+      <div class="f p" style="bottom:${plan / peak * 100}%"></div>
       <div class="a ${alert ? "alert" : ""}" style="height:${a / peak * 100}%"></div>
-      <small>${monthName(m)}</small></div>`;
+      <small>${short(m)}</small></div>`;
   }).join("");
 
   const NAMES = { "Failures (volume)": "Fewer breakdowns than assumed", "Model recall": "Model caught fewer",
@@ -92,9 +96,9 @@
   document.getElementById("gap").innerHTML = T.gap.map(g =>
     `<div class="bar"><span>${NAMES[g.cause]}</span><div class="track"><div class="fill ${g.effect < 0 ? "bad" : ""}" style="width:${Math.abs(g.effect) / maxGap * 100}%"></div></div><b>${money(g.effect)}</b></div>`).join("");
   document.getElementById("next").innerHTML = [
-    ["Update the forecast", "The plant had fewer breakdowns than the business case assumed. That's good news, not the model's fault."],
+    ["Update the estimate", "The plant had fewer breakdowns than the business case assumed. That's good news, not the model's fault."],
     ["Fix the workflow", `The crew acted on too few warnings in ${T.low_adoption_months.length} months. Send warnings straight into the maintenance system.`],
-    ["Retrain the model", `Its catch rate dropped in ${T.drift_months.map(monthName).join(" and ")}. Retrain it on recent data.`],
+    ["Retrain the model", `Its catch rate dropped in ${T.drift_months.join(" and ").replace(/ and Month /g, " and ")}. Retrain it on recent data.`],
   ].map(([h, t]) => `<div class="card"><h3>${h}</h3><p class="muted" style="margin:0">${t}</p></div>`).join("");
 </script>
 </body>
