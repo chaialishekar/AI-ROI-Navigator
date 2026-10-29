@@ -93,8 +93,9 @@ window.CASE = {
   "cost_caught": 4000.0,
   "cost_false_alarm": 500.0,
   "running_cost": 60000.0,
-  "deployment_cost": 150000.0,
-  "months_to_deploy": 2.0
+  "deployment_cost": 110000.0,
+  "months_to_deploy": 2.0,
+  "change_cost": 40000.0
  },
  "value": {
   "annual_net": 658431.3725,
