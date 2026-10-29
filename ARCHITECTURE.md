@@ -67,10 +67,10 @@ The browser's `value()` and `breakEven()` in `site/assets/site.js` repeat the fo
 
 Plain JavaScript, no framework and no build step.
 
-- **Calculator** (Business case → Show the details): the inputs are the state. Every change re-runs one `draw()` that prices the AI, the rules and doing nothing, fills the side-by-side table and asks the board for reactions. Pinned setups live in memory for the visit only.
-- **Board:** `board()` in `site.js` is a set of fixed, documented rules (payback, savings given up against break-even, false alarms a week, share of alerts that are real, catch rate, running cost, and the Readiness gaps). Each concern can carry a fix: new input values, an alert level, or a link. The board never changes anything itself; the page applies a fix only when it is clicked.
+- **Calculator** (Business case → Show the details): the inputs are the state. Each what-if changes one input on top of the others, and a line lists everything that differs from the base assumptions. Every change re-runs one `draw()` that prices the AI, the rules and doing nothing, fills the side-by-side table and runs the board's tests. The inputs are kept in `sessionStorage` for the visit, so leaving the page and coming back keeps them; pinned columns live in memory only.
+- **Board:** `board()` in `site.js` gives each executive two pass/fail tests on the calculator's numbers (CFO: saves money, pays back within 12 months; COO: at most one false alarm a week, at least half the alerts real; CTO: catches at least 80%, at least $30k a year to run). They are the same thresholds as the pilot's exit checks on Deliver. An executive signs when both pass, and a failed test says what would change it. The board never changes the inputs.
 - **Readiness** ratings, the "Show the details" toggle and the staircase all redraw from the page's inputs.
-- **Browser storage:** only which phases the visitor has opened (`roi-visited`, used to colour the staircase). If storage is blocked, the site still works.
+- **Browser storage:** which phases the visitor has opened (`roi-visited`, used to colour the staircase) and the calculator's inputs for the current visit (`roi-calc`). If storage is blocked, the site still works.
 - **3D characters:** three.js r128 from cdnjs, with a flat fallback when WebGL is not available.
 
 ## Data pipeline

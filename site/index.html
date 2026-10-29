@@ -39,13 +39,22 @@
   </div>
 </div>
 
+<section id="short">
+  <div class="wrap reveal">
+    <p class="eyebrow">Short on time?</p>
+    <h2>The whole case in seven lines.</h2>
+    <div class="shortlist" id="shortList"></div>
+    <p class="small" style="margin:14px 0 0">Each line opens that phase. Every phase page takes about two minutes, and its full working sits behind "Show the details".</p>
+  </div>
+</section>
+
 <section id="explore">
   <div class="wrap reveal">
     <p class="eyebrow">Explore it 3 ways</p>
     <h2>Read the case, try the model, or check the evidence.</h2>
     <div class="grid g3">
       <a class="card" style="text-decoration:none" href="phases/discover.html"><h3>Explore the case</h3><p class="muted" style="margin:0">Seven short pages, one per phase: what I did, what I found, what was decided.</p></a>
-      <a class="card" style="text-decoration:none" href="phases/business-case.html#details"><h3>Try the model</h3><p class="muted" style="margin:0">Change the plant's costs and the alert level; savings update and the CFO, COO and CTO react.</p></a>
+      <a class="card" style="text-decoration:none" href="phases/business-case.html#details"><h3>Try the model</h3><p class="muted" style="margin:0">Change the plant's costs and the alert level; see the savings, and whether the CFO, COO and CTO would sign.</p></a>
       <a class="card" style="text-decoration:none" id="docsCard" target="_blank" rel="noopener"><h3>Inspect the evidence ↗</h3><p class="muted" style="margin:0">PRD, requirements, 13 acceptance tests, the two-page decision brief and the code.</p></a>
     </div>
   </div>
@@ -120,6 +129,9 @@
   const show = k => { const c = Characters.DEFS[k]; pop.innerHTML = `<b>${c.name}</b> <span class="muted">· ${c.role}</span><div class="muted" style="font-size:15px;margin-top:4px">${HERO[k]}</div>`; };
   show("sentry");
   Characters.mountCast(document.getElementById("hero"), ["sentry", "lens", "foresight", "rulebook", "snooze"], { onSelect: show });
+
+  document.getElementById("shortList").innerHTML = Site.PHASES.map((p, i) =>
+    `<a href="phases/${p.slug}.html"><span class="n">0${i + 1}</span><span class="p">${p.name}</span><span class="a">${p.answer}</span><span class="arr">→</span></a>`).join("");
 
   stairs(document.getElementById("stairs"), { link: true, auto: true, replay: document.getElementById("climbAgain"), panel: document.getElementById("stairsPanel") });
 

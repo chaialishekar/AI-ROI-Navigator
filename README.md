@@ -14,7 +14,7 @@
 - Takes the top pick (predictive maintenance) through seven gated phases, from the problem to a year after go-live.
 - Tests it on 10,000 public machine records: **$658k a year** on the model test, **$290k** planned on published studies, **$464k** delivered in a simulated first year.
 - Compares the AI with doing nothing and with the maintenance manual's rules; the rules save more on paper but raise **~85 false alarms a year against ~13**.
-- On the website, change the plant's costs and see the savings update, compare options side by side, and watch a CFO, COO and CTO react, each concern with a fix you can apply.
+- On the website, change the plant's costs and see the savings update, compare options side by side, and see whether a CFO, COO and CTO would sign, each against two pass/fail tests.
 
 **Questions it answers**
 - **Which AI first?** Every tool in the library, priced for one plant, on expected and cautious figures.
@@ -123,7 +123,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 |---|---|
 | ![Staircase](docs/site_staircase.png) | ![Evaluate options](docs/site_evaluate.png) |
 
-**The model you can change**, with the options side by side and the board's reactions (Business case → Show the details)
+**The model you can change**, with the options side by side and the board's sign-off tests (Business case → Show the details)
 
 ![Calculator](docs/site_calculator.png)
 
