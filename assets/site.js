@@ -3,7 +3,7 @@
   const D = window.CASE;
   const REPO = "https://github.com/chaialishekar/AI-ROI-Navigator";
   // Public URL of the Streamlit app. Until it is set, "live analysis" links go to the repository.
-  const APP_URL = null;
+  const APP_URL = "https://ai-roi-navigator-lwqttyuudthdtcwenmycja.streamlit.app";
   const ROOT = document.body.dataset.root || ".";
 
   const money = (x, digits) => {
