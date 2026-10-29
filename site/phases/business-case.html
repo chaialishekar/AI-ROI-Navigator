@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/style.css?v=2026102911">
+  <link rel="stylesheet" href="../assets/style.css?v=2026102913">
 </head>
 <body data-root="..">
 <nav class="nav" data-nav></nav>
@@ -91,13 +91,13 @@
     <p class="eyebrow">The details</p>
     <h2 style="margin-bottom:18px">What if my guesses are wrong? Try it.</h2>
     <div class="card">
+      <div class="callout" id="dVsRules" style="margin:0 0 6px" aria-live="polite"></div>
       <div class="step-h"><span class="num">1</span><div><b>Change an assumption</b></div></div>
       <div class="try" id="dTry"></div>
       <div class="step-h"><span class="num">2</span><div><b>The result</b><div class="small" id="dNow"></div></div>
         <button class="linkbtn" type="button" id="dReset" style="margin-left:auto" hidden>Back to my assumptions</button></div>
       <div class="out three" id="dOut" style="margin-top:10px"></div>
       <div class="step-h"><span class="num">3</span><div><b>Would the board sign off?</b></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
-      <div class="callout" id="dVsRules" style="margin:0 0 12px"></div>
       <div class="board" id="dBoard" aria-live="polite"></div>
       <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
       <div class="step-h"><span class="num">4</span><div><b>Where does the winner flip?</b></div></div>
@@ -112,7 +112,7 @@
       <div style="margin-top:18px"><label class="small" for="dLevel">How sure should the AI be before it warns? <b id="dLevelTxt"></b></label>
         <input id="dLevel" type="range" min="1" max="99" step="1" style="width:100%;accent-color:var(--teal)">
         <div class="slider-hint small"><span>← warns early: catches more, more false alarms</span><span>warns late: fewer false alarms, misses more →</span></div>
-        <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button></div>
+        <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use the best level</button></div>
       <div class="step-h"><div><b>Every option side by side</b><div class="small">The same costs applied to every option. Pin your setup to keep it as a column while you try another.</div></div>
         <button class="chip" type="button" id="dPin">Pin this setup</button></div>
       <div class="tscroll"><table class="t cmp" id="dCmp"></table></div>
@@ -132,10 +132,10 @@
 <section data-pager></section>
 <footer data-footer></footer>
 
-<script src="../assets/data.js?v=2026102911"></script>
-<script src="../assets/site.js?v=2026102911"></script>
+<script src="../assets/data.js?v=2026102913"></script>
+<script src="../assets/site.js?v=2026102913"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="../assets/characters.js?v=2026102911"></script>
+<script src="../assets/characters.js?v=2026102913"></script>
 <script>
   const { D, money, pct, months, phaseHead } = Site;
   phaseHead(2);
@@ -197,7 +197,7 @@
   function board(c, r, level) {
     const rv = rulesNow(c), wk = r.false_alarms / 52, gross = r.net + c.running_cost, be = breakEven(c), atBe = value(c, be);
     const lost = atBe.net - r.net;
-    const toBe = { label: `Apply: go back to the ${Math.round(be * 100)}% break-even level`, level: be };
+    const toBe = { label: `Apply: go back to the best level, ${Math.round(be * 100)}%`, level: be };
     // Lowest alert level that keeps false alarms to one a week and at least half the alerts real
     const calm = [...Array(99).keys()].map(k => (k + 1) / 100).find(t => { const v = value(c, t); return v.false_alarms <= 52 && v.precision >= 0.5; });
     const toCalm = calm && calm > level ? { label: `Apply: raise the alert level to ${Math.round(calm * 100)}%`, level: calm } : null;
@@ -205,7 +205,7 @@
     const cfo = r.net <= 0 ? ["blocks", `It loses ${money(-r.net)} a year at these costs. I can't take that to the board.`, null]
       : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${money(setup)} one-time cost or show more savings.`,
           maxSetup > (c.change_cost || 0) ? { label: `Apply: cap setup and integration at ${money(maxSetup - (c.change_cost || 0))}`, set: { deployment_cost: maxSetup - (c.change_cost || 0) } } : null]
-      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${money(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
+      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${money(lost)} a year against the best level (${Math.round(be * 100)}%), to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
       : c.running_cost > 0.35 * gross ? ["concerns", `Running costs eat ${Math.round(c.running_cost / gross * 100)}% of the gross saving. I want a fixed-price contract before I sign.`,
           { label: `Apply: negotiate running cost to ${money(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
       : r.payback > 12 ? ["concerns", `${r.payback.toFixed(1)} months to pay back. Fine, but release the money in stages: one production line first.`,
@@ -215,7 +215,7 @@
     const coo = r.precision < 0.3 ? ["blocks", `Only ${Math.round(r.precision * 100)}% of alerts are real. My crew will stop answering them inside a month.`, toCalm]
       : wk > 1 ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is more than one a week. Expect technicians to start ignoring it.`, toCalm]
       : r.precision < 0.5 ? ["concerns", `Half the alerts are wrong (${Math.round(r.precision * 100)}% real). Show the reason with each one, or trust goes.`, toCalm]
-      : level > be && r.missed - atBe.missed >= 1 ? ["concerns", `This alert level lets through ${(r.missed - atBe.missed).toFixed(1)} more surprise breakdowns a year than break-even would. Those are the night-shift call-outs I wanted gone.`, toBe]
+      : level > be && r.missed - atBe.missed >= 1 ? ["concerns", `This alert level lets through ${(r.missed - atBe.missed).toFixed(1)} more surprise breakdowns a year than the best level would. Those are the night-shift call-outs I wanted gone.`, toBe]
       : ["backs", `About ${Math.round(r.false_alarms)} false alarms a year, one every ${Math.round(52 / Math.max(r.false_alarms, 0.1))} weeks. My crew can work with that if alerts land in the maintenance system.`];
     const cto = r.recall < 0.6 ? ["blocks", `At a ${Math.round(level * 100)}% alert level it catches only ${Math.round(r.recall * 100)}% of breakdowns. We'd be paying for a model and still missing most failures.`, level > be ? toBe : null]
       : r.recall < 0.8 ? ["concerns", `Tuned this cautiously, it misses ${Math.round((1 - r.recall) * 100)}% of breakdowns. Lower the alert level before go-live.`, level > be ? toBe : null]
@@ -276,7 +276,7 @@
   // What differs from my assumptions, in words
   function changes(c) {
     const out = FIELDS.filter(([k]) => c[k] !== D.costs[k]).map(([k]) => `${NAME[k]} ${k.startsWith("cost") || k.endsWith("cost") ? usd(c[k]) : c[k]} (mine: ${k.startsWith("cost") || k.endsWith("cost") ? usd(D.costs[k]) : D.costs[k]})`);
-    if (!auto) out.push(`alert level ${lvl.value}% (break-even: ${Math.round(breakEven(c) * 100)}%)`);
+    if (!auto) out.push(`alert level ${lvl.value}% (best: ${Math.round(breakEven(c) * 100)}%)`);
     return out;
   }
 
@@ -288,8 +288,8 @@
     const rows = [["Net savings a year", r => usd(r.net)], ["Pays for itself in", r => (r.none ? "–" : months(r.payback))],
       ["Net over 3 years", r => usd(r.three_year)], ["Breakdowns caught", r => pct(r.recall)],
       ["False alarms a year", r => r.false_alarms.toFixed(1)], ["Alerts that are real", r => (r.precision == null ? "–" : pct(r.precision))]];
-    document.getElementById("dCmp").innerHTML = `<tr><th></th>${cols.map(([t, r, n], k) => `<th class="${k === 2 ? "now" : ""}">${t}${r.net === best && best > 0 ? ` <span class="tag good" style="text-transform:none;letter-spacing:0">Saves most</span>` : ""}<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">${n || "&nbsp;"}</div></th>`).join("")}</tr>`
-      + rows.map(([n, f], j) => `<tr><td>${n}</td>${cols.map(([, r], k) => `<td class="${k === 2 ? "now" : ""}">${j === 0 && r.net === best ? `<b>${f(r)}</b>` : f(r)}</td>`).join("")}</tr>`).join("");
+    document.getElementById("dCmp").innerHTML = `<tr><th></th>${cols.map(([t, r, n], k) => `<th class="${k === 2 ? "now" : k === 0 ? "base" : ""}">${t}${r.net === best && best > 0 ? ` <span class="tag good" style="text-transform:none;letter-spacing:0">Saves most</span>` : ""}<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">${n || "&nbsp;"}</div></th>`).join("")}</tr>`
+      + rows.map(([n, f], j) => `<tr><td>${n}</td>${cols.map(([, r], k) => `<td class="${k === 2 ? "now" : k === 0 ? "base" : ""}">${j === 0 && r.net === best ? `<b>${f(r)}</b>` : f(r)}</td>`).join("")}</tr>`).join("");
   }
 
   // Where does the winner flip? Doc against the rules across breakdown costs, as an inline chart
@@ -345,15 +345,18 @@
     document.getElementById("dNow").textContent = diff.length ? `Changed: ${diff.join("; ")}.` : "";
     document.getElementById("dReset").hidden = !diff.length;
     document.getElementById("dLevelTxt").textContent = `${lvl.value}%`;
-    document.getElementById("dLevelNote").textContent = auto ? "Break-even: where the expected saving from an early catch outweighs the inspection." : `Break-even would be ${pct(breakEven(c))}.`;
+    document.getElementById("dLevelNote").textContent = auto ? "Best level: where catching a breakdown early is worth more than the extra checks." : `The best level would be ${pct(breakEven(c))}.`;
     document.getElementById("dOut").innerHTML = [
       ["Net savings a year", money(r.net)], ["Pays for itself in", months(r.payback)],
       ["Breakdowns caught", pct(r.recall), `about ${Math.round(r.false_alarms)} false alarms a year`]]
       .map(([a, b, n]) => `<div class="card tight" style="background:var(--page)"><div class="label">${a}</div><div class="stat sm">${b}</div>${n ? `<div class="small">${n}</div>` : ""}</div>`).join("");
     const rv = rulesNow(c), gap = rv.net - r.net, crew = follow < 1 ? ` (crew acting on ${pct(follow)} of their alerts)` : "";
+    // Share of the rules' real alerts crews can ignore before Doc comes out ahead
+    const rf = rulesValue(c), skip = (rf.net - r.net) / (rf.caught * (c.cost_missed - c.cost_caught));
+    const tip = skip > 0 && skip < 1 ? ` If crews ignore more than <b>${Math.ceil(skip * 100)}%</b> of the rules' alerts, Doc saves more.` : "";
     document.getElementById("dVsRules").innerHTML = gap > 0
-      ? `<span class="tag warn">No-AI option saves more</span> The rules save <b>${money(gap)} more</b>${crew}, but raise <b>${Math.round(rv.false_alarms)} false alarms</b> a year to Doc's ${Math.round(r.false_alarms)}.`
-      : `<span class="tag good">AI saves more</span> Doc saves <b>${money(-gap)} more</b> than the rules${crew}.`;
+      ? `<b>Bottom line:</b> the no-AI rules save <b>${money(gap)} more</b> a year on paper${crew}, but raise <b>${Math.round(rv.false_alarms)} false alarms</b> to Doc's ${Math.round(r.false_alarms)}.${tip}`
+      : `<b>Bottom line:</b> Doc saves <b>${money(-gap)} more</b> a year than the no-AI rules${crew}, with ${Math.round(rv.false_alarms - r.false_alarms)} fewer false alarms.`;
     const b = board(c, r, level), MOOD = { backs: ["good", "Backs it"], concerns: ["warn", "Has concerns"], blocks: ["bad", "Blocks it"] };
     document.getElementById("dBoard").innerHTML = b.map((p, i) => `<div class="seat ${p.mood}"><div class="who"><span class="av">${p.role}</span>
       <b>${p.who}</b><span class="tag ${MOOD[p.mood][0]}">${MOOD[p.mood][1]}</span></div>

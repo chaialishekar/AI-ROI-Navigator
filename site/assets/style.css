@@ -246,6 +246,7 @@ details.tech summary { cursor: pointer; font-size: 14px; color: var(--muted); }
 table.cmp th, table.cmp td { text-align: right; white-space: nowrap; }
 table.cmp th:first-child, table.cmp td:first-child { text-align: left; }
 table.cmp .now { background: rgba(15, 109, 116, 0.06); }
+table.cmp .base { color: var(--faint); }
 .step-h { display: flex; align-items: flex-start; gap: 12px; margin: 26px 0 10px; }
 .step-h:first-child { margin-top: 0; }
 .step-h .num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--page);
@@ -359,10 +360,9 @@ section.tight-top { border-top: 0; padding-top: 24px; }
   .answers .a { grid-column: 2; }
   #climbAgain { display: none; }
 }
-.where { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+.where { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
 .where > div { background: var(--card); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; }
 .where p { margin: 6px 0 10px; font-size: 16px; flex: 1; }
-@media (max-width: 860px) { .where { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .where { grid-template-columns: 1fr; } }
 .out.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 560px) { .out.three { grid-template-columns: 1fr; } }
