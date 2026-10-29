@@ -303,9 +303,9 @@ def page_value():
             st.markdown(md(
                 f"**Accuracy is not value.** The usual 50% cut-off ({best_acc['accuracy']*100:.1f}% accurate) saves "
                 f"{money(best_acc['annual_net'])} a year. The break-even level ({best_money['threshold']:.2f}) saves "
-                f"{money(best_money['annual_net'])}: alert whenever the chance of failure is above the inspection cost "
-                f"divided by what an early catch saves ({money(costs.cost_false_alarm)} ÷ "
-                f"{money(costs.cost_missed - costs.cost_caught)}). It is set from the costs, not tuned on the test data."))
+                f"{money(best_money['annual_net'])}: alert whenever the chance of failure makes an inspection worth it: "
+                f"{money(costs.cost_false_alarm)} ÷ ({money(costs.cost_missed - costs.cost_caught)} saved per early "
+                f"catch + {money(costs.cost_false_alarm)}). It is set from the costs, not tuned on the test data."))
         fig2 = go.Figure()
         fig2.add_trace(go.Scatter(x=curve["threshold"], y=curve["annual_net"], name="Annual net savings ($)",
                                   line=dict(color="#0f6d74", width=3)))

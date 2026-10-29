@@ -148,7 +148,7 @@ def main():
                       "weakest": [{"name": d, "score": num(s), "action": ACTIONS[d]} for d, s in weakest[:2]]},
         "decision": {"label": label, "reason": reason, "worst_case": num(val["cases"]["Low"]["annual_net"])},
         "model": {"records": len(df), "failures": int(df["Machine failure"].sum()), "train": res["n_train"],
-                  "test": res["n_test"], "causes": {causes[k]: int(df[k].sum()) for k in causes},
+                  "test": res["n_test"], "causes": {causes[k]: int(df.loc[df["Machine failure"] == 1, k].sum()) for k in causes},
                   "auc": {n: num(m["auc"]) for n, m in res["models"].items()}},
         "tracking": {"source": source, "months": t["label"].tolist(),
                      "forecast": [num(x) for x in t["forecast"]], "actual": [num(x) for x in t["actual"]],

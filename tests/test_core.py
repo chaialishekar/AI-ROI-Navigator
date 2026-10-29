@@ -284,9 +284,9 @@ def test_rule_alerts_align_with_test_set():
 
 
 def test_alert_threshold_is_break_even_from_costs():
-    # alert when chance x ($25k - $4k) > $500: 500 / 21,000 = 2.4%, rounded to the slider's 0.01 step
+    # alert when chance x ($25k - $4k) > (1 - chance) x $500: 500 / 21,500 = 2.3%, rounded to the 0.01 step
     assert alert_threshold(Costs()) == 0.02
-    assert alert_threshold(Costs(cost_false_alarm=5_000)) == 0.24
+    assert alert_threshold(Costs(cost_false_alarm=5_000)) == 0.19      # 5,000 / 26,000
     assert alert_threshold(Costs(cost_missed=4_000)) == 0.99     # catching early saves nothing: never alert
 
 

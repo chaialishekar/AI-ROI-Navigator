@@ -84,8 +84,8 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 ### 3.2 Functional requirements (user stories and acceptance criteria)
 
 #### Epic 1 · Compare the AI library for the client (UC-1)
-| ID | User story | Acceptance criteria |
-|---|---|---|
+| ID | User story | Acceptance criteria | Priority |
+|---|---|---|---|
 | US-1.1 | As an ops director, I want every AI tool that fits my industry priced for my business in dollars, so that I know which to buy first. | Only the client's industry; value = problem cost × published improvement; 3-year net value, payback, ROI and break-even per tool; ranking matches a hand calculation (unit test). | Must (done) |
 | US-1.2 | As an ops director, I want to enter my own problem costs, data quality and number of sites, so that the numbers are mine, not an example. | Editable under Show the details; ranking updates at once. | Must (done) |
 | US-1.3 | As a finance partner, I want every number shown as a range with its source, so that I can judge how far to trust it. | Low / expected / high per tool; evidence label and source link on every row. | Must (done) |
@@ -95,27 +95,27 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 | US-1.7 | As a finance partner, I want to see whether the order holds on cautious numbers, so that a tool cannot win on optimistic figures alone. | Expected / cautious switch; rank changes listed (unit test: chip fab). | Must (done) |
 
 #### Epic 2 · Prove value (UC-2)
-| ID | User story | Acceptance criteria |
-|---|---|---|
-| US-2.1 | As an ops director, I want to enter my own costs, so that savings reflect my plant. | Inputs: missed-failure cost, false-alarm cost, deployment cost, yearly running cost, machines in scope. Defaults provided; values must be > 0. |
-| US-2.2 | As an ops director, I want annual savings, ROI and payback, so that I can take a business case to my CFO. | Compared against "no AI" (all failures missed); shows net savings, ROI % and payback months; updates on every input change. |
-| US-2.3 | As an AI BSA, I want to adjust the alert threshold and see the dollar effect, so that I can show accuracy is not the same as value. | Slider; shows recall, precision, caught, missed, false alarms, net $; highlights dollar-optimal vs accuracy-optimal threshold. |
-| US-2.4 | As an ops director, I want results in plain language, so that I don't need ML knowledge. | e.g. "Catches 8 of 10 failures. About 1 in 3 alerts is a false alarm." |
-| US-2.5 | As an AI BSA, I want the model tested on unseen data, so that the numbers are trustworthy. | Train/test split; all reported metrics come from the test set. |
-| US-2.6 | As an ops director, I want to compare a custom build with a ready-made solution, so that I see how deployment time changes first-year value. | Input months to deploy; first-year value = annual savings × (12 − months) ÷ 12. |
-| US-2.7 | As a CFO, I want a range instead of a single number, so that I know how much the savings could vary. | Savings, payback, ROI, caught, missed and false alarms each show a 90% range from a bootstrap of the test set; the range always contains the point estimate. |
-| US-2.8 | As an ops director, I want low / base / high cases and to see which cost assumption matters most, so that we firm up the right numbers before committing. | Editable low and high value for every cost input; table of low / base / high annual savings, 3-year value, ROI and payback; tornado chart sorted by impact; warning if the low case never pays back within 3 years. |
+| ID | User story | Acceptance criteria | Priority |
+|---|---|---|---|
+| US-2.1 | As an ops director, I want to enter my own costs, so that savings reflect my plant. | Inputs: breakdowns a year, cost of a breakdown, planned-repair cost, inspection cost per false alarm, yearly running cost, setup cost, months to go live. Defaults provided; savings update on every change. | Must (done) |
+| US-2.2 | As an ops director, I want annual savings, ROI and payback, so that I can take a business case to my CFO. | Compared against "no AI" (all failures missed); shows net savings, ROI % and payback months; updates on every input change.  | Must (done) |
+| US-2.3 | As an AI BSA, I want to adjust the alert threshold and see the dollar effect, so that I can show accuracy is not the same as value. | Slider; shows recall, precision, caught, missed, false alarms, net $; marks the break-even level (set from the costs) and the usual 50% cut-off. | Should (done) |
+| US-2.4 | As an ops director, I want results in plain language, so that I don't need ML knowledge. | e.g. "Catches 8 of 10 failures. About 1 in 3 alerts is a false alarm."  | Should (done) |
+| US-2.5 | As an AI BSA, I want the model tested on unseen data, so that the numbers are trustworthy. | Train/test split; all reported metrics come from the test set.  | Must (done) |
+| US-2.6 | As an ops director, I want to compare a custom build with a ready-made solution, so that I see how deployment time changes first-year value. | Input months to deploy; first-year value = annual savings × (12 − months) ÷ 12.  | Could (done) |
+| US-2.7 | As a CFO, I want a range instead of a single number, so that I know how much the savings could vary. | Savings, payback, ROI, caught, missed and false alarms each show a 90% range from a bootstrap of the test set; the range always contains the point estimate.  | Must (done) |
+| US-2.8 | As an ops director, I want low / base / high cases and to see which cost assumption matters most, so that we firm up the right numbers before committing. | Editable low and high value for every cost input; table of low / base / high annual savings, 3-year value, ROI and payback; tornado chart sorted by impact; warning if the low case never pays back within 3 years.  | Should (done) |
 
 #### Epic 3 · Readiness (UC-3)
-| ID | User story | Acceptance criteria |
-|---|---|---|
-| US-3.1 | As an ops director, I want a short readiness checklist, so that I know if we're ready to go live. | ≤ 10 questions rated 1–5 across 5 areas: data, fits how people work, clear payoff, people trust it, clear ownership. Score per dimension. |
-| US-3.2 | As an ops director, I want a verdict and top actions, so that I know what to fix before launch. | **Go:** average ≥ 3.5 and no dimension < 2.5. **Fix first:** any dimension < 2.5. **Not ready:** average < 2.5. Shows 3 weakest dimensions with an action each. |
+| ID | User story | Acceptance criteria | Priority |
+|---|---|---|---|
+| US-3.1 | As an ops director, I want a short readiness checklist, so that I know if we're ready to go live. | ≤ 10 questions rated 1–5 across 5 areas: data, fits how people work, clear payoff, people trust it, clear ownership. Score per dimension.  | Must (done) |
+| US-3.2 | As an ops director, I want a verdict and top actions, so that I know what to fix before launch. | **Not ready:** average < 2.5. **Fix first:** any area < 2.5, or average below 3.5. **Go:** average ≥ 3.5 and no area < 2.5. Lists the weakest areas below 3.5 with an action each. | Must (done) |
 
 #### Epic 4 · Share (UC-4)
-| ID | User story | Acceptance criteria |
-|---|---|---|
-| US-4.1 | As an ops director, I want a one-page summary, so that I can share it with my CFO. | Includes use case, annual $ value, ROI, payback, readiness verdict and key assumptions; downloadable. |
+| ID | User story | Acceptance criteria | Priority |
+|---|---|---|---|
+| US-4.1 | As an ops director, I want a one-page summary, so that I can share it with my CFO. | Two-page PDF: recommendation, decision rule, options considered, annual $ value with range, payback, readiness verdict, risks and key assumptions; downloadable. | Must (done) |
 
 
 #### Epic 5 · Responsible AI & deployment (Implementation)
@@ -128,7 +128,7 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 #### Epic 6 · Adoption & value tracking (Adoption → Managed services)
 | ID | User story | Acceptance criteria | Priority |
 |---|---|---|---|
-| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Should (done) (step 5; gap split into volume, recall, adoption and false alarms) |
+| US-6.1 | As an ops director, I want to compare predicted savings with actual results after go-live, so that I can prove the value to finance. | Upload monthly actuals (failures, downtime, false alarms); chart shows predicted vs actual savings. | Must (done) (step 5; gap split into volume, recall, adoption and false alarms) |
 | US-6.2 | As an AI business analyst, I want to track adoption (share of alerts acted on), so that I can spot when users stop trusting the AI. | Adoption rate shown monthly; alert if it drops below 70%. | Should (done) |
 | US-6.3 | As an AI business analyst, I want to be warned when model accuracy drifts, so that we retrain before value drops. | Alert when recall falls 10 points below launch level. | Could (done) (3-month rolling recall, since ~3 failures a month is too few to judge one month alone) |
 | US-6.4 | As an ops director, I want the tool to suggest the next AI use case once the first is live, so that we expand value step by step. | After a "Go" verdict, the summary lists the next 2 "Start now" options from Epic 1. | Could (v2) |
@@ -178,16 +178,13 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 User (browser)
    │
    ▼
-Streamlit web app ──► Overview: problem, why it matters, lifecycle chart, a closer look at each stage, side experiments
-   │  Before launch    ├► 1 Compare the AI library       ──► ai_library.csv + library.py (ranges, evidence, data gaps)
-   │                   ├► 2 Build the business case      ──► trained model + test predictions + cost engine
-   │                   ├► 3 Assess readiness             ──► checklist + verdict rules + stakeholder impact
-   │                   └► 4 Prepare the decision         ──► decision rule + one-page business case (download)
-   │  After launch     └► 5 Measure realized value       ──► tracking engine + S3 → Databricks gold export
-   │  Side experiments ├► A GenAI work orders            ──► saved Bedrock pilot runs + GenAI cost engine
-   │  (separate)       └► B GenAI business-case review   ──► saved Bedrock agent runs + graders (live only with AWS credentials)
+Case-study website (site/, static) ──► home: the problem, 5 options, the 7-phase staircase, key decisions
+   │  one page per phase, each with "Show the details" (full working; live inputs on Business case and Readiness)
+   │  numbers come from site/export_data.py, which calls the same src/ functions as the tests
    ▼
-Hosted on Streamlit Community Cloud (public link)
+Hosted on GitHub Pages (gh-pages branch)
+
+Analyst workbench (app.py, Streamlit, run locally) ──► the same tools plus live Bedrock runs (needs AWS credentials)
 ```
 
 Value-tracking data pipeline (Epic 9):
@@ -219,7 +216,7 @@ bronze_actuals ──► silver_actuals ──► gold_tracked_value ──► e
 | Analyst agents | Intake, memo and red-team prompts (v1-v3), code post-processing, plausibility checklist, graders; Amazon Nova Lite on Bedrock | `src/agents.py`, `agents/` |
 | Data pipeline | S3 landing, sync to Databricks, bronze/silver/gold notebook, job, export back to the app and S3 | `pipeline/run.py`, `pipeline/notebook.py`, `data/pipeline/` |
 | Value tracking | Forecast vs actual savings, adoption and drift alerts, gap breakdown, simulated sample rollout | `src/tracking.py`, `data/sample_actuals.csv` |
-| User interface | Overview, 7 pages in 3 sections, one page template (client view first, analysis on demand), Back / Next links, inputs, charts, summary | `app.py`, `.streamlit/config.toml` |
+| User interface | Static website: 7 phase pages, answer first, "Show the details" with the full working and live inputs; local Streamlit workbench | `site/`, `app.py` |
 
 ---
 
@@ -286,11 +283,11 @@ The last row is the point of the whole design: someone is accountable for going 
 ---
 
 ## 7. Deployment Considerations
-- **Hosting:** Streamlit Community Cloud for a free public demo link.
+- **Hosting:** GitHub Pages for the website (free, static, no server). The Streamlit workbench runs locally.
 - **Data:** public AI4I 2020 dataset only; no customer data is stored.
 - **Customer use:** for real customer data, run the app locally or inside the customer's own environment so data stays on-premises.
-- **Dependencies:** listed in `requirements.txt` (Streamlit, pandas, Plotly, scikit-learn). The pipeline and live agents also need `boto3[crt]` and `databricks-sdk`; the public app does not.
-- **Pipeline:** S3 bucket in us-east-2 only (project Region). The public app reads the exported gold table in `data/pipeline/`, so it needs no AWS or Databricks credentials. The job's monthly schedule is created paused; turn it on when real files arrive.
+- **Dependencies:** listed in `requirements.txt` (Streamlit, pandas, Plotly, scikit-learn). The pipeline and live agents also need `boto3[crt]` and `databricks-sdk`; the website does not.
+- **Pipeline:** S3 bucket in us-east-2 only (project Region). The website and the workbench read the exported gold table in `data/pipeline/`, so it needs no AWS or Databricks credentials. The job's monthly schedule is created paused; turn it on when real files arrive.
 - **Cost:** S3 storage, requests and CloudWatch log delivery for these files are fractions of a cent a month; Databricks Free Edition serverless compute is free within its daily quota.
 
 ---
@@ -303,11 +300,11 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 | Ranking matches manual calculation | US-1.1 | Compare app output to hand calculation | Passed (auto-parts plant, predictive maintenance: $1M × 35% − $60k = $290k a year; 3-year net $672k; payback 8.2 months) |
 | Edited client figures update the ranking at once | US-1.2 | Manual UI test | Passed |
 | Model metrics come from test data only | US-2.5 | Stratified 70/30 split; all metrics on 3,000 unseen records | Passed |
-| Dollar-optimal threshold differs from accuracy-optimal | US-2.3 | Compare both on the test set (default costs) | Passed: 0.05 vs 0.90; dollar-optimal saves $29k/year more |
+| Dollar-optimal threshold differs from accuracy-optimal | US-2.3 | Compare both on the test set (default costs) | Passed: break-even level 0.02 (set from the costs) vs the usual 0.5 cut-off; break-even saves $20k/year more ($658k vs $638k) |
 | Verdict rules give the expected result for 3 sample checklists | US-3.2 | Unit tests (`tests/test_core.py`) | Passed |
 | Dollar math matches hand calculation | US-2.2 | Unit test on a 4-record example | Passed |
 | Uncertainty range contains the point estimate | US-2.7 | Unit test (`tests/test_core.py`) | Passed: default case $658k, range $609k–$703k |
-| Scenarios are ordered low ≤ base ≤ high; tornado sorted by impact | US-2.8 | Unit test (`tests/test_core.py`) | Passed: low case $164k/year, 20.5-month payback |
+| Scenarios are ordered low ≤ base ≤ high; tornado sorted by impact | US-2.8 | Unit test (`tests/test_core.py`) | Passed: low case $162k/year, 20.7-month payback |
 | Actual savings match hand calculation; adoption and drift alerts fire on the right months | US-6.1, US-6.2, US-6.3 | Unit test on a 4-month example | Passed |
 | Gap causes add up exactly to actual − forecast; actuals equal to the forecast give no gap | US-6.1 | Unit tests (5 simulated rollouts + exact-match case) | Passed: sample rollout $464k vs $658k model estimate, gap −$195k |
 | Bad actuals files are rejected with a clear message | US-6.1 | Unit test (missing column, impossible counts) | Passed |

@@ -662,7 +662,7 @@ window.CASE = {
    "Heat": 115,
    "Power": 95,
    "Overstrain": 98,
-   "Random": 19
+   "Random": 1
   },
   "auc": {
    "Logistic regression (baseline)": 0.9096,

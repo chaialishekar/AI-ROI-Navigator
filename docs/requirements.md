@@ -91,8 +91,8 @@ flowchart LR
 
 How a warning becomes a work order in the plant's maintenance system (a CMMS such as SAP PM or IBM Maximo).
 
-**Trigger:** the AI's breakdown risk for a machine is at or above the warning level (0.05 at the default costs,
-chosen to save the most money, see step 2).
+**Trigger:** the AI's breakdown risk for a machine is at or above the warning level (0.02 at the default costs,
+the break-even point set from the costs, see step 2).
 
 **Flow:**
 1. The AI service sends a warning event.

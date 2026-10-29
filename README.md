@@ -68,7 +68,7 @@ Every page shows **the answer first** (the question, the answer, three numbers, 
 
 ## Key result (default assumptions)
 On 3,000 machine records the model never saw during training, a gradient-boosting model:
-- alerts at the **break-even level** set by the costs ($500 inspection ÷ $21K saved per early catch ≈ 2%), so the test set is used only to check the result, never to tune it
+- alerts at the **break-even level** set by the costs ($500 inspection ÷ ($21K saved per early catch + $500) ≈ 2%), so the test set is used only to check the result, never to tune it
 - catches **~86% of failures** with **~73% of alerts being real** (~13 false alarms a year)
 - yields **~$658K annual net savings** for a plant with 40 failures a year, with a **~4.7-month payback**
 - **Plan with the published figure.** Published studies (20–50% less downtime) give **~$290K a year** for the same plant. The model test is higher because the synthetic data makes breakdowns easier to predict, so the case approves on the published figure and treats the rest as upside to prove in the pilot.
@@ -103,7 +103,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 
 ## How it works
 - **Library ranking:** value a year = client's problem cost × published improvement (low / middle / high); net = value − running cost; 3-year net value = net × live months ÷ 12 − setup; each point of missing data quality adds 20% to setup and 2 months. Ranked on the middle (expected) or low end (cautious); a runner-up within 25% is flagged as a close call. Code: `src/library.py`.
-- **Model:** AI4I 2020 dataset (10,000 records, 339 failures). Features: temperatures, speed, torque, tool wear, plus engineered power, temperature difference and wear × torque. Failure-mode columns are excluded to avoid leakage. Logistic regression (explainable baseline) vs gradient boosting; stratified 70/30 split.
+- **Model:** AI4I 2020 dataset (10,000 records, 339 failures). Features: temperatures, speed, torque, tool wear, plus engineered power, temperature difference and wear × torque. Failure-mode columns are excluded to avoid leakage. Logistic regression (explainable baseline) vs gradient boosting; stratified 70/30 split. The dataset's failures were generated from rules on power, temperature difference and wear × torque, so these features make the test AUC (0.99) an upper bound, not what a real plant would see.
 - **Dollars:** test-set catch, miss and false-alarm rates are scaled to the plant's failures per year. Savings = cost of failures without AI − (planned repairs + missed failures + false alarms + running cost).
 - **Uncertainty:** *model uncertainty* comes from a bootstrap of the test set (1,000 resamples, 90% range). *Assumption uncertainty* comes from a tornado chart that moves each cost input between an editable low and high value one at a time, plus low / base / high cases that set every input to its unfavorable or favorable end.
 - **Value tracking:** monthly counts (alerts, failures flagged, prevented, missed, false alarms) are turned into dollars with the same formula as the forecast. Adoption = share of alerts acted on (alert below 70%). Drift = 3-month rolling recall 10+ points below launch. The gap is split by swapping each forecast assumption (failure volume, recall, share of flagged failures acted on, false alarms) for its actual value one at a time, so the parts add up exactly. The bundled 12-month rollout is simulated, not real plant data.

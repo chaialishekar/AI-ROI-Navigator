@@ -120,7 +120,7 @@ P0 = must have for v1, P1 = should have. Full backlog with every acceptance crit
 | US-1.5 | P0 | Analyst | missing data to cost extra | tools needing perfect data do not look unfairly good | +20% setup and +2 months per point short; unit test | Done |
 | US-1.7 | P0 | Finance partner | to see if the order holds on cautious numbers | no tool wins on optimism alone | Expected / cautious switch; rank changes listed; unit test | Done |
 | US-1.6 | P0 | Business sponsor | to know why a tool is first, and when it is a close call | I can challenge it | Names value, payback and evidence; flags a runner-up within 25% | Done |
-| US-2.2 | P0 | Operations director | the top pick's savings in dollars from a real test | the case rests on more than published figures | Catch, miss and false-alarm rates from held-out data turned into dollars | Done |
+| US-2.2 | P0 | Operations director | the top pick's savings in dollars from a held-out test | the case rests on more than published figures | Catch, miss and false-alarm rates from held-out data turned into dollars | Done |
 | US-2.9 | P0 | Finance partner | the AI compared with doing nothing and with simple rules | we do not buy AI where rules would do | Both alternatives priced on the same data | Done |
 | US-3.1 | P0 | Operations director | a readiness verdict with the gaps to close | the pilot does not stall | Go / fix first / not ready, top actions, owners | Done |
 | US-4.1 | P0 | Finance partner | a two-page brief with a decision rule | I can approve or stop it | PDF: recommendation, options, ranges, risks, gates, evidence | Done |

@@ -83,8 +83,9 @@
   <div class="wrap reveal">
     <p class="eyebrow">How it ran</p>
     <h2>Seven phases. Each one had to pass a gate.</h2>
-    <p class="muted" style="margin:0">Follow the climber up the steps. Each one had a gate to pass first; open any step to see the work.</p>
+    <p class="muted" style="margin:0">Watch the climber go from Discover to go-live. Each step had a gate to pass first; open any step to see the work.</p>
     <div class="stairs" id="stairs" style="margin-top:22px"></div>
+    <button class="linkbtn" type="button" id="climbAgain" style="margin-top:6px">Climb again</button>
     <div class="card detail" id="stairsPanel"></div>
   </div>
 </section>
@@ -119,7 +120,7 @@
   show("sentry");
   Characters.mountCast(document.getElementById("hero"), ["sentry", "lens", "foresight", "rulebook", "snooze"], { onSelect: show });
 
-  stairs(document.getElementById("stairs"), { link: true, panel: document.getElementById("stairsPanel") });
+  stairs(document.getElementById("stairs"), { link: true, auto: true, replay: document.getElementById("climbAgain"), panel: document.getElementById("stairsPanel") });
 
   document.getElementById("decisionCards").innerHTML = [
     [`${money(D.value.annual_net)} → ${money(D.published.net)}`, "Planned on published studies, not the model test on synthetic data.", "business-case"],

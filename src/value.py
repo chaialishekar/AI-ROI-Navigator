@@ -87,12 +87,13 @@ ACCURACY_THRESHOLD = 0.5    # the usual cut-off; with honest probabilities it gi
 def alert_threshold(c: Costs) -> float:
     """Break-even alert level: alert when the chance of failure makes an inspection worth doing.
 
-    An inspection costs cost_false_alarm; a failure caught early saves cost_missed − cost_caught.
-    Alerting pays when chance × saving > inspection cost. The level comes from the plant's costs
-    alone, never from the test set, so the test results stay an honest check. Rounded to 0.01.
+    An alert on a machine that would fail saves cost_missed − cost_caught; an alert on one that would not
+    costs a cost_false_alarm inspection. Alerting pays when chance × saving > (1 − chance) × inspection,
+    so the level is inspection ÷ (saving + inspection). It comes from the plant's costs alone, never from
+    the test set, so the test results stay an honest check. Rounded to 0.01.
     """
     saving = c.cost_missed - c.cost_caught
-    return min(0.99, max(0.01, round(c.cost_false_alarm / saving, 2))) if saving > 0 else 0.99
+    return min(0.99, max(0.01, round(c.cost_false_alarm / (saving + c.cost_false_alarm), 2))) if saving > 0 else 0.99
 
 
 def sweep(y_true: np.ndarray, proba: np.ndarray, c: Costs, steps: int = 99) -> pd.DataFrame:

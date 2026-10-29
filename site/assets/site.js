@@ -32,7 +32,7 @@
   }
   // Break-even alert level, as src/value.py alert_threshold()
   const breakEven = c => (c.cost_missed > c.cost_caught
-    ? Math.min(0.99, Math.max(0.01, Math.round(c.cost_false_alarm / (c.cost_missed - c.cost_caught) * 100) / 100)) : 0.99);
+    ? Math.min(0.99, Math.max(0.01, Math.round(c.cost_false_alarm / (c.cost_missed - c.cost_caught + c.cost_false_alarm) * 100) / 100)) : 0.99);
 
   const delivered = D.tracking.delivered / D.tracking.promised;   // share of the model's estimate
   const PHASES = [
@@ -71,9 +71,7 @@
     const el = document.querySelector("[data-footer]");
     if (!el) return;
     el.innerHTML = `<div class="wrap">
-      <div><h2 style="margin:0">Built by Chaitali Shekar</h2>
-        <p class="muted" style="margin:6px 0 0">AI business systems analysis, end to end.</p>
-        <p class="small" style="margin:10px 0 0">Client costs and provider prices are estimates. The model is tested on a public, synthetic dataset. The year after launch is simulated.</p></div>
+      <div><h2 style="margin:0">Built by Chaitali Shekar</h2></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         ${ESSAY.url ? `<a class="btn ghost" href="${ESSAY.url}" target="_blank" rel="noopener">Read my writing ↗</a>` : ""}
         <a class="btn ghost" href="${REPO}" target="_blank" rel="noopener">View the code</a>
@@ -120,9 +118,11 @@
       </g>`;
     const vertical = PHASES.map((p, i) =>
       `<a href="${href(p)}" class="${i === sel ? "on" : seen.includes(i) ? "done" : ""}"><span>0${i + 1}</span>${p.name}<em>${p.gate.join(" ")}</em></a>`).join("");
+    const LIVE = `<b>Go-live!</b> Sentry is now watching every machine on the floor. Next question: did the savings show up?`;
     el.innerHTML = `<svg viewBox="0 0 ${20 + 7 * w + dx + 10} ${ly + 60}" role="img" aria-label="Seven phases drawn as a rising staircase, each with its gate, and a person climbing it">
       <defs><marker id="arTeal" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#0f6d74" stroke-width="1.8" stroke-linecap="round"/></marker><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8a8a85" stroke-width="1.5"/></marker></defs>${s}</svg>
-      <div class="stairs-v">${vertical}</div>`;
+      <div class="stairs-v">${vertical}</div>
+      <div class="golive-msg" role="status" aria-live="polite"></div>`;
 
     function paint() {
       el.querySelectorAll(".step").forEach(g => {
@@ -142,18 +142,59 @@
         arrow.style.display = "";
         arrow.classList.remove("draw"); void arrow.getBBox(); arrow.classList.add("draw");
       } else arrow.style.display = "none";
+      // Reaching the top step means the project went live
+      const msg = el.querySelector(".golive-msg"), top = sel === n - 1;
+      msg.innerHTML = top ? LIVE : "";
+      msg.classList.toggle("show", top);
+      el.classList.toggle("is-live", top);
       if (opts.panel) {
         const p = PHASES[sel];
         opts.panel.innerHTML = `<div><span>Phase ${sel + 1} · ${p.name}</span>${p.q}</div>
           <div><span>Deliverable</span>${p.made}</div><div><span>Gate passed</span>${p.gate.join(" ")}</div>`;
       }
     }
+    let climbing = null;
+    const stop = () => { clearInterval(climbing); climbing = null; };
     el.querySelectorAll(".step").forEach(g => {
-      g.addEventListener("mouseenter", () => { sel = +g.dataset.i; paint(); });
+      g.addEventListener("mouseenter", () => { stop(); sel = +g.dataset.i; paint(); });
       if (!opts.link) g.addEventListener("click", e => e.preventDefault());
     });
     if (!opts.link || opts.current === undefined) el.addEventListener("mouseleave", () => { sel = opts.current ?? sel; paint(); });
     paint();
+    // opts.auto: climb from the first step to the top once the staircase is on screen
+    function climb() {
+      stop(); sel = 0; paint();
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) { sel = n - 1; paint(); return; }
+      climbing = setInterval(() => { sel += 1; paint(); if (sel >= n - 1) stop(); }, 750);
+    }
+    if (opts.auto) {
+      if (opts.replay) opts.replay.addEventListener("click", climb);
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); climb(); } }, { threshold: 0.5 });
+        io.observe(el);
+      } else { sel = n - 1; paint(); }
+    }
+  }
+
+  // Phase pages: a small staircase that stays under the nav while you scroll; each step opens its phase
+  function rail(i) {
+    const nav = document.querySelector("[data-nav]");
+    if (!nav) return;
+    const seen = visited(), climber = `<svg class="rail-climber" viewBox="-8 -32 20 34" aria-hidden="true"><path d="M-4 0 L-1 -11 M6 -6 L2 -11" stroke="#111" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M0 -11 L2 -22" stroke="#0f6d74" stroke-width="6" stroke-linecap="round"/><path d="M1.5 -20 L9 -27 M1.5 -20 L-5 -15" stroke="#111" stroke-width="2.4" stroke-linecap="round" fill="none"/><circle cx="3.5" cy="-28.5" r="4.2" fill="#111"/></svg>`;
+    const steps = PHASES.map((p, j) => `${j === n - 1 ? `<span class="rail-live" title="Go-live">Go-live</span>` : ""}
+      <a href="${href(p)}" class="${j === i ? "on" : seen.includes(j) ? "done" : ""}" ${j === i ? 'aria-current="page"' : ""}>
+        ${j === i ? climber : ""}<span class="blk" style="height:${8 + j * 5}px"></span><span class="nm"><em>0${j + 1}</em> ${p.name}</span></a>`).join("");
+    nav.insertAdjacentHTML("beforeend", `<div class="wrap rail" aria-label="Phases">${steps}</div>`);
+  }
+  const n = PHASES.length;
+
+  // A short note that slides in and fades out
+  function toast(html) {
+    const t = document.createElement("div");
+    t.className = "toast"; t.setAttribute("role", "status"); t.innerHTML = html;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => t.classList.add("show"));
+    setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 600); }, 6000);
   }
 
   function pager(i) {
@@ -174,8 +215,8 @@
     markVisited(i);
     const head = document.querySelector("[data-phase-head]");
     if (head) head.innerHTML = `<p class="eyebrow">Phase ${i + 1} of 7 · ${p.name}</p><h1>${p.q}</h1>`;
-    const st = document.querySelector("[data-stairs]");
-    if (st) stairs(st, { current: i, link: true });
+    rail(i);
+    if (i === n - 1) toast(`<b>Go-live!</b> Sentry went live across the plant. This page checks whether the savings showed up.`);
     pager(i);
     detailsToggle();
   }
