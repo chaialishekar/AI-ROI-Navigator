@@ -1,4 +1,4 @@
-# Product roadmap: AI ROI Navigator
+# Product roadmap: The ROI Compass
 
 *Last updated October 2026 · Owner: Chaitali Shekar · Format: Now / Next / Later*
 

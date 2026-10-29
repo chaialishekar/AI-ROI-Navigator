@@ -1,4 +1,4 @@
-"""AI ROI Navigator: an AI business systems analysis case study
+"""The ROI Compass: an AI business systems analysis case study
 
 An AI provider sells a library of AI tools; its clients ask which one to buy first and whether it will pay off.
 Evaluate options compares the library for one client in dollars; the later phases take the top pick for an
@@ -56,7 +56,7 @@ from src.value import (
     sweep,
 )
 
-st.set_page_config(page_title="AI ROI Navigator", page_icon=":material/insights:", layout="wide")
+st.set_page_config(page_title="The ROI Compass", page_icon=":material/insights:", layout="wide")
 
 
 @st.cache_data
@@ -1446,7 +1446,7 @@ def break_even_cost(val: dict, c: Costs) -> float:
 CASE_STUDY_SITE = "https://chaialishekar.github.io/AI-ROI-Navigator/"
 def page_home():
     """Start page: one card per tool."""
-    st.title("AI ROI Navigator")
+    st.title("The ROI Compass")
     st.markdown(f'<div class="model-text">Example client: an auto-parts plant. '
                 f'<a href="{CASE_STUDY_SITE}" target="_blank">Case study ↗</a></div>', unsafe_allow_html=True)
     tools = [("pick", "Rank the AI tools for a client."),

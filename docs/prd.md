@@ -1,4 +1,4 @@
-# PRD: AI ROI Navigator
+# PRD: The ROI Compass
 
 > Pick the right AI first, and prove it paid off.
 

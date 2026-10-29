@@ -84,17 +84,23 @@
     { slug: "discover", name: "Discover", q: "What's going wrong, and what does it cost?",
       made: "Problem statement, stakeholders, as-is process", gate: [money(D.plant.total), "a year at stake"] },
     { slug: "evaluate", name: "Evaluate options", q: "Which AI should they buy first?",
+      from: `Discover put ${money(D.plant.total)} a year of losses on the table.`, now: "Which AI tool, if any, attacks them best?",
       made: "Priced options with sources, cautious view", gate: ["Predictive", "maint. first"] },
     { slug: "business-case", name: "Business case", q: "Will it pay for itself, and how sure are we?",
+      from: "Evaluate picked Sentry, predictive maintenance, on published results.", now: "Test it on machine data and price it for this plant.",
       made: "ROI model with ranges, break-even", gate: [`${money(D.published.net)} a year`, "planned"] },
     { slug: "readiness", name: "Readiness", q: "Can the team actually use it?",
+      from: `The business case says it pays: ${money(D.published.net)} a year planned, ${money(D.decision.worst_case)} in the worst case.`, now: "Money isn't enough. Is the team ready to act on warnings?",
       made: "Readiness check, change impact", gate: [`${D.readiness.weakest.length} gaps`, "to close"] },
     { slug: "decide", name: "Decide", q: "What exactly is finance signing?",
+      from: `Readiness found ${D.readiness.weakest.length} gaps: ${D.readiness.weakest.map(w => w.name.toLowerCase()).join(" and ")}.`, now: "Put the money and the gaps in front of finance.",
       made: "Two-page decision brief, options considered",
       gate: D.decision.label === "Proceed after fixes" ? ["Pilot after", "fixes"] : [D.decision.label, ""] },
     { slug: "deliver", name: "Deliver", q: "What gets built, and how do we know it works?",
+      from: "Decide approved a pilot on one line, after the readiness gaps are closed.", now: "Specify it, build it, and set the checks the pilot must pass.",
       made: "Requirements, integration spec, 13 UATs, traceability", gate: ["13 tests", "pass"] },
     { slug: "measure", name: "Measure", q: "Did the savings show up?",
+      from: "Deliver built Sentry and ran the one-line pilot against its exit checks.", now: "A year after go-live, did the savings show up?",
       made: "Monthly tracking, gap analysis by cause", gate: [`${money(D.tracking.delivered)} vs`, `${money(D.tracking.plan)} plan`] },
   ];
   const href = p => `${ROOT}/phases/${p.slug}.html`;
@@ -103,7 +109,7 @@
     const el = document.querySelector("[data-nav]");
     if (!el) return;
     el.innerHTML = `<div class="wrap">
-      <a class="logo" href="${ROOT}/index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="15" width="5" height="7" rx="1" fill="#111"/><rect x="9.5" y="10" width="5" height="12" rx="1" fill="#111"/><rect x="17" y="4" width="5" height="18" rx="1" fill="#0f6d74"/></svg>AI ROI Navigator</a>
+      <a class="logo" href="${ROOT}/index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="15" width="5" height="7" rx="1" fill="#111"/><rect x="9.5" y="10" width="5" height="12" rx="1" fill="#111"/><rect x="17" y="4" width="5" height="18" rx="1" fill="#0f6d74"/></svg>The ROI Compass</a>
       <div class="nav-links">
         <a class="hide-sm" href="${ROOT}/index.html#phases">Phases</a>
         <a class="hide-sm" href="${ROOT}/index.html#decisions">Decisions</a>
@@ -256,10 +262,11 @@
   // A phase page's header: mini staircase plus the phase's question
   function phaseHead(i) {
     const p = PHASES[i];
-    document.title = `${p.name} · AI ROI Navigator`;
+    document.title = `${p.name} · The ROI Compass`;
     markVisited(i);
     const head = document.querySelector("[data-phase-head]");
-    if (head) head.innerHTML = `<p class="eyebrow">Phase ${i + 1} of 7 · ${p.name}</p><h1>${p.q}</h1>`;
+    if (head) head.innerHTML = `<p class="eyebrow">Phase ${i + 1} of 7 · ${p.name}</p><h1>${p.q}</h1>` +
+      (p.from ? `<p class="bridge"><span class="muted">${p.from}</span> <b>Now:</b> ${p.now}</p>` : "");
     rail(i);
     if (i === n - 1) toast(`<b>Go-live!</b> Sentry went live across the plant. This page checks whether the savings showed up.`);
     pager(i);

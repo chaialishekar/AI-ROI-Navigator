@@ -1,11 +1,11 @@
-# AI ROI Navigator: Solution Design
+# The ROI Compass: Solution Design
 
 *Independent concept project.*
 
 ---
 
 ## 1. Introduction
-The AI ROI Navigator is a browser-based tool for the work of an **AI business systems analyst**: taking a business need through to an AI that is live and paying off. It helps the analyst and an operations leader:
+The ROI Compass is a browser-based tool for the work of an **AI business systems analyst**: taking a business need through to an AI that is live and paying off. It helps the analyst and an operations leader:
 1. pick the AI that fits the business need,
 2. prove its value in dollars using a real model,
 3. check whether the team is ready, and get finance to sign off, and

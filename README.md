@@ -1,4 +1,4 @@
-# AI ROI Navigator
+# The ROI Compass: an AI business case, end to end
 
 > Which AI should a business buy first, and will it pay off?
 
@@ -15,6 +15,30 @@
 - Tests it on 10,000 public machine records: **$658k a year** on the model test, **$290k** planned on published studies, **$464k** delivered in a simulated first year.
 - Compares the AI with doing nothing and with the maintenance manual's rules; the rules save more on paper but raise **~85 false alarms a year against ~13**.
 - On the website, change the plant's costs and see the savings update, compare options side by side, and watch a CFO, COO and CTO react, each concern with a fix you can apply.
+
+**Questions it answers**
+- **Which AI first?** Every tool in the library, priced for one plant, on expected and cautious figures.
+- **AI or a simpler option?** The AI against doing nothing and against the maintenance manual's rules, on the same costs.
+- **How many false alarms is too many?** The alert level is set where an inspection pays for itself, and the site shows what moving it does to savings and to crew trust.
+- **What has to be true before money is spent?** Seven phases, each with a gate: readiness gaps, a decision rule agreed in advance, a one-line pilot.
+- **Did it pay off?** Twelve months tracked against the plan and the model, with the gap split by cause.
+
+**Repository layout**
+```
+site/                 the website (GitHub Pages)
+  index.html          home: the options, the 7-phase staircase, key decisions
+  phases/             one page per phase, each with "Show the details"
+  assets/             shared code (calculator, board), styles, data.js
+  export_data.py      writes assets/data.js from src/
+src/                  the engine: model, dollar formula, ranking, readiness, tracking, brief
+data/                 AI4I 2020 records, AI library with sources, monthly actuals
+pipeline/             S3 → Databricks bronze / silver / gold job
+pilot/, agents/       the two Amazon Bedrock experiments and their graders
+tests/                23 unit tests (pytest)
+docs/                 PRD, requirements pack (13 acceptance tests), solution design, roadmap, decision brief
+app.py                Streamlit analyst workbench, run locally
+ARCHITECTURE.md       how it fits together
+```
 
 An end-to-end case study in **AI business systems analysis**: *should we invest in AI, or is there a better way?*
 

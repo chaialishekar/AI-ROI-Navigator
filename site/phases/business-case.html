@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Business case · AI ROI Navigator</title>
+  <title>Business case · The ROI Compass</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -59,6 +59,7 @@
     <h2>The rules saved more on paper. Here's why they lost.</h2>
     <div class="cast" id="trio" style="height:230px"></div>
     <div class="grid g3" id="trioCards" style="margin-top:6px"></div>
+    <div class="callout" style="margin-top:18px"><div class="label">When would the rules win?</div><p style="margin:6px 0 0" id="rulesWin"></p></div>
   </div>
 </section>
 
@@ -66,20 +67,24 @@
   <div class="wrap">
     <p class="eyebrow">The details</p>
     <h2>What if my guesses are wrong? Try it.</h2>
-    <p class="muted" style="margin:0 0 18px;max-width:680px">The boxes below are my assumptions about the plant. Change any number, or pick a scenario, and the savings and the executives' reactions update.</p>
+    <p class="muted" style="margin:0 0 18px;max-width:680px">Everything on this page rests on my guesses about the plant's costs. Pick a what-if and watch what happens to the savings, and to who would sign off.</p>
     <div class="card">
-      <div class="try"><span class="label">Try a scenario</span><span id="dTry"></span><button class="chip ghost" type="button" id="dReset">Reset all</button></div>
-      <div class="inputs" id="dIn"></div>
+      <div class="step-h"><span class="num">1</span><div><b>Pick a what-if</b><div class="small">Each one starts from my assumptions and changes one thing.</div></div></div>
+      <div class="try" id="dTry"></div>
+      <details class="adv" id="dAdv"><summary>Or change the numbers yourself</summary>
+      <div class="inputs" id="dIn" style="margin-top:14px"></div>
       <div style="margin-top:18px"><label class="small" for="dLevel">How sure should the AI be before it warns? <b id="dLevelTxt"></b></label>
         <input id="dLevel" type="range" min="1" max="99" step="1" style="width:100%;accent-color:var(--teal)">
         <div class="slider-hint small"><span>← warns early: catches more, more false alarms</span><span>warns late: fewer false alarms, misses more →</span></div>
         <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button></div>
-      <div class="out" id="dOut"></div>
+      </details>
+      <div class="step-h"><span class="num">2</span><div><b>The result</b><div class="small" id="dNow"></div></div></div>
+      <div class="out" id="dOut" style="margin-top:10px"></div>
       <p class="muted" style="margin:16px 0 0" id="dSay"></p>
-      <div class="board-head"><div><div class="label">Side by side</div><div class="small">The same costs applied to every option. Pin a setup to keep it while you try another.</div></div>
-        <button class="chip" type="button" id="dPin">Pin these settings</button></div>
+      <div class="step-h"><span class="num">3</span><div><b>Against the options without AI</b><div class="small">The same costs applied to every option. Pin a what-if to keep it as a column while you try another.</div></div>
+        <button class="chip" type="button" id="dPin">Pin this what-if</button></div>
       <div class="tscroll"><table class="t cmp" id="dCmp"></table></div>
-      <div class="board-head"><div><div class="label">The board reacts</div><div class="small">How three executives would respond to these numbers. A concern often comes with a fix you can apply in one click.</div></div><div class="small" id="dBoardSum"></div></div>
+      <div class="step-h"><span class="num">4</span><div><b>Would the board sign off?</b><div class="small">How three executives would respond. A concern often comes with a fix you can apply in one click.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
       <div class="board" id="dBoard" aria-live="polite"></div>
       <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
       <p class="small" style="margin:6px 0 0">The board never changes the model by itself: it only comments. Reactions follow fixed rules on the numbers above (payback, savings given up versus break-even, false alarms a week, share of alerts that are real, catch rate, running cost) and the Readiness results, not a live AI.</p>
@@ -129,12 +134,24 @@
 
   const trio = {
     rulebook: ["Rulebook · the manual's rules", `${money(D.rules.annual_net)} a year`, `Catches ${pct(D.rules.recall)} of breakdowns, but raises ~${Math.round(D.rules.false_alarms)} false alarms a year. Only ${pct(D.rules.precision)} of its alerts are real: the kind of noise a crew learns to ignore.`],
-    sentry: ["Sentry · predictive maintenance", `${money(v.annual_net)} a year`, `Catches ${pct(v.recall)} of breakdowns with ~${Math.round(v.false_alarms)} false alarms a year. ${pct(v.precision)} of its alerts are real. Recommended, with the manual's limits shown to explain each warning.`],
+    sentry: ["Sentry · predictive maintenance", `${money(v.annual_net)} a year`, `Catches ${pct(v.recall)} of breakdowns with ~${Math.round(v.false_alarms)} false alarms a year. ${pct(v.precision)} of its alerts are real. The manual's limits are kept to explain each warning.`],
     snooze: ["Snooze · do nothing", "$0 saved", `Every breakdown stays unplanned: ${money(c.failures_per_year * c.cost_missed)} a year in downtime and emergency repairs.`],
   };
   document.getElementById("trioCards").innerHTML = Object.entries(trio).map(([k, [t, n, d]]) =>
-    `<div class="card ${k === "sentry" ? "opt-card top" : ""}" data-k="${k}"><div class="label">${t}</div><div class="stat sm">${n}</div><p class="muted" style="margin:0;font-size:14px">${d}</p></div>`).join("");
-  Characters.mountCast(document.getElementById("trio"), ["rulebook", "sentry", "snooze"], { scale: 1.05, spacing: 3.2 });
+    `<div class="card opt-card" data-k="${k}" tabindex="0"><div class="label">${t}${k === "sentry" ? ' <span class="tag good">Recommended</span>' : ""}</div><div class="stat sm">${n}</div><p class="muted" style="margin:0;font-size:14px">${d}</p></div>`).join("");
+  // The outline follows whichever option the visitor points at; it rests on the recommendation
+  const pick = k => document.querySelectorAll("#trioCards .card").forEach(x => x.classList.toggle("top", x.dataset.k === k));
+  document.querySelectorAll("#trioCards .card").forEach(x => ["mouseenter", "focus", "click"].forEach(ev => x.addEventListener(ev, () => pick(x.dataset.k))));
+  document.getElementById("trioCards").addEventListener("mouseleave", () => pick("sentry"));
+  pick("sentry");
+  Characters.mountCast(document.getElementById("trio"), ["rulebook", "sentry", "snooze"], { scale: 1.05, spacing: 3.2, onSelect: pick });
+
+  // When would the rules win? They save more on paper; the question is whether a crew keeps acting on their alerts.
+  const rv = Site.rulesValue(c), lead = rv.net - v.annual_net, perCatch = c.cost_missed - c.cost_caught;
+  const share = lead / (rv.caught * perCatch);
+  document.getElementById("rulesWin").innerHTML = lead > 0
+    ? `On paper the manual's rules save <b>${money(lead)} a year more</b> than Sentry, because they catch slightly more breakdowns. But they raise about ${Math.round(rv.caught + rv.false_alarms)} alerts a year and ${Math.round(rv.false_alarms)} of them are false. Each real alert the crew skips turns a ${money(c.cost_caught)} repair back into a ${money(c.cost_missed)} breakdown. If the crew ignores more than <b>${pct(share)}</b> of the rules' real alerts (about 1 in ${Math.round(1 / share)}), Sentry comes out ahead. In the simulated rollout on Measure, crews acted on only 50–67% of alerts in the first three months, so I planned for alert fatigue. If your crew reliably acts on every alert, the rules are the better buy.`
+    : `At these costs Sentry saves more than the manual's rules even if the crew acts on every rule alert.`;
 </script>
 <script>
 (() => {
@@ -153,7 +170,7 @@
   // Side by side: do nothing, the manual's rules and the AI at today's settings, plus up to two pinned setups
   function compare(c, level) {
     const none = { net: 0, payback: null, three_year: 0, recall: 0, false_alarms: 0, precision: null, none: true };
-    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`AI, these settings`, value(c, level), `alert at ${Math.round(level * 100)}%`],
+    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`Sentry · ${lastTry || (document.querySelector("#dTry .chip.on") ? "my assumptions" : "your numbers")}`, value(c, level), `alert at ${Math.round(level * 100)}%`],
       ...pins.map((p, k) => [p.label, value(p.c, p.level), `alert at ${Math.round(p.level * 100)}% <button class="linkbtn" type="button" data-unpin="${k}">remove</button>`])];
     const best = Math.max(...cols.map(x => x[1].net));
     const rows = [["Net savings a year", r => usd(r.net)], ["Pays for itself in", r => (r.none ? "–" : months(r.payback))],
@@ -162,20 +179,24 @@
     document.getElementById("dCmp").innerHTML = `<tr><th></th>${cols.map(([t, , n], k) => `<th class="${k === 2 ? "now" : ""}">${t}<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">${n || "&nbsp;"}</div></th>`).join("")}</tr>`
       + rows.map(([n, f], j) => `<tr><td>${n}</td>${cols.map(([, r], k) => `<td class="${k === 2 ? "now" : ""}">${j === 0 && r.net === best ? `<b>${f(r)}</b>` : f(r)}</td>`).join("")}</tr>`).join("");
   }
-  // Scenarios: each starts from my assumptions and changes one thing
-  const TRY = [["Breakdowns cost less ($10k)", () => setTo({ cost_missed: 10000 })],
+  // What-ifs: each starts from my assumptions and changes one thing
+  const TRY = [["My assumptions", () => {}], ["Breakdowns cost less ($10k)", () => setTo({ cost_missed: 10000 })],
     ["Setup costs 4× more", () => setTo({ deployment_cost: D.costs.deployment_cost * 4 })],
     ["Twice as many breakdowns", () => setTo({ failures_per_year: D.costs.failures_per_year * 2 })],
     ["AI only warns when 90% sure", () => { auto = false; lvl.value = 90; }]];
   document.getElementById("dTry").innerHTML = TRY.map(([t], i) => `<button class="chip" type="button" data-try="${i}">${t}</button>`).join("");
+  const mark = i => document.querySelectorAll("#dTry .chip").forEach((b, j) => b.classList.toggle("on", j === i));
   document.getElementById("dTry").addEventListener("click", e => {
     const i = e.target.dataset.try; if (i === undefined) return;
-    reset(false); TRY[i][1](); lastTry = TRY[i][0]; draw(); applied(`Scenario: ${TRY[i][0]}. Everything else is back to my assumptions.`);
+    reset(false); TRY[i][1](); lastTry = +i ? TRY[i][0] : ""; mark(+i); draw();
+    applied(+i ? `What-if: ${TRY[i][0]}. Everything else is my assumptions.` : "");
   });
   function draw() {
     const c = costs();
     if (auto) lvl.value = Math.round(breakEven(c) * 100);
     const level = lvl.value / 100, r = value(c, level);
+    const on = [...document.querySelectorAll("#dTry .chip")].findIndex(b => b.classList.contains("on"));
+    document.getElementById("dNow").textContent = on >= 0 ? `Showing: ${TRY[on][0]}` : "Showing: your own numbers";
     document.getElementById("dLevelTxt").textContent = `${lvl.value}%`;
     document.getElementById("dLevelNote").textContent = auto ? "Break-even: where the expected saving from an early catch outweighs the inspection." : `Break-even would be ${pct(breakEven(c))}.`;
     document.getElementById("dOut").innerHTML = [
@@ -197,8 +218,8 @@
   box.addEventListener("input", draw);
   lvl.addEventListener("input", () => { auto = false; draw(); });
   document.getElementById("dAuto").addEventListener("click", () => { auto = true; draw(); });
-  document.getElementById("dReset").addEventListener("click", () => { lastTry = ""; reset(); });
-  box.addEventListener("input", () => (lastTry = ""));
+  box.addEventListener("input", () => { lastTry = ""; mark(-1); draw(); });
+  lvl.addEventListener("input", () => mark(-1));
   document.getElementById("dPin").addEventListener("click", () => {
     const c = costs(), level = lvl.value / 100;
     pins = [...pins, { c, level, label: lastTry || (FIELDS.every(([k]) => c[k] === D.costs[k]) && auto ? "My assumptions" : `Your setup ${pins.length + 1}`) }].slice(-2);
@@ -211,11 +232,12 @@
   document.getElementById("dBoard").addEventListener("click", e => {
     const i = e.target.dataset.fix; if (i === undefined) return;
     const p = fixes[i], f = p.fix;
-    if (f.set) setTo(f.set);
+    if (f.set) { setTo(f.set); document.getElementById("dAdv").open = true; }
+    lastTry = ""; mark(-1);
     if (f.level !== undefined) { auto = Math.abs(f.level - breakEven(costs())) < 0.005; lvl.value = Math.round(f.level * 100); }
     draw(); applied(`Applied the ${p.role}'s fix: ${f.label.replace("Apply: ", "")}. See how the board reacts now.`);
   });
-  reset();
+  mark(0); reset();
   document.getElementById("dAuc").innerHTML = `<tr><th>Model</th><th style="text-align:right">AUC</th></tr>`
     + Object.entries(D.model.auc).map(([k, v]) => `<tr><td>${k}</td><td style="text-align:right">${v.toFixed(2)}</td></tr>`).join("");
 })();

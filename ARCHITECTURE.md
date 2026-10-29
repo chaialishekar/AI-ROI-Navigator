@@ -1,6 +1,6 @@
 # Architecture
 
-How the AI ROI Navigator is built: where each number comes from, how the website stays in step with the Python model, and how it is deployed. For the product view, see the [PRD](docs/prd.md); for requirements and acceptance tests, the [requirements pack](docs/requirements.md).
+How The ROI Compass is built: where each number comes from, how the website stays in step with the Python model, and how it is deployed. For the product view, see the [PRD](docs/prd.md); for requirements and acceptance tests, the [requirements pack](docs/requirements.md).
 
 ## System overview
 
