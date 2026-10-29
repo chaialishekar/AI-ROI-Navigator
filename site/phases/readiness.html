@@ -15,7 +15,7 @@
 <section class="first">
   <div class="wrap phase-head">
     <div data-phase-head></div>
-    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Rate the team live ↗</a></div>
+    <div class="head-cta"><button class="btn" type="button" data-details-btn aria-controls="details">Show the details</button></div>
   </div>
 </section>
 
@@ -53,6 +53,22 @@
   </div>
 </section>
 
+<section id="details" hidden>
+  <div class="wrap">
+    <p class="eyebrow">The details</p>
+    <h2>Rate the team. The verdict updates.</h2>
+    <div class="card">
+      <p class="muted" style="margin:0 0 14px">1 = not at all, 5 = fully in place. Set to the example plant's ratings.</p>
+      <div class="qs" id="dQs"></div>
+      <div class="out" id="dVerdict" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+      <div id="dGaps" style="margin-top:14px"></div>
+      <button class="linkbtn" type="button" id="dReset" style="margin-top:10px">Reset to the example</button>
+    </div>
+    <div class="callout" style="margin-top:16px"><b>How the verdict works.</b> <span class="muted">Each area's score is the average of its two questions.
+      Average below 2.5: not ready. Any area below 2.5: fix first. Average 3.5 or more with no weak area: go. Otherwise: fix first.</span></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">Where this sits</p>
@@ -65,13 +81,37 @@
 <script src="../assets/data.js"></script>
 <script src="../assets/site.js"></script>
 <script>
-  const { D, app, phaseHead } = Site;
+  const { D, phaseHead } = Site;
   phaseHead(3);
-  document.getElementById("appLink").href = app("readiness");
   document.getElementById("dims").innerHTML = Object.entries(D.readiness.dims).map(([n, s]) =>
     `<div class="bar"><span>${n}</span><div class="track"><div class="fill ${s < 2.5 ? "bad" : s < 3.5 ? "warn" : ""}" style="width:${s / 5 * 100}%"></div></div><b>${s.toFixed(1)} / 5</b></div>`).join("");
   document.getElementById("gaps").innerHTML = D.readiness.weakest.map(w =>
     `<div style="background:var(--page);border-radius:10px;padding:10px 12px"><b>${w.name}</b> <span class="small">(${w.score.toFixed(1)})</span><div class="muted" style="font-size:14px">${w.action}</div></div>`).join("");
+</script>
+<script>
+(() => {
+  const { D } = Site;
+  const R = D.readiness, box = document.getElementById("dQs");
+  box.innerHTML = Object.entries(R.questions).flatMap(([dim, qs]) => qs.map((q, j) =>
+    `<div class="q"><div><div class="dim">${dim}</div>${q}</div><div class="inputs" style="display:block"><select data-d="${dim}" data-j="${j}" aria-label="${q}">${[1, 2, 3, 4, 5].map(n => `<option>${n}</option>`).join("")}</select></div></div>`)).join("");
+  const sels = [...box.querySelectorAll("select")];
+  function reset() { sels.forEach(s => (s.value = R.example[s.dataset.d][+s.dataset.j])); draw(); }
+  function draw() {
+    const dims = {};
+    sels.forEach(s => (dims[s.dataset.d] = (dims[s.dataset.d] || 0) + +s.value / 2));
+    const vals = Object.values(dims), avg = vals.reduce((a, b) => a + b, 0) / vals.length, low = Math.min(...vals);
+    const v = avg < 2.5 ? "Not ready" : low < 2.5 ? "Fix first" : avg >= 3.5 ? "Go" : "Fix first";
+    const weak = Object.entries(dims).sort((a, b) => a[1] - b[1]).filter(([, s]) => s < 3.5).slice(0, 2);
+    document.getElementById("dVerdict").innerHTML =
+      `<div class="card tight" style="background:var(--page)"><div class="label">Verdict</div><div class="stat sm">${v}</div></div>
+       <div class="card tight" style="background:var(--page)"><div class="label">Average</div><div class="stat sm">${avg.toFixed(1)} / 5</div></div>`;
+    document.getElementById("dGaps").innerHTML = v === "Go" && !weak.length ? "" : weak.length
+      ? `<div class="label">Gaps to close</div>` + weak.map(([d, s]) => `<p style="margin:6px 0 0"><b>${d} (${s.toFixed(1)}).</b> <span class="muted">${R.actions[d]}</span></p>`).join("") : "";
+  }
+  box.addEventListener("change", draw);
+  document.getElementById("dReset").addEventListener("click", reset);
+  reset();
+})();
 </script>
 </body>
 </html>

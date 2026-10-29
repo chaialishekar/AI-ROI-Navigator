@@ -4,8 +4,7 @@ An AI provider sells a library of AI tools; its clients ask which one to buy fir
 Evaluate options compares the library for one client in dollars; the later phases take the top pick for an
 auto-parts plant, predictive maintenance, through to a decision and a check of the value it delivers after launch.
 
-Overview           - the project lifecycle as one chart, the evidence, the product, a closer look at each phase
-Lifecycle phases with a page (Discover and Deliver live in the documents)
+Start              - one card per tool (the story is on the case-study website, site/)
   Evaluate options   - every AI tool for the client's industry, priced for them, with ranges and evidence
   Business case      - a real predictive maintenance model, priced in dollars, with ranges and sensitivity
   Readiness          - readiness check, stakeholder impact, human review and escalation rules
@@ -15,8 +14,8 @@ Side experiments (separate from the main case)
   A GenAI work orders          - measured Bedrock pilot of an AI work-order writer, and its ROI
   B GenAI business-case review - intake, memo and critic agents on Bedrock, graded on known answers
 
-Every page follows one template: the question, the answer, three numbers, one chart and what to do next,
-then 'Show the details' with the assumptions, method and data, then Back / Next links.
+Every page follows one template: the question, the result, three numbers, one chart and what to do next,
+then the inputs and method, then Back / Next links.
 """
 
 import html
@@ -30,10 +29,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-import streamlit.components.v1 as components
 
 from src.brief import build_brief
-from src.model import load_data, train_and_score
+from src.model import train_and_score
 from src.library import (EVIDENCE_ORDER, EXAMPLE_CLIENTS, Client, break_even_improvement, evidence_strength,
                          load_library, rank, rank_changes, too_close)
 from src.readiness import ACTIONS, DIMENSIONS, verdict
@@ -1032,7 +1030,7 @@ def page_track():
                            + "  \n".join(gap_lines)))
         st.caption(f"Approved plan: the {money(plan)} finance budgeted for these {n} months, from published studies. "
                    f"Model estimate: the {money(promised)} the model test suggested. Delivered: the same formula applied "
-                   "to the plant's monthly records. Simulated data for this example.")
+                   "to the plant's monthly records. Simulated data for this example.".replace("$", "\\$"))
         next_steps(steps, label="Scale, improve or reconsider?")
     nav_footer("track")
 
@@ -1392,11 +1390,6 @@ def default_tracking() -> dict:
 
 
 # ---------------------------------------------------------------- Layout helpers
-# The project lifecycle, in the order a BA / PM would run it. Pages 1-5 are phases 2-5 and 7; Discover and Deliver
-# have no page of their own (their work is in the documents).
-PHASES = ["Discover", "Evaluate options", "Business case", "Readiness", "Decide", "Deliver", "Measure"]
-PAGE_PHASE = {1: "Evaluate options", 2: "Business case", 3: "Readiness", 4: "Decide", 5: "Measure"}
-EXPERIMENTS = {6: "A", 7: "B"}   # the GenAI experiments sit outside the numbered lifecycle
 ORDER = ["home", "pick", "value", "ready", "case", "track", "pilot", "agents"]
 
 
@@ -1405,20 +1398,16 @@ def esc_html(text: str) -> str:
 
 
 def page_header(step: int, title: str, intro: str, detail_label: str = "Show the details"):
-    """Every page: question, one line of context, the answer, the client view, then the analysis on demand.
+    """Every page: the question, the result, the client view, then the inputs and method.
 
     Returns (answer, client, detail) containers; the page fills them in any order, so inputs inside the
     detail tabs can be read before the answer and the client view are written."""
-    eyebrow = (f"Side experiment {EXPERIMENTS[step]} · separate from the main case" if step in EXPERIMENTS
-               else f"Phase {PHASES.index(PAGE_PHASE[step]) + 1} of {len(PHASES)} · {PAGE_PHASE[step]}")
-    st.markdown(f'<div class="eyebrow">{eyebrow}</div>', unsafe_allow_html=True)
     st.title(title)
-    intro = re.sub(r"[*][*](.+?)[*][*]", r"<b>\1</b>", intro)
-    st.markdown(f'<div class="intro">{intro}</div>', unsafe_allow_html=True)
     answer = st.container(key=f"answer_{step}")
-    answer.markdown('<div class="box-label">The answer</div>', unsafe_allow_html=True)
+    answer.markdown('<div class="box-label">Result</div>', unsafe_allow_html=True)
     client = st.container()
-    detail = st.expander(detail_label, icon=":material/query_stats:")
+    detail = st.container(border=True, key=f"detail_{step}")
+    detail.markdown(f'<div class="box-label">{esc_html(detail_label)}</div>', unsafe_allow_html=True)
     return answer, client, detail
 
 
@@ -1446,62 +1435,7 @@ def nav_footer(name: str):
         nxt.page_link(PAGES[ORDER[i + 1]], label=f"Next: {PAGES[ORDER[i + 1]].title} →")
 
 
-# ---------------------------------------------------------------- Overview
-SAGE, LIME, INK = "#c8d2c3", "#d4ee5e", "#1d2521"
-REPO = "https://github.com/chaialishekar/AI-ROI-Navigator/blob/main"
-DOCS = {"Product requirements (PRD)": f"{REPO}/docs/prd.md",
-        "Requirements pack": f"{REPO}/docs/requirements.md",
-        "Process maps (as-is and to-be)": f"{REPO}/docs/requirements.md#2-process-map-from-warning-to-repair-today-and-with-ai",
-        "Acceptance tests and traceability": f"{REPO}/docs/requirements.md#5-user-acceptance-tests",
-        "User stories and stakeholders": f"{REPO}/docs/solution_design.md",
-        "Roadmap": f"{REPO}/docs/roadmap.md"}
-
-
-@st.cache_data
-def accuracy_vs_profit() -> dict:
-    """Savings at the usual 50% cut-off vs the break-even alert level, default plant costs."""
-    res, c = get_model_results(), Costs()
-    y, proba = res["y_test"], res["models"]["Gradient boosting"]["proba"]
-    return {"accurate": evaluate(y, proba, ACCURACY_THRESHOLD, c)["annual_net"],
-            "profitable": evaluate(y, proba, alert_threshold(c), c)["annual_net"]}
-
-
-@st.cache_data
-def failure_causes() -> dict:
-    """Breakdowns by cause in the 10,000 machine records (a breakdown can have more than one cause)."""
-    df = load_data()
-    names = {"TWF": "Tool wear", "HDF": "Heat", "PWF": "Power", "OSF": "Overstrain", "RNF": "Random"}
-    return {names[k]: int(df[k].sum()) for k in names}
-
-
-def default_track_frame() -> pd.DataFrame:
-    val, pipe = get_value(), load_pipeline()
-    actuals = pipe["gold"][COLUMNS] if pipe else pd.read_csv("data/sample_actuals.csv")
-    return track(actuals, val, val["costs"])
-
-
-def mini_chart(fig: go.Figure, height: int = 260) -> go.Figure:
-    fig.update_layout(height=height, margin=dict(l=0, r=0, t=10, b=0), showlegend=False,
-                      paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font=dict(color=INK))
-    fig.update_xaxes(showgrid=False, zeroline=False, title="")
-    fig.update_yaxes(showgrid=False, zeroline=False, title="", showticklabels=False)
-    return fig
-
-
-def mini_bars(labels, values, texts, highlight, horizontal=False) -> go.Figure:
-    colors = [LIME if h else SAGE for h in highlight]
-    bar = (go.Bar(y=labels, x=values, orientation="h") if horizontal else go.Bar(x=labels, y=values))
-    bar.update(text=texts, textposition="outside", cliponaxis=False, marker=dict(color=colors, cornerradius=14),
-               hoverinfo="skip", textfont=dict(size=15, color=INK))
-    fig = mini_chart(go.Figure(bar))
-    if horizontal:
-        fig.update_yaxes(showticklabels=True, autorange="reversed")
-        fig.update_xaxes(showticklabels=False, range=[0, max(values) * 1.3])
-    else:
-        fig.update_yaxes(range=[0, max(values) * 1.25])
-    return fig
-
-
+# ---------------------------------------------------------------- Start
 def break_even_cost(val: dict, c: Costs) -> float:
     """Cost of a breakdown at which the AI stops paying: savings = caught × (breakdown − planned repair) − other costs."""
     if val["caught"] <= 0:
@@ -1509,761 +1443,79 @@ def break_even_cost(val: dict, c: Costs) -> float:
     return c.cost_caught + (val["false_alarms"] * c.cost_false_alarm + c.running_cost) / val["caught"]
 
 
-STAGES = ["Discover", "Evaluate options", "Business case", "Readiness", "Decide", "Measure",
-          "A · Work orders", "B · Case review"]
-
-
-def tour_content(stage: str) -> dict:
-    """For one stage: the business question, how it was analysed, what was produced, the decision it supported,
-    what kind of evidence the headline number is, and a small chart."""
-    val, rd = get_value(), get_readiness()
-    c = val["costs"]
-    stage = {p: str(i) for i, p in enumerate(STAGES[:6])}.get(stage, stage)   # phase name -> its tour key
-    if stage.startswith("0"):
-        cl = EXAMPLE_CLIENTS["Auto-parts plant"]
-        probs = cl.problem_costs
-        return dict(page=None, q="What do the client's problems cost today?",
-                    how=f"Listed the plant's problems that an AI tool could address and what each costs a year: "
-                        f"{money(sum(probs.values()))} in all. For the deep dive, set the downtime baseline at "
-                        f"{c.failures_per_year:.0f} surprise breakdowns a year × {money(c.cost_missed)}, broke the "
-                        f"{int(load_data()['Machine failure'].sum())} breakdowns in the machine data down by cause, mapped "
-                        "how repairs happen today, and listed who is involved: operations, maintenance, finance and IT.",
-                    made="Problem statement and baseline, stakeholder list, as-is process map, user stories with "
-                         "success measures.",
-                    docs=["Process maps (as-is and to-be)", "User stories and stakeholders"],
-                    decision=f"Worth solving: {money(sum(probs.values()))} a year is at stake across three problems.",
-                    evidence="Client costs are example figures you can edit in Evaluate options.",
-                    chart_title="What each problem costs the plant a year",
-                    fig=mini_bars(list(probs), list(probs.values()), [money(v) for v in probs.values()],
-                                  [p == "Unplanned machine downtime" for p in probs], horizontal=True))
-    if stage.startswith("1"):
-        r = rank(load_library_data(), EXAMPLE_CLIENTS["Auto-parts plant"])
-        top = r.iloc[0]
-        return dict(page="pick", q="Which AI should the client buy first?",
-                    how=f"Priced each of the provider's {len(r)} AI tools for automotive clients for this plant: its "
-                        "problem cost × the improvement published elsewhere, minus setup and running costs, over 3 "
-                        "years. Every number is a range with its evidence labelled, ranked on the expected and the "
-                        "cautious view, with extra cost where the plant's data falls short.",
-                    made="Ranked comparison in dollars with ranges, payback, break-even and evidence strength, and "
-                         "the sources behind each figure.",
-                    docs=[],
-                    decision=f"{top['solution']} first: {money(top['net_3y'])} over 3 years, pays back in "
-                             f"{months(top['payback'])}, ahead of a runner-up that rests on a vendor claim.",
-                    evidence="Improvement ranges are published results; provider prices and client costs are examples.",
-                    chart_title="3-year net value for the plant (green = start here)",
-                    fig=mini_bars(r["solution"], r["net_3y"], [money(v) for v in r["net_3y"]],
-                                  [i == 0 for i in range(len(r))], horizontal=True))
-    if stage.startswith("2"):
-        ap = accuracy_vs_profit()
-        low = val["cases"]["Low"]["annual_net"]
-        rules = alternatives(val, c)["rules"]
-        return dict(page="value", q="Does it save more than it costs, and how sure are we?",
-                    how="Trained a breakdown-warning model on public, synthetic machine data and turned every catch, miss and false "
-                        "alarm into dollars. Set the warning level to save the most money rather than to be the most "
-                        f"accurate (worth {money(ap['profitable'] - ap['accurate'])} a year more), then tested best "
-                        "and worst cases and which assumption matters most.",
-                    made="Financial model: savings, costs, payback, 3-year ROI, ranges and sensitivity analysis.",
-                    docs=[],
-                    decision=f"Invest: {money(val['annual_net'])} a year after running costs, {money(c.deployment_cost)} "
-                             f"to set up, pays back in {months(val['payback_months'])}. Still {money(low)} a year if "
-                             f"every cost estimate is too optimistic. Rules from the manual save {money(rules['annual_net'])} "
-                             f"on this synthetic data but raise {rules['false_alarms']:.0f} false alarms a year against "
-                             f"{val['false_alarms']:.0f}, so the AI is recommended.",
-                    evidence="Projection: real model results, assumed plant costs.",
-                    chart_title="Cost of breakdowns each year",
-                    fig=mini_bars(["Today", "With the AI", "Saved"],
-                                  [val["cost_without"], val["cost_with"], val["annual_net"]],
-                                  [money(val["cost_without"]), money(val["cost_with"]), money(val["annual_net"])],
-                                  [False, False, True]))
-    if stage.startswith("3"):
-        dims = rd.get("dims") or {d: sum(v) / len(v) for d, v in EXAMPLE_PILOT.items()}
-        weak = [d for d, _ in rd["weakest"][:2]]
-        return dict(page="ready", q="Will people use it, and what has to change first?",
-                    how="Rated the team on 10 statements in 5 areas, mapped how the repair process changes with the AI, "
-                        "and listed what changes for each group and what worries them.",
-                    made="Readiness score with fixes, to-be process map, stakeholder impact table, human review and "
-                         "escalation rules.",
-                    docs=["Process maps (as-is and to-be)"],
-                    decision=(f"Close two gaps before launch: “{weak[0].lower()}” ({rd['weakest'][0][1]:.1f} / 5) and "
-                              f"“{weak[1].lower()}” ({rd['weakest'][1][1]:.1f} / 5)." if rd["verdict"] != "Go"
-                              else "Ready to launch."),
-                    evidence="Assessment: example ratings for the factory.",
-                    chart_title="Score out of 5 (green = fix before launch)",
-                    fig=mini_bars(list(dims), list(dims.values()), [f"{v:.1f}" for v in dims.values()],
-                                  [d in weak for d in dims], horizontal=True))
-    if stage.startswith("4"):
-        cases = val["cases"]
-        return dict(page="case", q="What exactly is finance being asked to approve?",
-                    how="Put the value, the range of outcomes, the risks and the readiness gaps on one page, with a "
-                        "rule for when to proceed, fix first, revise or stop.",
-                    made="One-page business case (download), decision rule, 13 acceptance tests, and a traceability "
-                         "matrix linking each requirement to its test.",
-                    docs=["Acceptance tests and traceability"],
-                    decision=": ".join(decision_rule(val, rd)),
-                    evidence="Recommendation, not an approval: no real finance team signed it.",
-                    chart_title="Savings a year if costs turn out worse, as planned, or better",
-                    fig=mini_bars(["Worse", "As planned", "Better"], [x["annual_net"] for x in cases.values()],
-                                  [money(x["annual_net"]) for x in cases.values()], [False, True, False]))
-    if stage.startswith("5"):
-        t = default_track_frame()
-        tk, gap = default_tracking(), explain_gap(t, val, c)
-        gap = gap[gap["effect"] < 0].sort_values("effect")
-        return dict(page="track", q="A year after the plant-wide rollout, did the savings show up?",
-                    how="After the one-line pilot passed, the AI went live across the plant. Turned each month's repair "
-                        "records into dollars with the same formula as the business case, then split the gap to the "
-                        "model's estimate into its causes, one at a time, so the parts add up exactly.",
-                    made="Forecast-vs-actual tracking, warnings when the crew ignores alerts or the AI gets weaker, and "
-                         "the reasons for the gap.",
-                    docs=[],
-                    decision=f"Improve, then scale. It delivered {money(tk['delivered'])}: above the "
-                             f"{money(tk['plan'])} plan finance approved, but {tk['pct']*100:.0f}% of the model's "
-                             f"{money(tk['promised'])} estimate. The plant had fewer breakdowns than assumed (update the "
-                             f"estimate), the crew ignored warnings in {len(tk['low_adoption_months'])} months (fix the "
-                             "workflow) and " + ("the AI got weaker late in the year (update it with recent data)."
-                                                 if tk["drift_now"] else "the AI caught fewer breakdowns than in testing."),
-                    evidence="Simulated: 12 made-up months, run through the real data pipeline.",
-                    chart_title="Why it fell short of the model's estimate",
-                    fig=mini_bars([SHORTFALL[x].split(" than")[0].replace("the ", "").capitalize() for x in gap["cause"]],
-                                  list(-gap["effect"]), [money(e) for e in gap["effect"]],
-                                  [False] * len(gap), horizontal=True))
-    if stage.startswith("A"):
-        pilot = load_pilot()
-        s1, s2 = pilot["summary"][1], pilot["summary"][2]
-        g2 = pilot["runs"][2]
-        real = int((g2["true_mode"] != "NONE").sum())
-        fa = len(g2) - real
-        right1, right2 = round(s1["correct_on_real_failures"] * real), round(s2["correct_on_real_failures"] * real)
-        return dict(page="pilot", q="Can GenAI draft repair orders a planner can trust?",
-                    how=f"Sent {len(g2)} warnings from the test data ({real} real breakdowns, {fa} false alarms) to "
-                        "Amazon Nova Micro on Bedrock and graded each draft against the true cause, in two versions.",
-                    made="Graded results for both versions, cost per draft, and payback including review time.",
-                    docs=[],
-                    decision=f"Use GenAI to write, not to diagnose. Right cause on real breakdowns: {right1} of {real} "
-                             f"when it diagnosed, {right2} of {real} when rules diagnosed and it only wrote. On false "
-                             f"alarms it still named a fault in {fa - round(s2['false_alarm_handled_rate'] * fa)} of "
-                             f"{fa}, so a planner reviews every draft.",
-                    evidence=f"Measured on {len(g2)} cases: a small sample, not proof of reliability.",
-                    chart_title=f"Right cause named, out of {real} real breakdowns",
-                    fig=mini_bars(["AI diagnoses", "Rules diagnose, AI writes"], [right1, right2],
-                                  [f"{right1} of {real}", f"{right2} of {real}"], [False, True]))
-    sc = load_agents()["scores"]
-    caught = [sc[v]["redteam_caught"] for v in ("v1", "v2", "v3")]
-    n = sc["v3"]["redteam_flaws"]
-    return dict(page="agents", q="Can GenAI spot errors in a business case?",
-                how="Built three AI helpers on Amazon Bedrock (take down the numbers, write the memo, critique the "
-                    "case) and tested them on 19 cases with known answers, including business cases with errors I seeded.",
-                made="Scorecard for each version and the grading code.",
-                docs=[],
-                decision=f"Useful as a first check, not a replacement for a finance review. The critic went from "
-                         f"{caught[0]} to {caught[2]} of {n} seeded errors once code checked the numbers, with "
-                         f"{sc['v3']['redteam_clean_high']} false alarms on the sound case.",
-                evidence="Measured on test cases I wrote: not a blind test.",
-                chart_title=f"Seeded errors caught, out of {n}",
-                fig=mini_bars(["Version 1", "Version 2", "Version 3"], caught, [str(x) for x in caught],
-                              [False, False, True]))
-
-
-def flow_node(page: str | None, num: str, title: str, desc: str, result: str, kind: str) -> str:
-    """One stage card. kind says what the result is: a baseline, a decision, a projection, a result."""
-    inner = (f'<span class="node-top"><span class="num">{num}</span>'
-             + ('<span class="go">→</span>' if page else "") + '</span>'
-             f'<span class="node-title">{esc_html(title)}</span><span class="node-q">{esc_html(desc)}</span>'
-             f'<span class="node-kind">{esc_html(kind)}</span><span class="node-res">{esc_html(result)}</span>')
-    if page is None:
-        return f'<div class="node need">{inner}</div>'
-    return f'<a class="node" href="{PAGES[page].url_path}" target="_self" aria-label="{esc_html(title)}">{inner}</a>'
-
-
-def lifecycle() -> str:
-    """The project as a BA / PM lifecycle: one column per phase with its key question, the deliverable and the gate
-    it passed. Phases with a page link to it; Discover and Deliver link to their documents."""
-    val, rd, tk = get_value(), get_readiness(), default_tracking()
-    c = val["costs"]
-    cl = EXAMPLE_CLIENTS["Auto-parts plant"]
-    top = rank(load_library_data(), cl).iloc[0]["solution"]
-    n_fix = len([1 for _, s in rd["weakest"] if s < 3.5][:2]) if rd["verdict"] != "Go" else 0
-    rows = [  # phase, link, key question, deliverable, gate result, what kind of number the result is
-        ("Discover", DOCS["Process maps (as-is and to-be)"], "What's going wrong, and what does it cost?",
-         "Problem statement, stakeholders, as-is process", f"{money(sum(cl.problem_costs.values()))} a year at stake",
-         "client's figures"),
-        ("Evaluate options", "pick", "Which AI tool should they buy first?",
-         "Options analysis with sources", f"{top} first", "published results"),
-        ("Business case", "value", "Will it pay for itself, and how sure are we?",
-         "ROI model with ranges", f"{money(published_estimate(c)['mid'])}–{money(val['annual_net'])} a year",
-         "published to tested"),
-        ("Readiness", "ready", "Can the team actually use it?",
-         "Readiness check, change impact", f"{n_fix} gaps to close" if n_fix else "Ready", "assessment"),
-        ("Decide", "case", "What exactly is finance signing?",
-         "Two-page decision brief", decision_rule(val, rd)[0], "recommendation"),
-        ("Deliver", DOCS["Acceptance tests and traceability"], "What gets built, and how do we know it works?",
-         "Requirements, acceptance tests, traceability", "13 acceptance tests pass", "tested"),
-        ("Measure", "track", "Did the savings show up?",
-         "Monthly tracking, gap analysis", f"{money(tk['delivered'])} vs {money(tk['plan'])} plan", "simulated"),
-    ]
-    cols = []
-    for i, (phase, link, q, made, gate, kind) in enumerate(rows, 1):
-        href, target = (PAGES[link].url_path, "_self") if link in PAGES else (link, "_blank")
-        live = ' live' if phase == "Measure" else ""
-        cols.append(
-            f'<a class="phase{live}" href="{href}" target="{target}" aria-label="{esc_html(phase)}">'
-            f'<span class="ph-head"><span class="ph-num">{i:02d}</span>{esc_html(phase)}</span>'
-            f'<span class="ph-q">{esc_html(q)}</span>'
-            f'<span class="ph-label">Deliverable</span><span class="ph-made">{esc_html(made)}</span>'
-            f'<span class="ph-label">Gate</span><span class="ph-gate">{esc_html(gate)}</span>'
-            f'<span class="ph-kind">{esc_html(kind)}</span></a>')
-    return ('<div class="cycle">' + "".join(cols) + '</div>'
-            '<div class="cycle-foot"><span class="golive">Go-live</span> falls between Deliver and Measure. After '
-            'that I compare savings with the forecast every month, and anything I learn goes back into the business '
-            'case.</div>')
-
-
-def genai_cards() -> str:
-    pilot = load_pilot()
-    s1, s2, g2 = pilot["summary"][1], pilot["summary"][2], pilot["runs"][2]
-    real = int((g2["true_mode"] != "NONE").sum())
-    sc = load_agents()["scores"]["v3"]
-    return ('<div class="lane-nodes genai-nodes">'
-            + flow_node("pilot", "A", "GenAI work orders",
-                        "Can GenAI turn a warning into an accurate draft work order?",
-                        f"Right cause: {round(s1['correct_on_real_failures'] * real)} → "
-                        f"{round(s2['correct_on_real_failures'] * real)} of {real} breakdowns",
-                        f"Measured on {len(g2)} cases")
-            + flow_node("agents", "B", "GenAI business-case review",
-                        "Can GenAI flag errors in a financial business case?",
-                        f"{sc['redteam_caught']} of {sc['redteam_flaws']} seeded errors caught",
-                        "Measured on my own test cases")
-            + '</div>')
-
-
-@st.cache_data
-def data_facts() -> dict:
-    df = load_data()
-    return {"rows": len(df), "failures": int(df["Machine failure"].sum()),
-            "rate": df["Machine failure"].mean(), "types": df["Type"].value_counts().to_dict()}
-
-
-def case_and_data() -> str:
-    """The three questions a reader asks first: who is involved, why this deep dive, and what data is behind it."""
-    c, f = get_value()["costs"], data_facts()
-    res = get_model_results()
-    lib, cl = load_library_data(), EXAMPLE_CLIENTS["Auto-parts plant"]
-    p = cl.problem_costs
-    cards = [
-        ("The provider and the client",
-         f"The provider sells {lib['solution'].nunique()} AI tools across {lib['industry'].nunique()} industries. I "
-         "focused on its manufacturing clients. The main example is a machining plant that supplies car makers. It "
-         f"loses about <b>{money(sum(p.values()))} a year</b> to three problems: machines breaking down without "
-         f"warning ({money(p['Unplanned machine downtime'])}), scrap and defects "
-         f"({money(p['Scrap, rework and warranty defects'])}), and parts shortages "
-         f"({money(p['Shortages, expediting and excess inventory'])})."),
-        ("Why predictive maintenance gets the deep dive",
-         "It came out on top for the plant. It pays back fastest, and its evidence is better than the runner-up's. "
-         "It's also the only tool on the list I could test on public data, so I didn't have to take the published "
-         "numbers on faith. Breakdowns usually give warning signs first, like rising torque, tool wear or heat, and "
-         "the machines already record those."),
-        ("The data",
-         f"I used the AI4I 2020 dataset from UCI: <b>{f['rows']:,} machine records</b>, each with five sensor readings "
-         "(two temperatures, speed, torque and tool wear) and a product quality grade. "
-         f"<b>{f['failures']} of them ({f['rate']:.1%}) end in a breakdown.</b> The model learns from "
-         f"{res['n_train']:,} records and is tested on the {res['n_test']:,} it hasn't seen. One caveat: the data is "
-         "synthetic, built to look like real factory data."),
-    ]
-    return ('<div class="case-cards">' + "".join(
-        f'<div class="case-card"><div class="row-label">{t}</div><div class="case-text">{x}</div></div>'
-        for t, x in cards) + '</div>')
-
-
-# The problem, what works, and why it takes analysis, not only technology (each checked against the publisher's page)
 CASE_STUDY_SITE = "https://chaialishekar.github.io/AI-ROI-Navigator/"
-WHY_IT_MATTERS_IBM = "https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles"
-WHY_IT_MATTERS = [
-    ("39%", "of organisations report any profit (EBIT) impact from AI at all",
-     "McKinsey, The State of AI, 2025",
-     "https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-2025"),
-    ("81%", "of AI initiatives returned a profit at firms that track AI ROI and drop weak projects",
-     "Gartner, 1,303 leaders, September 2026",
-     "https://www.gartner.com/en/newsroom/press-releases/gartner-survey-finds-only-22-percent-of-organizations-have-successfully-scaled-ai-across-multiple-business-units"),
-    ("70%", "of AI leaders' effort goes into people and processes; 20% into technology and data, 10% into algorithms",
-     "BCG, Where's the Value in AI?, 2024",
-     "https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value"),
-]
-MORE_EVIDENCE = [
-    ("PwC CEO Survey 2026", "56% of 4,454 CEOs saw neither higher revenue nor lower costs from AI",
-     "https://www.pwc.com/gx/en/issues/c-suite-insights/ceo-survey.html"),
-    ("IBM CEO Study 2025", "65% of CEOs now pick AI use cases by expected return",
-     WHY_IT_MATTERS_IBM),
-    ("BCG 2024", "74% of companies have yet to show tangible value from AI",
-     "https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value"),
-    ("Gartner 2026", "the most widely pursued AI uses are rarely the ones with the highest returns", "https://www.gartner.com/en/newsroom/press-releases/gartner-survey-finds-only-22-percent-of-organizations-have-successfully-scaled-ai-across-multiple-business-units"),
-]
-
-
-def why_it_matters() -> str:
-    return ('<div class="why-cards">' + "".join(
-        f'<div class="why-card"><div class="why-num">{esc_html(n)}</div><div class="why-text">{esc_html(t)}</div>'
-        f'<a class="why-src" href="{u}" target="_blank">{esc_html(src)}</a></div>' for n, t, src, u in WHY_IT_MATTERS)
-        + '</div><div class="why-line">Companies have plenty of AI options. What they lack is a reliable way to pick '
-          'one, and to check later that it paid off.</div>'
-        + '<div class="why-more"><b>More evidence:</b> ' + " · ".join(
-            f'<a href="{u}" target="_blank">{esc_html(src)}</a>: {esc_html(t)}' for src, t, u in MORE_EVIDENCE)
-        + '</div>')
-
-
-PRODUCT_CAPABILITIES = [
-    ("Compares the library", "Prices every tool that fits the client in their own dollars over three years, and "
-                             "puts them in the order I'd buy them."),
-    ("Shows its sources", "Every figure has a range, a link to where it came from and a note on how far to trust it. "
-                          "A cautious view catches tools that only win on rosy numbers."),
-    ("Gets to sign-off", "A readiness check, who is affected and how, a decision rule agreed up front, and a "
-                         "two-page brief for finance."),
-    ("Checks it paid off", "Each month the savings go up against the forecast, with the reason for any gap."),
-]
-PRODUCT_USERS = [
-    ("Operations director", "decides which AI to buy and owns the savings"),
-    ("Finance partner", "approves the budget and checks the numbers"),
-    ("AI provider's team", "shows each client which tool pays off first, with numbers that hold up"),
-]
-
-
-def product_section() -> str:
-    """The case study presented the way a product is: what it is, what it does, its specifications, who it is for."""
-    lib, f = load_library_data(), data_facts()
-    specs = [
-        ("AI library", f"{lib['solution'].nunique()} AI tools across {lib['industry'].nunique()} industries, "
-                       f"{len(lib)} priced entries"),
-        ("Example clients", "Auto-parts plant, chip fab"),
-        ("Evidence levels", f"{len(EVIDENCE_ORDER)}, from field study to vendor claim"),
-        ("Views", "Expected and cautious; 3-year horizon"),
-        ("Deep dive", f"Predictive maintenance, tested on {f['rows']:,} machine records"),
-        ("Outputs", "Ranked shortlist, business case, two-page PDF brief, monthly value tracking"),
-        ("Analyst documents", '<a href="{0}" target="_blank">Product requirements (PRD)</a>, '
-                              '<a href="{1}" target="_blank">process maps, acceptance tests, traceability</a>'
-                              .format(DOCS["Product requirements (PRD)"], DOCS["Requirements pack"])),
-        ("Built with", "Python, pandas, scikit-learn, Plotly, Streamlit, pytest; Amazon S3 and Databricks"),
-    ]
-    return ('<div class="row-label">The product</div>'
-            '<div class="prod-name">AI ROI Navigator</div>'
-            '<div class="prod-tag">Pick the right AI first, and prove it paid off.</div>'
-            '<div class="prod-caps">' + "".join(
-                f'<div class="prod-cap"><div class="prod-cap-t">{esc_html(t)}</div>'
-                f'<div class="prod-cap-d">{esc_html(d)}</div></div>' for t, d in PRODUCT_CAPABILITIES) + '</div>'
-            '<div class="prod-grid"><div><div class="row-label">Specifications</div><table class="spec">' + "".join(
-                f'<tr><th>{esc_html(k)}</th><td>{v if "<a" in v else esc_html(v)}</td></tr>' for k, v in specs)
-            + '</table></div><div><div class="row-label">Built for</div>' + "".join(
-                f'<div class="prod-user"><b>{esc_html(u)}</b><span>{esc_html(d)}</span></div>' for u, d in PRODUCT_USERS)
-            + '<div class="row-label">My role</div><div class="role-text">Independent project, built end to end by '
-              'me: the business analysis, the financial model, the data pipeline, the AI tests and this app.</div>'
-              '</div></div>')
-
-
-LEAK_SHORT = {"Unplanned machine downtime": "Downtime", "Scrap, rework and warranty defects": "Scrap and rework",
-              "Shortages, expediting and excess inventory": "Shortages"}
-
-
-SETUP = [
-    ("Provider", "An AI vendor selling 9 tools to manufacturers, telecoms and banks", "Example"),
-    ("Client", "One machining plant of a tier-1 auto-parts supplier", "Example"),
-    ("AI solution", "Predictive maintenance model that warns before a machine breaks", "Built and tested"),
-    ("Dataset", "UCI AI4I 2020 · 10,000 machine records", "Public · synthetic"),
-]
-NUMBER_KINDS = [
-    ("Published", "How much each AI improved its problem elsewhere. Every range is linked to its source and labelled "
-                  "by evidence strength."),
-    ("Estimated", "The plant's $3.7M of losses and the provider's prices. My figures, editable in the app."),
-    ("Built and tested", "The predictive maintenance model, tested on 3,000 records it never saw. Synthetic data, "
-                         "not a live factory."),
-    ("Simulated", "The 12 months after launch. Real S3 → Databricks pipeline, but simulated results, so not proof "
-                  "of real savings."),
-]
-
-
-def setup_strip() -> str:
-    return ('<div class="setup"><div class="setup-label">The setup</div><div class="setup-row">' + "".join(
-        f'<div class="setup-item"><div class="setup-role">{r}</div><div class="setup-what">{esc_html(w)}</div>'
-        f'<span class="setup-tag {"tag-ex" if t == "Example" else "tag-real"}">{t}</span></div>'
-        for r, w, t in SETUP) + '</div></div>')
-
-
-def number_key(model_net: float, published_net: float) -> str:
-    return ('<div class="numkey"><div class="setup-label">How to read the numbers</div><div class="numkey-row">'
-            + "".join(f'<div><b>{k}</b><span>{esc_html(t)}</span></div>' for k, t in NUMBER_KINDS) + '</div>'
-            f'<div class="twofig"><b>Two savings figures, one plan.</b> The model test on synthetic data says '
-            f'{money(model_net)} a year. Published studies say {money(published_net)}. Finance plans on '
-            f'{money(published_net)} and treats the rest as upside to prove in a one-line pilot.</div></div>')
-
-
-def leak_map() -> str:
-    """The plant's yearly losses drawn as leaks; each one opens the AI from the library that plugs it."""
-    client = EXAMPLE_CLIENTS["Auto-parts plant"]
-    r = rank(load_library_data(), client)
-    leaks = []
-    for problem, cost in client.problem_costs.items():
-        row = r[r["problem"] == problem].iloc[0]
-        leaks.append({
-            "name": LEAK_SHORT.get(problem, problem), "cost": f"${cost / 1e6:.1f}M", "raw": cost,
-            "ai": row["solution"], "rank": int(row["rank"]), "does": row["what_it_does"],
-            "plug": float(row["improvement_mid"]), "plug_year": money(row["value_mid"]), "net_year": money(row["net_mid"]),
-            "range": f"{row['improvement_low']:.0%} to {row['improvement_high']:.0%}",
-            "net3": money(row["net3_mid"]), "payback": months(row["payback"]),
-            "strength": evidence_strength(row["evidence"]), "evidence": row["evidence"],
-            "color": STRENGTH_COLORS[evidence_strength(row["evidence"])]})
-    data = json.dumps({"leaks": leaks})
-    return """
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-body { margin: 0; font-family: "Source Sans 3", "Source Sans Pro", sans-serif; color: #1d2521; }
-.wrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 1.6rem; align-items: center; }
-svg { width: 100%; height: auto; display: block; }
-.leak { cursor: pointer; } .leak:focus { outline: none; }
-.leak .drop { transition: stroke-width .2s; } .leak:hover .drop, .leak:focus .drop { stroke-width: 3; }
-.leak.on .drop { stroke: #1d2521; stroke-width: 3.5; }
-.key { font-size: .85rem; color: #5b665e; margin-top: .3rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-.key i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: .35rem; vertical-align: -1px; }
-.panel { background: #fff; border-radius: 20px; padding: 1.1rem 1.3rem; box-shadow: 0 4px 16px rgba(29,37,33,.06); }
-.lab { text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; font-weight: 700; color: #0f6d74; }
-.big { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin: .2rem 0 .1rem; }
-.muted { color: #5b665e; font-size: .95rem; line-height: 1.45; }
-.badge { display: inline-block; font-size: .75rem; font-weight: 700; padding: .1rem .55rem; border-radius: 999px;
-         color: #fff; margin: .35rem 0 .2rem; }
-.bar { height: 10px; background: #f3d9cf; border-radius: 5px; margin: .7rem 0 .3rem; overflow: hidden; }
-.bar div { height: 10px; background: #0f6d74; border-radius: 5px; transition: width .4s; }
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .8rem; }
-.stats div { background: #f1f5ec; border-radius: 12px; padding: .45rem .7rem; }
-.stats span { display: block; font-size: .75rem; color: #5b665e; } .stats b { font-size: 1.02rem; }
-@media (max-width: 700px) { .wrap { grid-template-columns: 1fr; gap: .8rem; } }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-</style>
-<div class="wrap">
-  <div>
-    <svg viewBox="0 0 520 360" role="img" aria-label="The auto-parts plant with three money leaks">
-      <path d="M10 170 V70 L80 22 V70 L150 22 V70 L220 22 V70 L290 22 V70 H510 V170 Z" fill="#dfe7d8"/>
-      <rect x="370" y="30" width="30" height="40" fill="#cfd9c6"/><rect x="415" y="44" width="24" height="26" fill="#cfd9c6"/>
-      <text x="30" y="108" font-size="20" font-weight="700" fill="#3d4741">Auto-parts plant</text>
-      <text x="30" y="130" font-size="14" fill="#5b665e">One machining plant, tier-1 supplier</text>
-      <rect x="10" y="166" width="500" height="6" rx="3" fill="#b9c6b0"/>
-      <g id="leaks"></g>
-    </svg>
-    <div class="key"><span><i style="background:#e8a58c"></i>Lost a year (drop size)</span>
-      <span><i style="background:#0f6d74"></i>Share the AI plugs</span></div>
-  </div>
-  <div class="panel" id="panel" aria-live="polite"></div>
-</div>
-<script>
-const D = """ + data + """;
-const xs = [95, 260, 425], maxR = 58, tip = 196;
-const g = document.getElementById("leaks");
-const maxCost = Math.max(...D.leaks.map(l => l.raw));
-D.leaks.forEach((l, i) => {
-  const r = Math.round(maxR * Math.sqrt(l.raw / maxCost)), cx = xs[i], cy = tip + r * 1.55;
-  const drop = `M${cx} ${tip} C${cx + r * .25} ${tip + r * .45} ${cx + r} ${cy - r * .55} ${cx + r} ${cy} `
-             + `A${r} ${r} 0 0 1 ${cx - r} ${cy} C${cx - r} ${cy - r * .55} ${cx - r * .25} ${tip + r * .45} ${cx} ${tip} Z`;
-  const plugH = Math.round(2 * r * l.plug);
-  g.insertAdjacentHTML("beforeend", `
-   <g class="leak" tabindex="0" role="button" data-i="${i}" aria-label="${l.name}, ${l.cost} lost a year">
-    <rect x="${cx - 13}" y="172" width="26" height="20" rx="3" fill="#9aa79a"/>
-    <clipPath id="c${i}"><path d="${drop}"/></clipPath>
-    <path class="drop" d="${drop}" fill="#e8a58c" stroke="#fff" stroke-width="2"/>
-    <rect x="${cx - r}" y="${cy + r - plugH}" width="${2 * r}" height="${plugH}" fill="#0f6d74" clip-path="url(#c${i})"/>
-    <path d="${drop}" fill="none" stroke="transparent"/>
-    <text x="${cx}" y="${cy - 10}" text-anchor="middle" font-size="${r > 50 ? 24 : 21}" font-weight="700" fill="#1d2521">${l.cost}</text>
-    <text x="${cx}" y="${cy + 9}" text-anchor="middle" font-size="14" font-weight="600" fill="#1d2521">${l.name}</text>
-   </g>`);
-});
-function show(i) {
-  const l = D.leaks[i];
-  document.querySelectorAll(".leak").forEach(n => n.classList.toggle("on", +n.dataset.i === i));
-  document.getElementById("panel").innerHTML = `
-   <div class="lab">${l.name} · ${l.cost} lost a year</div>
-   <div class="big">${l.ai}</div>
-   <span class="badge" style="background:${l.color}">${l.rank === 1 ? "Buy first · " : "Option #" + l.rank + " · "}${l.strength} evidence</span>
-   <div class="muted">${l.does}.</div>
-   <div class="bar"><div style="width:${Math.round(l.plug * 100)}%"></div></div>
-   <div class="muted">Plugs about ${Math.round(l.plug * 100)}%, or ${l.plug_year} a year (${l.net_year} after running costs). Published range ${l.range} (${l.evidence.toLowerCase()}).</div>
-   <div class="stats"><div><span>3-year net value</span><b>${l.net3}</b></div><div><span>Payback</span><b>${l.payback}</b></div></div>`;
-}
-document.querySelectorAll(".leak").forEach(n => {
-  n.addEventListener("click", () => show(+n.dataset.i));
-  n.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(+n.dataset.i); } });
-});
-show(D.leaks.findIndex(l => l.rank === 1));
-const fit = () => {
-  const f = window.frameElement; if (!f) return;
-  f.style.height = document.body.scrollHeight + 8 + "px";
-};
-new ResizeObserver(fit).observe(document.body); fit();
-</script>"""
-
-
 def page_home():
-    val = get_value()
-    c = val["costs"]
-    with st.container(key="hero"):
+    """Start page: one card per tool."""
+    st.title("AI ROI Navigator")
+    st.markdown(f'<div class="model-text">Example client: an auto-parts plant. '
+                f'<a href="{CASE_STUDY_SITE}" target="_blank">Case study ↗</a></div>', unsafe_allow_html=True)
+    tools = [("pick", "Rank the AI tools for a client."),
+             ("value", "Savings, payback and ranges from the plant's costs."),
+             ("ready", "Rate the team; get a verdict and the gaps."),
+             ("case", "Decision rule and the two-page brief (PDF)."),
+             ("track", "Monthly results vs the plan and the estimate."),
+             ("pilot", "GenAI repair-order drafts, graded on 30 cases."),
+             ("agents", "GenAI business-case review, graded on 19 cases.")]
+    for row in (tools[:4], tools[4:]):
+        for col, (key, what) in zip(st.columns(4), row):
+            with col.container(border=True, key=f"tool_{key}"):
+                st.page_link(PAGES[key], label=PAGES[key].title, icon=":material/arrow_forward:")
+                st.caption(what)
+    with st.expander("Data and limitations"):
         st.markdown(
-            '<div class="eyebrow">AI business systems analysis · end-to-end case study</div>'
-            '<div class="hero-title">Should we invest in AI, or is there a better way?</div>'
-            '<div class="hero-text">In recent conversations with people in the industry, one topic kept coming up: '
-            'AI libraries, the catalogues of AI tools that companies build, sell and buy to automate work. We all know '
-            'AI makes automation easier. What I kept wondering was whether it pays. Is the return higher or lower than '
-            'we assume, and is <i>not</i> automating, or a simple rule, sometimes the cheaper choice? So I built a way '
-            'to answer that for one specific job: compare the options, challenge the numbers, test the AI, and check '
-            'the savings after launch.</div>'
-            '<div class="hero-stat">It\'s a live question. In IBM\'s 2025 study of 2,000 CEOs, only <b>25% of AI '
-            'initiatives</b> had delivered the return expected of them (<a href="' + WHY_IT_MATTERS_IBM + '" '
-            'target="_blank">source</a>).</div>'
-            '<div class="hero-stat">Prefer a guided tour? <a href="' + CASE_STUDY_SITE + '" target="_blank">'
-            'Read the case study as a website ↗</a></div>' + setup_strip(),
-            unsafe_allow_html=True)
-        st.markdown('<div class="case-label">The case</div><div class="case-title">An example plant loses $3.7M a '
-                    'year. Which leak should AI fix first?</div>', unsafe_allow_html=True)
-        with st.container(key="leakmap"):
-            components.html(leak_map(), height=420)
-        st.markdown(number_key(val["annual_net"], published_estimate(c)["mid"]), unsafe_allow_html=True)
-        st.page_link(PAGES["pick"], label="Compare every AI in the library", icon=":material/arrow_forward:")
-
-    with st.container(key="phases"):
-        st.markdown('<div class="row-label">How the project ran, phase by phase</div>' + lifecycle(),
-                    unsafe_allow_html=True)
-
-    with st.container(key="why"):
-        st.markdown('<div class="row-label">Why this matters</div>' + why_it_matters(), unsafe_allow_html=True)
-
-    with st.container(key="case_data"):
-        st.markdown(case_and_data(), unsafe_allow_html=True)
-
-    with st.container(key="role"):
-        st.markdown(product_section(), unsafe_allow_html=True)
-
-    st.markdown('<div class="row-label">Look closer at a phase</div>', unsafe_allow_html=True)
-    stage = st.segmented_control("Stage", STAGES, default=STAGES[1], key="tour",
-                                 label_visibility="collapsed") or STAGES[1]
-    tc = tour_content(stage)
-    with st.container(key="tour_panel"):
-        left, right = st.columns([1.05, 1], gap="large")
-        with left:
-            st.markdown(f'<div class="tour-q">{esc_html(tc["q"])}</div>', unsafe_allow_html=True)
-            st.markdown("".join(
-                f'<div class="tour-label">{label}</div><div class="tour-text">{esc_html(text)}</div>'
-                for label, text in [("How I analysed it", tc["how"]), ("What I produced", tc["made"]),
-                                    ("Decision it supported", tc["decision"])]), unsafe_allow_html=True)
-            if tc["docs"]:
-                st.markdown(" · ".join(f"[{d}]({DOCS[d]})" for d in tc["docs"]))
-            if tc["page"]:
-                st.page_link(PAGES[tc["page"]], label="View analysis and deliverables", icon=":material/arrow_forward:")
-        with right:
-            st.markdown(f'<div class="chart-title">{esc_html(tc["chart_title"])}</div>', unsafe_allow_html=True)
-            st.plotly_chart(tc["fig"], width="stretch", config={"displayModeBar": False, "staticPlot": True})
-            st.markdown(f'<div class="evidence">{esc_html(tc["evidence"])}</div>', unsafe_allow_html=True)
-
-    with st.container(key="genai"):
-        st.markdown(
-            '<div class="row-label">Side experiments</div>'
-            '<div class="genai-intro">Separate from the case above. Two small tests of <b>generative</b> AI (on '
-            'Amazon Bedrock), which writes text, with graded results and a person reviewing the output.</div>'
-            + genai_cards(),
-            unsafe_allow_html=True)
-
-    with st.container(key="conclusion"):
-        st.markdown(
-            '<div class="row-label">What this case study demonstrates</div>'
-            '<div class="conclusion">The AI is the easy part. An AI purchase pays off when you know what the problem '
-            'costs, compare the options on the same terms, get the team ready, agree up front what success looks '
-            'like, and check afterwards that it happened.</div>'
-            '<div class="doc-links">' + "".join(f'<a href="{u}" target="_blank">{esc_html(d)}</a>'
-                                                for d, u in DOCS.items()) + '</div>', unsafe_allow_html=True)
-        with st.expander("Data, assumptions and limitations"):
-            st.markdown(
-                "- **Real:** the 10,000 machine records (AI4I 2020, UCI) and the model trained on them; the Amazon "
-                "Bedrock tests; the S3 → Databricks data pipeline.\n"
-                "- **Published, with sources:** how much each AI tool improved its problem elsewhere. The evidence is "
-                "mixed, from a peer-reviewed field study to vendor claims, and labelled on every number.\n"
-                "- **Assumed, and editable in the app:** the clients' costs, the provider's prices and the readiness "
-                "ratings.\n"
-                "- **Simulated:** the 12 months after launch.\n"
-                "- **Limits:** the dataset is synthetic, so the model's accuracy is likely better than in a real plant. "
-                "The GenAI tests are small (30 and 19 cases) and the business-case test was written by me, so it is "
-                "not blind. Stakeholders are personas.")
+            "- **Data:** 10,000 synthetic machine records (AI4I 2020, UCI).\n"
+            "- **Published, with sources:** the results each AI tool got elsewhere.\n"
+            "- **Assumed, editable:** the clients' costs, prices and readiness ratings.\n"
+            "- **Simulated:** the 12 months after launch.\n"
+            "- **Limits:** synthetic data flatters accuracy; the GenAI tests are small (30 and 19 cases).")
     nav_footer("home")
 
 
 # ---------------------------------------------------------------- Style and navigation
 st.markdown("""
 <style>
-:root { --teal: #0f6d74; --green: #1d7a45; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-[data-testid="stMainBlockContainer"] { max-width: 1100px; padding-top: 2.5rem; }
-[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > * { animation: fadeUp 0.5s ease-out both; }
-[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(2) { animation-delay: 0.05s; }
-[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(3) { animation-delay: 0.1s; }
-[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(4) { animation-delay: 0.15s; }
-[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > :nth-child(n+5) { animation-delay: 0.2s; }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-[data-testid="stMainBlockContainer"] h1 { font-size: 2.1rem; line-height: 1.2; padding: 0.1rem 0 0.3rem; }
-.eyebrow, .row-label, .box-label, .story-step, .kpi-label {
-    text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.74rem; font-weight: 700; color: var(--teal); }
-.row-label { margin-top: 0.6rem; opacity: 0.85; }
-.intro { font-size: 1.05rem; opacity: 0.8; max-width: 52rem; }
+:root { --ink: #111; --muted: #6b6b6b; --faint: #8a8a85; --line: #e6e4df; --teal: #0f6d74; --green: #2f6b1f; }
+[data-testid="stMainBlockContainer"] { max-width: 1080px; padding-top: 2.5rem; }
+[data-testid="stMainBlockContainer"] h1 { font-size: 2.4rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1.1;
+                                          padding: 0.1rem 0 0.4rem; }
+[data-testid="stMainBlockContainer"] h2, [data-testid="stMainBlockContainer"] h3 { font-weight: 500;
+                                                                                   letter-spacing: -0.015em; }
+.box-label, .kpi-label { text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.72rem; font-weight: 600;
+                         color: var(--faint); }
 .box-label { margin-bottom: 0.2rem; }
-[class*="st-key-answer_"] { background: rgba(15, 109, 116, 0.08); border-left: 4px solid var(--teal);
-                            border-radius: 10px; padding: 0.9rem 1.2rem; font-size: 1.1rem; }
-[class*="st-key-next_"] { background: rgba(29, 122, 69, 0.06); border-left: 4px solid var(--green);
-                          border-radius: 10px; padding: 0.9rem 1.2rem; }
-[class*="st-key-next_"] .box-label { color: var(--green); }
-.kpi-label { color: inherit; opacity: 0.65; font-weight: 600; }
-.kpi-value { font-size: 1.65rem; font-weight: 700; line-height: 1.25; margin: 0.15rem 0; }
-.kpi-note { font-size: 0.85rem; opacity: 0.7; }
-[class*="st-key-kpi_"] { height: 100%; }
-[class*="st-key-kpi_"] { background: #fff; border-color: transparent !important; border-radius: 20px;
-                         box-shadow: 0 4px 16px rgba(29, 37, 33, 0.06); }
-.st-key-hero { background: linear-gradient(135deg, #e3ebdd 0%, #f1f5ec 55%, #eef6cf 100%); border-radius: 32px;
-               padding: 2.2rem 2.4rem 1.8rem; }
-.hero-title { font-size: 2.55rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; color: #1d2521;
-              margin: 0.4rem 0 0.8rem; }
-.hero-text { font-size: 1.08rem; line-height: 1.55; color: #3d4741; margin-bottom: 0.9rem; }
-.cycle { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; margin-top: 1.4rem; }
-.phase { display: flex; flex-direction: column; background: #fff; border-radius: 16px; overflow: hidden;
-         padding-bottom: 0.8rem; text-decoration: none !important; color: #1d2521 !important;
-         box-shadow: 0 2px 10px rgba(29, 37, 33, 0.06); transition: transform 0.2s ease, box-shadow 0.2s ease; }
-.phase:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(29, 37, 33, 0.12); }
-.phase:focus-visible { outline: 3px solid #0f6d74; outline-offset: 2px; }
-.ph-head { display: flex; align-items: baseline; gap: 0.4rem; background: #1d2521; color: #fff; font-weight: 700;
-           font-size: 0.86rem; line-height: 1.2; padding: 0.6rem 1.2rem 0.6rem 0.8rem;
-           clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%); }
-.phase.live .ph-head { background: #0f6d74; }
-.ph-num { font-size: 0.68rem; opacity: 0.6; }
-.ph-q { padding: 0.7rem 0.8rem 0.1rem; font-weight: 600; font-size: 0.86rem; line-height: 1.3; min-height: 6.1rem; }
-.ph-label { padding: 0.55rem 0.8rem 0; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.07em;
-            text-transform: uppercase; color: #56615a; }
-.ph-made { padding: 0.1rem 0.8rem 0; font-size: 0.8rem; line-height: 1.35; color: #3d4741; flex: 1; }
-.ph-gate { align-self: flex-start; margin: 0.2rem 0.8rem 0; background: #d4ee5e; border-radius: 8px;
-           padding: 0.15rem 0.5rem; font-size: 0.8rem; font-weight: 600; line-height: 1.35; }
-.ph-kind { padding: 0.25rem 0.8rem 0; font-size: 0.7rem; color: #6b766d; }
-.cycle-foot { margin-top: 1rem; font-size: 0.92rem; color: #3d4741; }
-.golive { display: inline-block; background: #1d2521; color: #fff; border-radius: 999px; padding: 0.05rem 0.6rem;
-          font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-right: 0.3rem; }
-@media (max-width: 1000px) { .cycle { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 640px) { .cycle { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 420px) { .cycle { grid-template-columns: 1fr; } .ph-q { min-height: 0; } }
-.lane-nodes { flex: 1; display: flex; align-items: stretch; gap: 0.35rem; flex-wrap: nowrap; }
-.node { flex: 1 1 0; min-width: 0; background: #fff; border-radius: 18px; padding: 0.8rem 0.85rem; display: flex;
-        flex-direction: column; gap: 0.2rem; text-decoration: none !important; color: #1d2521 !important;
-        box-shadow: 0 2px 10px rgba(29, 37, 33, 0.06); transition: transform 0.2s ease, box-shadow 0.2s ease; }
-a.node:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(29, 37, 33, 0.12); }
-.node.need { background: transparent; box-shadow: none; border: 1.5px dashed #b9c4b4; }
-.node .num { width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #1d2521; color: #fff; font-size: 0.75rem;
-             font-weight: 700; display: flex; align-items: center; justify-content: center; }
-.node.need .num { background: #b9c4b4; }
-.node-top { display: flex; justify-content: space-between; align-items: center; }
-.node .go { color: #0f6d74; font-weight: 700; opacity: 0.55; transition: opacity 0.2s ease, transform 0.2s ease; }
-a.node:hover .go, a.node:focus-visible .go { opacity: 1; transform: translateX(3px); }
-a.node:focus-visible { outline: 3px solid #0f6d74; outline-offset: 2px; }
-.node-kind { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #56615a;
-             margin-top: 0.35rem; }
-.node-title { font-weight: 700; font-size: 0.95rem; line-height: 1.2; margin-top: 0.2rem; }
-.node-q { font-size: 0.8rem; color: #4d5852; line-height: 1.3; flex: 1; }
-.node-res { align-self: flex-start; background: #d4ee5e; border-radius: 10px; padding: 0.15rem 0.55rem; line-height: 1.35; font-size: 0.8rem;
-            font-weight: 600; margin-top: 0.15rem; }
-.setup { margin: 0.4rem 0 1.6rem; }
-.setup-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700; color: #0f6d74;
-               margin-bottom: 0.45rem; }
-.setup-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; }
-.setup-item { background: rgba(255, 255, 255, 0.75); border-radius: 16px; padding: 0.7rem 0.9rem; }
-.setup-role { font-size: 0.78rem; font-weight: 700; color: #5b665e; }
-.setup-what { font-size: 0.95rem; font-weight: 600; line-height: 1.3; margin: 0.15rem 0 0.4rem; color: #1d2521; }
-.setup-tag { font-size: 0.72rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 999px; }
-.tag-ex { background: #f6e3c8; color: #7a4700; } .tag-real { background: #d5ece3; color: #0f5a45; }
-.case-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700; color: #0f6d74; }
-.case-title { font-size: 1.45rem; font-weight: 700; line-height: 1.25; color: #1d2521; margin: 0.1rem 0 0.2rem; }
-.numkey { margin-bottom: 0.9rem; }
-.twofig { margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.45; color: #3d4741; background: rgba(255,255,255,.7);
-          border-radius: 12px; padding: 0.6rem 0.9rem; }
-.hero-stat { font-size: 0.95rem; color: #3d4741; margin: -0.3rem 0 1.1rem; }
-.numkey-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; }
-.numkey-row div { border-left: 3px solid #b9c4b4; padding-left: 0.6rem; font-size: 0.83rem; line-height: 1.4; color: #3d4741; }
-.numkey-row b { display: block; color: #1d2521; font-size: 0.86rem; }
-@media (max-width: 900px) { .setup-row, .numkey-row { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 420px) { .setup-row, .numkey-row { grid-template-columns: 1fr; } }
-.hero-note { font-size: 0.85rem; color: #4d5852; border-left: 3px solid #b9c4b4; padding-left: 0.7rem; }
-.st-key-role { padding: 1.2rem 0.4rem 0.4rem; }
-.st-key-case_data { margin-top: 1.2rem; }
-.st-key-why { margin-top: 1.2rem; }
-.st-key-phases { margin-top: 1.2rem; } .st-key-phases .cycle { margin-top: 0.6rem; }
-.st-key-leakmap iframe { border: 0; }
-.st-key-leakmap [data-testid="stElementContainer"] { height: auto !important; flex: 0 0 auto !important; }
-.why-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 0.4rem; }
-.why-card { background: #fff; border-radius: 22px; padding: 1.1rem 1.3rem; box-shadow: 0 4px 16px rgba(29, 37, 33, 0.06);
-            display: flex; flex-direction: column; gap: 0.3rem; }
-.why-num { font-size: 2rem; font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; color: #1d2521; }
-.why-text { font-size: 0.93rem; line-height: 1.45; color: #2f3833; flex: 1; }
-.why-src { font-size: 0.8rem; color: #0f6d74 !important; }
-.why-line { font-size: 1.05rem; font-weight: 600; margin-top: 0.9rem; max-width: 52rem; }
-.why-more { font-size: 0.85rem; color: #4d5852; margin-top: 0.5rem; line-height: 1.6; }
-.why-more a { color: #0f6d74 !important; }
-.prod-name { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 0.2rem; }
-.prod-tag { font-size: 1.1rem; color: #3d4741; margin-bottom: 1rem; }
-.prod-caps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; margin-bottom: 1.2rem; }
-.prod-cap { background: #fff; border-radius: 18px; padding: 0.9rem 1rem; box-shadow: 0 2px 10px rgba(29, 37, 33, 0.06);
-            border-top: 3px solid #d4ee5e; }
-.prod-cap-t { font-weight: 700; margin-bottom: 0.25rem; }
-.prod-cap-d { font-size: 0.88rem; line-height: 1.45; color: #3d4741; }
-.prod-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; }
-table.spec { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 0.3rem; border: none; }
-table.spec th, table.spec td { border: none !important; background: transparent !important; }
-table.spec tr { border-bottom: 1px solid #dfe5da; }
-table.spec th { text-align: left; font-weight: 600; color: #56615a; width: 34%; padding: 0.45rem 0.8rem 0.45rem 0;
-                vertical-align: top; border-bottom: 1px solid #dfe5da; }
-table.spec td { padding: 0.45rem 0; border-bottom: 1px solid #dfe5da; color: #1d2521; }
-table.spec a { color: #0f6d74 !important; }
-.prod-user { display: flex; flex-direction: column; padding: 0.45rem 0; border-bottom: 1px solid #dfe5da; font-size: 0.9rem; }
-.prod-user span { color: #4d5852; }
-@media (max-width: 800px) { .prod-caps { grid-template-columns: 1fr 1fr; } .prod-grid { grid-template-columns: 1fr; gap: 0.6rem; } }
-@media (max-width: 480px) { .prod-caps { grid-template-columns: 1fr; } }
-@media (max-width: 800px) { .why-cards { grid-template-columns: 1fr; } }
-.case-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.case-card { background: #fff; border-radius: 22px; padding: 1.1rem 1.3rem; box-shadow: 0 4px 16px rgba(29, 37, 33, 0.06); }
-.case-text { font-size: 0.93rem; line-height: 1.55; color: #2f3833; margin-top: 0.35rem; }
-@media (max-width: 800px) { .case-cards { grid-template-columns: 1fr; } }
-.role-text { font-size: 1rem; line-height: 1.55; color: #2f3833; margin-top: 0.3rem; }
-.tour-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #0f6d74;
-              margin-top: 0.7rem; }
-.tour-text { font-size: 0.97rem; line-height: 1.5; }
-.evidence { font-size: 0.82rem; color: #4d5852; background: #f1f4ed; border-radius: 10px; padding: 0.4rem 0.7rem; }
-.st-key-genai { margin-top: 1.2rem; background: #f1f4ed; border: 1.5px dashed #b9c4b4; border-radius: 28px;
-                padding: 1.4rem 1.6rem; }
-.genai-intro { font-size: 0.95rem; color: #2f3833; max-width: 52rem; margin: 0.2rem 0 0.9rem; }
-.genai-nodes { max-width: 60%; gap: 0.8rem; }
-.st-key-conclusion { margin-top: 1.2rem; }
-.conclusion { font-size: 1.2rem; line-height: 1.5; font-weight: 600; max-width: 54rem; margin: 0.3rem 0 0.8rem;
-              border-left: 4px solid #d4ee5e; padding-left: 1rem; }
-.doc-links a { display: inline-block; margin: 0 0.4rem 0.5rem 0; padding: 0.35rem 0.85rem; border-radius: 999px;
-               background: #fff; color: #1d2521 !important; text-decoration: none; font-size: 0.88rem;
-               box-shadow: 0 1px 3px rgba(29, 37, 33, 0.1); }
-.doc-links a:hover { background: #eef4d6; }
-@media (max-width: 800px) {
-  .lane-nodes { flex-direction: column; } .genai-nodes { max-width: none; } }
-.st-key-tour_panel { background: #fff; border-radius: 28px; padding: 1.6rem 1.9rem; box-shadow: 0 12px 36px rgba(29, 37, 33, 0.07); }
-.tour-q { font-size: 1.5rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; margin: 0.3rem 0 0.6rem; }
-.chart-title { font-size: 0.85rem; color: #6b766d; margin-bottom: 0.2rem; }
+.intro, .model-text { color: var(--muted); font-size: 0.98rem; }
+.model-text { margin: -0.3rem 0 1rem; }
+.model-text a { color: var(--teal) !important; }
+[class*="st-key-answer_"] { background: #fff; border: 1px solid var(--line); border-left: 3px solid var(--teal);
+                            border-radius: 14px; padding: 0.9rem 1.2rem; font-size: 1.08rem; }
+[class*="st-key-next_"] { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 0.9rem 1.2rem; }
+[class*="st-key-detail_"], [class*="st-key-tool_"] { background: #fff; border-radius: 14px; }
+.kpi-value { font-size: 1.7rem; font-weight: 500; letter-spacing: -0.02em; line-height: 1.25; margin: 0.15rem 0; }
+.kpi-note { font-size: 0.85rem; color: var(--muted); }
+[class*="st-key-kpi_"] { height: 100%; background: #fff; border-radius: 14px; }
+[data-testid="stExpander"] details { background: #fff; border-radius: 14px; }
+[data-testid="stExpander"] summary { font-weight: 500; }
 [data-testid="stButtonGroup"] button { border-radius: 999px !important; padding: 0.35rem 1rem; }
-@media (max-width: 640px) { .hero-title { font-size: 1.9rem; } .st-key-hero { padding: 1.4rem 1.2rem; border-radius: 24px; } }
-[data-testid="stExpander"] summary { font-weight: 600; }
-[data-testid="stPageLink"] a { border: 1px solid rgba(128, 128, 128, 0.3); border-radius: 8px; padding: 0.3rem 0.8rem;
-                               transition: background 0.2s ease, border-color 0.2s ease; }
-[data-testid="stPageLink"] a:hover { border-color: var(--teal); background: rgba(15, 109, 116, 0.08); }
+.stButton button, .stDownloadButton button, .stFormSubmitButton button { background: var(--ink); color: #f7f7f5;
+                                                                          border: 0; border-radius: 12px; }
+.stButton button:hover, .stDownloadButton button:hover, .stFormSubmitButton button:hover { background: #333;
+                                                                                           color: #fff; }
+[data-testid="stPageLink"] a { border-radius: 10px; padding: 0.3rem 0.6rem; }
+[data-testid="stPageLink"] a:hover { background: #ecebe7; }
 .stAppDeployButton { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
 PAGES = {
-    "home": st.Page(page_home, title="Overview", icon=":material/home:", default=True),
+    "home": st.Page(page_home, title="Start", icon=":material/home:", default=True),
     "pick": st.Page(page_pick, title="Evaluate options", url_path="compare"),
     "value": st.Page(page_value, title="Business case", url_path="value"),
     "ready": st.Page(page_ready, title="Readiness", url_path="readiness"),
     "case": st.Page(page_case, title="Decide", url_path="business-case"),
     "track": st.Page(page_track, title="Measure", url_path="track"),
-    "pilot": st.Page(page_pilot, title="A · GenAI work orders", url_path="genai-pilot"),
-    "agents": st.Page(page_agents, title="B · GenAI business-case review", url_path="agents"),
+    "pilot": st.Page(page_pilot, title="GenAI work orders", url_path="genai-pilot"),
+    "agents": st.Page(page_agents, title="GenAI case review", url_path="agents"),
 }
 st.navigation({"": [PAGES["home"]],
-               "Before launch": [PAGES[k] for k in ("pick", "value", "ready", "case")],
-               "After launch": [PAGES["track"]],
-               "Side experiments": [PAGES["pilot"], PAGES["agents"]]}, position="top").run()
+               "Model": [PAGES[k] for k in ("pick", "value", "ready", "case", "track")],
+               "GenAI tests": [PAGES["pilot"], PAGES["agents"]]}, position="top").run()

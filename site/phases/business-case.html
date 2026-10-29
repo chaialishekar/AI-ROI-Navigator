@@ -15,7 +15,7 @@
 <section class="first">
   <div class="wrap phase-head">
     <div data-phase-head></div>
-    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Change the costs live ↗</a></div>
+    <div class="head-cta"><button class="btn" type="button" data-details-btn aria-controls="details">Show the details</button></div>
   </div>
 </section>
 
@@ -62,6 +62,27 @@
   </div>
 </section>
 
+<section id="details" hidden>
+  <div class="wrap">
+    <p class="eyebrow">The details</p>
+    <h2>Change the costs. The savings update.</h2>
+    <div class="card">
+      <div class="inputs" id="dIn"></div>
+      <div style="margin-top:16px"><label class="small" for="dLevel">Alert when the chance of a breakdown is at least <b id="dLevelTxt"></b></label>
+        <input id="dLevel" type="range" min="1" max="99" step="1" style="width:100%;accent-color:var(--teal)">
+        <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button> · <button class="linkbtn" type="button" id="dReset">Reset all</button></div>
+      <div class="out" id="dOut"></div>
+      <p class="muted" style="margin:16px 0 0" id="dSay"></p>
+    </div>
+    <div class="grid g2">
+      <div class="card"><div class="label">Models compared on the same 3,000 test records</div><div class="tscroll"><table class="t" id="dAuc"></table></div>
+        <p class="small" style="margin:12px 0 0">AUC: how well a model ranks risky machines above safe ones (1.0 is perfect, 0.5 is a coin flip).</p></div>
+      <div class="card"><div class="label">What changing the inputs does not do</div>
+        <p class="muted" style="margin:6px 0 0">The model is not retrained. Its tested results at each alert level (what share of breakdowns it catches, how many false alarms it raises) are fixed; your costs turn them into dollars, with the same formula as the Python code.</p></div>
+    </div>
+  </div>
+</section>
+
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">Where this sits</p>
@@ -76,9 +97,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="../assets/characters.js"></script>
 <script>
-  const { D, money, pct, months, app, phaseHead } = Site;
+  const { D, money, pct, months, phaseHead } = Site;
   phaseHead(2);
-  document.getElementById("appLink").href = app("value");
   const c = D.costs, v = D.value;
   document.getElementById("pubText").textContent =
     `Published programs cut downtime by ${pct(D.published.low_pct)}–${pct(D.published.high_pct)}. The middle of that range, applied to this plant's ${money(c.failures_per_year * c.cost_missed)} of downtime, minus running costs.`;
@@ -110,6 +130,40 @@
   document.getElementById("trioCards").innerHTML = Object.entries(trio).map(([k, [t, n, d]]) =>
     `<div class="card ${k === "sentry" ? "opt-card top" : ""}" data-k="${k}"><div class="label">${t}</div><div class="stat sm">${n}</div><p class="muted" style="margin:0;font-size:14px">${d}</p></div>`).join("");
   Characters.mountCast(document.getElementById("trio"), ["rulebook", "sentry", "snooze"], { scale: 1.05, spacing: 3.2 });
+</script>
+<script>
+(() => {
+  const { D, usd, pct, months, value, breakEven } = Site;
+  const FIELDS = [["failures_per_year", "Breakdowns a year, no AI", 1], ["cost_missed", "Cost of a breakdown ($)", 500],
+    ["cost_caught", "Planned repair when caught early ($)", 250], ["cost_false_alarm", "Inspection on a false alarm ($)", 50],
+    ["running_cost", "Running the AI, a year ($)", 1000], ["deployment_cost", "One-time setup ($)", 5000], ["months_to_deploy", "Months to go live", 1]];
+  const box = document.getElementById("dIn"), lvl = document.getElementById("dLevel");
+  box.innerHTML = FIELDS.map(([k, t, step]) => `<label>${t}<input type="number" min="0" step="${step}" data-k="${k}"></label>`).join("");
+  let auto = true;
+  const costs = () => Object.fromEntries(FIELDS.map(([k]) => [k, +box.querySelector(`[data-k=${k}]`).value || 0]));
+  function reset() { FIELDS.forEach(([k]) => (box.querySelector(`[data-k=${k}]`).value = D.costs[k])); auto = true; draw(); }
+  function draw() {
+    const c = costs();
+    if (auto) lvl.value = Math.round(breakEven(c) * 100);
+    const level = lvl.value / 100, r = value(c, level);
+    document.getElementById("dLevelTxt").textContent = `${lvl.value}%`;
+    document.getElementById("dLevelNote").textContent = auto ? "Break-even: the inspection cost ÷ what an early catch saves." : `Break-even would be ${pct(breakEven(c))}.`;
+    document.getElementById("dOut").innerHTML = [
+      ["Net savings a year", usd(r.net)], ["Pays for itself in", months(r.payback)], ["Net over 3 years", usd(r.three_year)],
+      ["Breakdowns caught", pct(r.recall), `${r.false_alarms.toFixed(1)} false alarms a year`]]
+      .map(([a, b, n]) => `<div class="card tight" style="background:var(--page)"><div class="label">${a}</div><div class="stat sm">${b}</div>${n ? `<div class="small">${n}</div>` : ""}</div>`).join("");
+    document.getElementById("dSay").textContent = r.net > 0
+      ? `Catches ${r.caught.toFixed(1)} of ${c.failures_per_year} breakdowns a year and misses ${r.missed.toFixed(1)}; ${pct(r.precision)} of its alerts are real.`
+      : "At these costs the AI costs more than it saves.";
+  }
+  box.addEventListener("input", draw);
+  lvl.addEventListener("input", () => { auto = false; draw(); });
+  document.getElementById("dAuto").addEventListener("click", () => { auto = true; draw(); });
+  document.getElementById("dReset").addEventListener("click", reset);
+  reset();
+  document.getElementById("dAuc").innerHTML = `<tr><th>Model</th><th style="text-align:right">AUC</th></tr>`
+    + Object.entries(D.model.auc).map(([k, v]) => `<tr><td>${k}</td><td style="text-align:right">${v.toFixed(2)}</td></tr>`).join("");
+})();
 </script>
 </body>
 </html>

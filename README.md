@@ -2,6 +2,8 @@
 
 > Which AI should a business buy first, and will it pay off?
 
+**See it:** [chaialishekar.github.io/AI-ROI-Navigator](https://chaialishekar.github.io/AI-ROI-Navigator/): seven short phase pages; "Show the details" on each opens the full working, and the Business case and Readiness pages let you change the inputs.
+
 An end-to-end case study in **AI business systems analysis**: *should we invest in AI, or is there a better way?*
 
 In recent conversations with people in the industry, one topic kept coming up: AI libraries, the catalogues of AI tools that companies build, sell and buy to automate work. We all know AI makes automation easier. What I kept wondering was whether it pays. Is the return higher or lower than we assume, and is *not* automating, or a simple rule, sometimes the cheaper choice? So I built a way to answer that for one specific job. I took one provider's catalogue of AI tools, priced each one for a single client, weighed it against doing nothing and against simple rules, and followed the best option through a full project lifecycle, from the business case to the savings a year after launch.
@@ -62,7 +64,7 @@ Every page shows **the answer first** (the question, the answer, three numbers, 
 | [Roadmap](docs/roadmap.md) | Now / Next / Later, prioritised by value × ease |
 | [Delivery log](docs/delivery.md) | How the work was split into increments and checked |
 
-*Independent concept project. Client costs and provider prices are illustrative and can be edited in the app; improvement ranges are published results with sources.*
+*Independent concept project. Client costs and provider prices are illustrative and can be edited on the website's Business case page; improvement ranges are published results with sources.*
 
 ## Key result (default assumptions)
 On 3,000 machine records the model never saw during training, a gradient-boosting model:
@@ -107,14 +109,16 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 - **Value tracking:** monthly counts (alerts, failures flagged, prevented, missed, false alarms) are turned into dollars with the same formula as the forecast. Adoption = share of alerts acted on (alert below 70%). Drift = 3-month rolling recall 10+ points below launch. The gap is split by swapping each forecast assumption (failure volume, recall, share of flagged failures acted on, false alarms) for its actual value one at a time, so the parts add up exactly. The bundled 12-month rollout is simulated, not real plant data.
 - **GenAI pilot:** 30 alerts from the test set (true failures of each type plus false alarms, from the synthetic dataset) are sent to Amazon Nova Micro on Bedrock (us-east-2, US inference profile, temperature 0, 500-token cap). Each draft must name one cause from a fixed list, graded against the true cause in the data. ROI counts the five cost categories from the Forbes article (usage, setup, review, training, errors) and splits time saved into cash and capacity. Re-run with `python -m pilot.run_pilot --profile <aws-profile> --version 2`.
 - **Data pipeline:** monthly actuals files land in a private, encrypted, versioned S3 bucket (us-east-2, access logged to CloudWatch). `pipeline/run.py` syncs them into a Databricks Free Edition volume (Free Edition cannot mount your own S3; with paid Databricks this becomes a Unity Catalog external location) and runs `pipeline/notebook.py` as a serverless job: **bronze** loads files once with `COPY INTO`, **silver** applies the Track value checks and sends failing rows to **quarantine** with the reason, **gold** computes savings, adoption and drift in SQL. A unit test confirms gold matches the app's Python formula to the cent; a planted bad file is quarantined. Run with `python -m pipeline.run land sync run fetch --aws-profile <profile>`.
-- **Analyst agents:** Amazon Nova Lite on Bedrock (us-east-2, temperature 0). 8 intake descriptions, 2 memos and 9 red-team cases (a sound case plus 8 with one planted flaw) live in `agents/eval_cases.json`; `python -m agents.grade` scores saved runs. The public app shows saved results; live intake runs only where AWS credentials exist.
+- **Analyst agents:** Amazon Nova Lite on Bedrock (us-east-2, temperature 0). 8 intake descriptions, 2 memos and 9 red-team cases (a sound case plus 8 with one planted flaw) live in `agents/eval_cases.json`; `python -m agents.grade` scores saved runs. The website shows the saved, graded results; live runs need AWS credentials (`streamlit run app.py`).
 - **Readiness:** 5 areas (data, fits how people work, clear payoff, people trust it, clear ownership). Go = average ≥ 3.5 and no dimension below 2.5.
 
 ## Run locally
 ```bash
 pip install -r requirements.txt
-streamlit run app.py
-pytest            # optional: run the tests
+streamlit run app.py               # the analyst workbench, including live Bedrock runs
+python site/export_data.py         # refresh the website's numbers from src/
+python -m http.server -d site 8000 # view the website
+pytest                             # optional: run the tests
 ```
 
 ## Data

@@ -1,6 +1,9 @@
 [theme]
 base = "light"
 primaryColor = "#0f6d74"
-backgroundColor = "#f6f8f3"
-secondaryBackgroundColor = "#eaefe5"
-textColor = "#1d2521"
+backgroundColor = "#f7f7f5"
+secondaryBackgroundColor = "#ecebe7"
+textColor = "#111111"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+borderColor = "#e6e4df"
+baseRadius = "10px"

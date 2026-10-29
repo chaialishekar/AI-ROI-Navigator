@@ -15,7 +15,7 @@
 <section class="first">
   <div class="wrap phase-head">
     <div data-phase-head></div>
-    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Upload a month live ↗</a></div>
+    <div class="head-cta"><button class="btn" type="button" data-details-btn aria-controls="details">Show the details</button></div>
   </div>
 </section>
 
@@ -58,6 +58,17 @@
   </div>
 </section>
 
+<section id="details" hidden>
+  <div class="wrap">
+    <p class="eyebrow">The details</p>
+    <h2>Every month, and how the gap splits.</h2>
+    <div class="card"><div class="tscroll"><table class="t" id="dMonths"></table></div>
+      <p class="small" style="margin:12px 0 0">Saved = breakdowns prevented × what an early catch saves − false alarms × inspection − a month of running cost. Warnings: low adoption when fewer than 70% of alerts are acted on; drift when the 3-month catch rate is 10 points below launch.</p></div>
+    <div class="card" style="margin-top:14px"><div class="label">The gap to the model's estimate, one cause at a time</div><div class="tscroll"><table class="t" id="dGap"></table></div>
+      <p class="small" style="margin:12px 0 0">Each assumption is swapped for what actually happened, in turn, so the effects add up exactly to the total gap. Data: <span id="dSrc"></span>, simulated for this example.</p></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">Where this sits</p>
@@ -72,7 +83,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="../assets/characters.js"></script>
 <script>
-  const { D, money, pct, app, phaseHead, delivered, ESSAY } = Site;
+  const { D, money, pct, phaseHead, delivered, ESSAY } = Site;
   if (ESSAY.url) {
     const e = document.getElementById("essay");
     e.innerHTML = `<b>Why this phase exists.</b> <span class="muted">Most AI decisions are made once and never checked again. I wrote about that in <a href="${ESSAY.url}" target="_blank" rel="noopener">${ESSAY.title} ↗</a>. This page is the fix: the original decision, revisited every month.</span>`;
@@ -81,7 +92,6 @@
   phaseHead(6);
   const T = D.tracking;
   const short = m => m.replace("Month ", "M");   // months are counted from go-live
-  document.getElementById("appLink").href = app("track");
   document.getElementById("pctBig").textContent = pct(delivered);
   Characters.mountCast(document.getElementById("sentry"), ["sentry"], { scale: 1.2, sink: 0.1 });
 
@@ -106,6 +116,22 @@
     ["Fix the workflow", `The crew acted on too few warnings in ${T.low_adoption_months.length} months. Send warnings straight into the maintenance system.`],
     ["Retrain the model", `Its catch rate dropped in ${T.drift_months.join(" and ").replace(/ and Month /g, " and ")}. Retrain it on recent data.`],
   ].map(([h, t]) => `<div class="card"><h3>${h}</h3><p class="muted" style="margin:0">${t}</p></div>`).join("");
+</script>
+<script>
+(() => {
+  const { D, usd, pct } = Site;
+  const T = D.tracking, drift = new Set(T.drift_months), low = new Set(T.low_adoption_months);
+  document.getElementById("dMonths").innerHTML = `<tr><th>Month</th><th style="text-align:right">Alerts</th><th style="text-align:right">Prevented</th><th style="text-align:right">Missed</th><th style="text-align:right">False alarms</th><th style="text-align:right">Caught</th><th style="text-align:right">Acted on</th><th style="text-align:right">Saved</th><th>Warning</th></tr>`
+    + T.rows.map(r => `<tr><td>${r.month}</td><td style="text-align:right">${r.alerts}</td><td style="text-align:right">${r.prevented}</td><td style="text-align:right">${r.missed}</td><td style="text-align:right">${r.false_alarms}</td>
+      <td style="text-align:right">${r.recall == null ? "–" : pct(r.recall)}</td><td style="text-align:right">${r.adoption == null ? "–" : pct(r.adoption)}</td><td style="text-align:right">${usd(r.actual)}</td>
+      <td>${[low.has(r.month) ? '<span class="tag warn">low adoption</span>' : "", drift.has(r.month) ? '<span class="tag bad">drift</span>' : ""].join(" ")}</td></tr>`).join("")
+    + `<tr><td><b>Total</b></td><td colspan="6"></td><td style="text-align:right"><b>${usd(T.delivered)}</b></td><td></td></tr>`;
+  const fmt = (cause, x) => cause.includes("recall") || cause.includes("acted") ? pct(x) : x.toFixed(1);
+  document.getElementById("dGap").innerHTML = `<tr><th>Cause</th><th style="text-align:right">Assumed</th><th style="text-align:right">Actual</th><th style="text-align:right">Effect</th></tr>`
+    + T.gap.map(g => `<tr><td>${g.cause}</td><td style="text-align:right">${fmt(g.cause, g.assumed)}</td><td style="text-align:right">${fmt(g.cause, g.actual)}</td><td style="text-align:right">${usd(g.effect)}</td></tr>`).join("")
+    + `<tr><td><b>Total gap</b></td><td></td><td></td><td style="text-align:right"><b>${usd(T.delivered - T.promised)}</b></td></tr>`;
+  document.getElementById("dSrc").textContent = T.source;
+})();
 </script>
 </body>
 </html>

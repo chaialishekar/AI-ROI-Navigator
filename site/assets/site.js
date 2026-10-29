@@ -2,8 +2,6 @@
 (function () {
   const D = window.CASE;
   const REPO = "https://github.com/chaialishekar/AI-ROI-Navigator";
-  // Public URL of the Streamlit app. Until it is set, "live analysis" links go to the repository.
-  const APP_URL = "https://ai-roi-navigator-lwqttyuudthdtcwenmycja.streamlit.app";
   // Chaitali's Substack post on revisiting AI decisions. Links to it stay hidden until it is set.
   const ESSAY = { url: null, title: "AI's Hidden Problem: Nobody Revisits the Original Decision" };
   const ROOT = document.body.dataset.root || ".";
@@ -15,10 +13,26 @@
     if (a >= 1e3) return `${sign}$${Math.round(a / 1e3)}k`;
     return `${sign}$${Math.round(a)}`;
   };
+  const usd = x => `${x < 0 ? "−" : ""}$${Math.round(Math.abs(x)).toLocaleString("en-US")}`;
   const pct = (x, d = 0) => `${(x * 100).toFixed(d)}%`;
   const months = x => (x === null ? "never" : `${x.toFixed(1)} months`);
   const doc = path => `${REPO}/blob/main/${path}`;
-  const app = page => (APP_URL ? `${APP_URL.replace(/\/$/, "")}/${page}` : REPO);
+
+  // Same formula as src/value.py evaluate(): the test-set counts at an alert level, scaled to the plant's breakdowns
+  function value(c, level) {
+    const i = Math.min(99, Math.max(1, Math.round(level * 100))) - 1;
+    const [tp, fp] = D.curve.levels[i], scale = c.failures_per_year / D.curve.failures;
+    const caught = tp * scale, missed = (D.curve.failures - tp) * scale, false_alarms = fp * scale;
+    const net = c.failures_per_year * c.cost_missed
+      - (caught * c.cost_caught + missed * c.cost_missed + false_alarms * c.cost_false_alarm + c.running_cost);
+    const live3 = Math.max(0, 36 - c.months_to_deploy);
+    return { caught, missed, false_alarms, net, recall: tp / D.curve.failures, precision: tp + fp ? tp / (tp + fp) : 0,
+             payback: net > 0 ? c.months_to_deploy + c.deployment_cost / (net / 12) : null,
+             three_year: net * live3 / 12 - c.deployment_cost };
+  }
+  // Break-even alert level, as src/value.py alert_threshold()
+  const breakEven = c => (c.cost_missed > c.cost_caught
+    ? Math.min(0.99, Math.max(0.01, Math.round(c.cost_false_alarm / (c.cost_missed - c.cost_caught) * 100) / 100)) : 0.99);
 
   const delivered = D.tracking.delivered / D.tracking.promised;   // share of the model's estimate
   const PHASES = [
@@ -49,7 +63,7 @@
         <a class="hide-sm" href="${ROOT}/index.html#phases">Phases</a>
         <a class="hide-sm" href="${ROOT}/index.html#decisions">Decisions</a>
         <a class="hide-sm" href="${REPO}" target="_blank" rel="noopener">GitHub</a>
-        <a class="btn" href="${app("")}" target="_blank" rel="noopener">Live analysis ↗</a>
+        <a class="btn" href="${ROOT}/phases/business-case.html#details">Try the model</a>
       </div></div>`;
   }
 
@@ -63,7 +77,7 @@
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         ${ESSAY.url ? `<a class="btn ghost" href="${ESSAY.url}" target="_blank" rel="noopener">Read my writing ↗</a>` : ""}
         <a class="btn ghost" href="${REPO}" target="_blank" rel="noopener">View the code</a>
-        <a class="btn" href="${app("")}" target="_blank" rel="noopener">Open the live analysis ↗</a></div></div>`;
+        <a class="btn" href="${ROOT}/phases/business-case.html#details">Try the model</a></div></div>`;
   }
 
   // Which phases this visitor has opened, kept in their own browser only. Storage can be blocked, so fail quietly.
@@ -163,6 +177,21 @@
     const st = document.querySelector("[data-stairs]");
     if (st) stairs(st, { current: i, link: true });
     pager(i);
+    detailsToggle();
+  }
+
+  // "Show the details": every phase page keeps its full working in a hidden section. #details in the URL opens it.
+  function detailsToggle() {
+    const sec = document.getElementById("details"), btns = document.querySelectorAll("[data-details-btn]");
+    if (!sec) return;
+    const set = (open, scroll) => {
+      sec.hidden = !open;
+      btns.forEach(b => { b.textContent = open ? "Hide the details" : "Show the details"; b.setAttribute("aria-expanded", open); });
+      if (open && scroll) sec.scrollIntoView({ behavior: "smooth" });
+      if (open) sec.querySelectorAll(".reveal").forEach(e => e.classList.add("in"));
+    };
+    btns.forEach(b => b.addEventListener("click", () => set(sec.hidden, true)));
+    set(location.hash === "#details", location.hash === "#details");
   }
 
   function reveal() {
@@ -186,5 +215,5 @@
 
   nav(); footer(); fillValues();
   document.addEventListener("DOMContentLoaded", reveal);
-  window.Site = { D, PHASES, REPO, ESSAY, money, pct, months, doc, app, stairs, phaseHead, delivered };
+  window.Site = { D, PHASES, REPO, ESSAY, money, usd, pct, months, doc, value, breakEven, stairs, phaseHead, delivered };
 })();

@@ -125,7 +125,506 @@ window.CASE = {
   "precision": 0.3145,
   "false_alarms": 85.4902
  },
+ "curve": {
+  "failures": 102,
+  "levels": [
+   [
+    88,
+    38
+   ],
+   [
+    88,
+    32
+   ],
+   [
+    88,
+    30
+   ],
+   [
+    88,
+    27
+   ],
+   [
+    88,
+    22
+   ],
+   [
+    87,
+    22
+   ],
+   [
+    87,
+    19
+   ],
+   [
+    86,
+    18
+   ],
+   [
+    86,
+    18
+   ],
+   [
+    86,
+    16
+   ],
+   [
+    86,
+    16
+   ],
+   [
+    86,
+    16
+   ],
+   [
+    86,
+    14
+   ],
+   [
+    86,
+    13
+   ],
+   [
+    86,
+    13
+   ],
+   [
+    86,
+    13
+   ],
+   [
+    86,
+    13
+   ],
+   [
+    86,
+    13
+   ],
+   [
+    86,
+    13
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    12
+   ],
+   [
+    86,
+    11
+   ],
+   [
+    86,
+    11
+   ],
+   [
+    86,
+    11
+   ],
+   [
+    86,
+    11
+   ],
+   [
+    86,
+    11
+   ],
+   [
+    86,
+    11
+   ],
+   [
+    86,
+    10
+   ],
+   [
+    86,
+    10
+   ],
+   [
+    85,
+    10
+   ],
+   [
+    85,
+    10
+   ],
+   [
+    85,
+    10
+   ],
+   [
+    85,
+    10
+   ],
+   [
+    85,
+    10
+   ],
+   [
+    85,
+    9
+   ],
+   [
+    85,
+    9
+   ],
+   [
+    85,
+    8
+   ],
+   [
+    85,
+    8
+   ],
+   [
+    85,
+    8
+   ],
+   [
+    85,
+    8
+   ],
+   [
+    85,
+    8
+   ],
+   [
+    85,
+    8
+   ],
+   [
+    85,
+    8
+   ],
+   [
+    84,
+    8
+   ],
+   [
+    84,
+    8
+   ],
+   [
+    84,
+    8
+   ],
+   [
+    84,
+    8
+   ],
+   [
+    84,
+    8
+   ],
+   [
+    84,
+    8
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    7
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    6
+   ],
+   [
+    84,
+    5
+   ],
+   [
+    84,
+    5
+   ],
+   [
+    84,
+    5
+   ],
+   [
+    84,
+    5
+   ],
+   [
+    84,
+    5
+   ],
+   [
+    84,
+    5
+   ],
+   [
+    84,
+    5
+   ],
+   [
+    84,
+    4
+   ],
+   [
+    83,
+    4
+   ],
+   [
+    82,
+    4
+   ],
+   [
+    82,
+    4
+   ],
+   [
+    82,
+    4
+   ],
+   [
+    81,
+    4
+   ],
+   [
+    79,
+    4
+   ],
+   [
+    77,
+    4
+   ],
+   [
+    76,
+    4
+   ],
+   [
+    71,
+    3
+   ]
+  ]
+ },
+ "genai": {
+  "pilot": {
+   "v1": {
+    "correct_mode_rate": 0.3333,
+    "correct_on_real_failures": 0.4167,
+    "false_alarm_handled_rate": 0.0,
+    "median_latency_s": 0.902,
+    "cost_per_1000": 0.0381
+   },
+   "v2": {
+    "correct_mode_rate": 0.8333,
+    "correct_on_real_failures": 1.0,
+    "false_alarm_handled_rate": 0.1667,
+    "median_latency_s": 0.9705,
+    "cost_per_1000": 0.0373
+   }
+  },
+  "agents": {
+   "v1": {
+    "intake": 0.425,
+    "memo_faithful": 1,
+    "memos": 2,
+    "caught": 3,
+    "flaws": 6,
+    "clean_high": 2,
+    "cost": 0.0015
+   },
+   "v2": {
+    "intake": 1.0,
+    "memo_faithful": 2,
+    "memos": 2,
+    "caught": 2,
+    "flaws": 6,
+    "clean_high": 1,
+    "cost": 0.002
+   },
+   "v3": {
+    "intake": 1.0,
+    "memo_faithful": 2,
+    "memos": 2,
+    "caught": 6,
+    "flaws": 6,
+    "clean_high": 0,
+    "cost": 0.0012
+   }
+  }
+ },
  "readiness": {
+  "questions": {
+   "Data": [
+    "Sensor and maintenance data is collected consistently for the machines in scope.",
+    "Past breakdowns are recorded with dates and causes."
+   ],
+   "Fits how people work": [
+    "Warnings show up in the tools technicians already use, such as the maintenance system.",
+    "It is clear who acts on a warning, and how."
+   ],
+   "Clear payoff": [
+    "We know what an unplanned failure costs us (downtime, repair, scrap).",
+    "Finance agrees on how savings will be measured."
+   ],
+   "People trust it": [
+    "Technicians helped test it and understand why warnings appear.",
+    "Managers will back acting on a warning even when a machine looks fine."
+   ],
+   "Clear ownership": [
+    "One person owns how well the AI works after launch.",
+    "There is a plan to check its accuracy and update it when it slips."
+   ]
+  },
+  "actions": {
+   "Data": "Spend 4\u20136 weeks cleaning up sensor logs and filling in past breakdown records.",
+   "Fits how people work": "Map how a warning becomes a repair, and send warnings straight into the maintenance system before launch.",
+   "Clear payoff": "Agree with finance what a breakdown costs and how savings will be counted.",
+   "People trust it": "Design the warnings with technicians, show why each one appears, and start with one production line.",
+   "Clear ownership": "Name one owner for the AI, agree the accuracy level that triggers a review, and schedule regular updates."
+  },
+  "example": {
+   "Data": [
+    4,
+    4
+   ],
+   "Fits how people work": [
+    2,
+    2
+   ],
+   "Clear payoff": [
+    4,
+    3
+   ],
+   "People trust it": [
+    3,
+    2
+   ],
+   "Clear ownership": [
+    3,
+    3
+   ]
+  },
   "verdict": "Fix first",
   "avg": 3.0,
   "dims": {
@@ -226,21 +725,151 @@ window.CASE = {
    "Month 2",
    "Month 3"
   ],
+  "rows": [
+   {
+    "month": "Month 1",
+    "alerts": 3,
+    "prevented": 2,
+    "missed": 1,
+    "false_alarms": 0,
+    "recall": 1.0,
+    "adoption": 0.6667,
+    "actual": 37000.0
+   },
+   {
+    "month": "Month 2",
+    "alerts": 2,
+    "prevented": 1,
+    "missed": 1,
+    "false_alarms": 0,
+    "recall": 1.0,
+    "adoption": 0.5,
+    "actual": 16000.0
+   },
+   {
+    "month": "Month 3",
+    "alerts": 2,
+    "prevented": 1,
+    "missed": 1,
+    "false_alarms": 0,
+    "recall": 1.0,
+    "adoption": 0.5,
+    "actual": 16000.0
+   },
+   {
+    "month": "Month 4",
+    "alerts": 1,
+    "prevented": 1,
+    "missed": 0,
+    "false_alarms": 0,
+    "recall": 1.0,
+    "adoption": 1.0,
+    "actual": 16000.0
+   },
+   {
+    "month": "Month 5",
+    "alerts": 5,
+    "prevented": 3,
+    "missed": 1,
+    "false_alarms": 2,
+    "recall": 0.75,
+    "adoption": 1.0,
+    "actual": 57000.0
+   },
+   {
+    "month": "Month 6",
+    "alerts": 3,
+    "prevented": 3,
+    "missed": 1,
+    "false_alarms": 0,
+    "recall": 0.75,
+    "adoption": 1.0,
+    "actual": 58000.0
+   },
+   {
+    "month": "Month 7",
+    "alerts": 1,
+    "prevented": 1,
+    "missed": 0,
+    "false_alarms": 0,
+    "recall": 1.0,
+    "adoption": 1.0,
+    "actual": 16000.0
+   },
+   {
+    "month": "Month 8",
+    "alerts": 4,
+    "prevented": 4,
+    "missed": 1,
+    "false_alarms": 0,
+    "recall": 0.8,
+    "adoption": 1.0,
+    "actual": 79000.0
+   },
+   {
+    "month": "Month 9",
+    "alerts": 1,
+    "prevented": 1,
+    "missed": 0,
+    "false_alarms": 0,
+    "recall": 1.0,
+    "adoption": 1.0,
+    "actual": 16000.0
+   },
+   {
+    "month": "Month 10",
+    "alerts": 4,
+    "prevented": 4,
+    "missed": 1,
+    "false_alarms": 0,
+    "recall": 0.8,
+    "adoption": 1.0,
+    "actual": 79000.0
+   },
+   {
+    "month": "Month 11",
+    "alerts": 4,
+    "prevented": 4,
+    "missed": 2,
+    "false_alarms": 0,
+    "recall": 0.6667,
+    "adoption": 1.0,
+    "actual": 79000.0
+   },
+   {
+    "month": "Month 12",
+    "alerts": 1,
+    "prevented": 0,
+    "missed": 1,
+    "false_alarms": 1,
+    "recall": 0.0,
+    "adoption": 1.0,
+    "actual": -5500.0
+   }
+  ],
   "gap": [
    {
     "cause": "Failures (volume)",
+    "assumed": 40.0,
+    "actual": 35.0,
     "effect": -90588.2353
    },
    {
     "cause": "Model recall",
+    "assumed": 0.8627,
+    "actual": 0.8,
     "effect": -46117.6471
    },
    {
     "cause": "Flagged failures acted on",
+    "assumed": 1.0,
+    "actual": 0.8929,
     "effect": -63000.0
    },
    {
     "cause": "False alarms",
+    "assumed": 12.549,
+    "actual": 3.0,
     "effect": 4774.5098
    }
   ]

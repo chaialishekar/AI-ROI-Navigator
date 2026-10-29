@@ -15,7 +15,7 @@
 <section class="first">
   <div class="wrap phase-head">
     <div data-phase-head></div>
-    <div class="head-cta"><a class="btn" id="appLink" target="_blank" rel="noopener">Compare the library live ↗</a></div>
+    <div class="head-cta"><button class="btn" type="button" data-details-btn aria-controls="details">Show the details</button></div>
   </div>
 </section>
 
@@ -62,6 +62,16 @@
   </div>
 </section>
 
+<section id="details" hidden>
+  <div class="wrap">
+    <p class="eyebrow">The details</p>
+    <h2>Every option, every number.</h2>
+    <div class="card"><div class="tscroll"><table class="t" id="dOpts"></table></div></div>
+    <div class="callout" style="margin-top:16px"><b>How each number is worked out.</b> <span class="muted">Value a year = the cost of the problem the tool targets × the improvement published elsewhere (the middle of the range; the low end for the cautious view), minus the running cost.
+      3-year net = value a year × the months it runs in 3 years, minus setup. Setup and time to go live grow when the client's data is weaker than the tool needs.</span></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap reveal">
     <p class="eyebrow">Where this sits</p>
@@ -76,9 +86,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="../assets/characters.js"></script>
 <script>
-  const { D, money, pct, months, app, phaseHead } = Site;
+  const { D, money, pct, months, phaseHead } = Site;
   phaseHead(1);
-  document.getElementById("appLink").href = app("compare");
   const strengthTag = s => `<span class="tag ${s === "Stronger" ? "good" : s === "Medium" ? "warn" : "bad"}">${s} evidence</span>`;
   const box = document.getElementById("options");
   box.innerHTML = D.options.map(o => `
@@ -122,6 +131,16 @@
     render(b.dataset.view);
   }));
   render("expected");
+</script>
+<script>
+(() => {
+  const { D, usd, pct, months } = Site;
+  document.getElementById("dOpts").innerHTML = `<tr><th>AI tool</th><th>Problem (a year)</th><th>Published improvement</th><th style="text-align:right">Setup</th><th style="text-align:right">Running a year</th><th style="text-align:right">3-year net</th><th style="text-align:right">Cautious</th><th>Payback</th><th>Evidence</th></tr>`
+    + D.options.map(o => `<tr><td><b>${o.solution}</b></td><td>${o.problem}<div class="small">${usd(o.problem_cost)}</div></td>
+      <td>${pct(o.improve_low)}–${pct(o.improve_high)}</td><td style="text-align:right">${usd(o.setup)}</td><td style="text-align:right">${usd(o.running)}</td>
+      <td style="text-align:right">${usd(o.net3)}</td><td style="text-align:right">${usd(o.net3_cautious)}</td><td>${months(o.payback)}</td>
+      <td>${o.strength}<div class="small"><a href="${o.source_url}" target="_blank" rel="noopener">${o.source}</a></div></td></tr>`).join("");
+})();
 </script>
 </body>
 </html>

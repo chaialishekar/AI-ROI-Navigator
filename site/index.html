@@ -44,7 +44,7 @@
     <h2>Read the case, try the model, or check the evidence.</h2>
     <div class="grid g3">
       <a class="card" style="text-decoration:none" href="phases/discover.html"><h3>Explore the case</h3><p class="muted" style="margin:0">Seven short pages, one per phase: what I did, what I found, what was decided.</p></a>
-      <a class="card" style="text-decoration:none" id="appCard" target="_blank" rel="noopener"><h3>Try the decision model ↗</h3><p class="muted" style="margin:0">Change the plant's costs and watch the recommendation move.</p></a>
+      <a class="card" style="text-decoration:none" href="phases/business-case.html#details"><h3>Try the model</h3><p class="muted" style="margin:0">Change the plant's costs and the alert level; savings and payback update as you type.</p></a>
       <a class="card" style="text-decoration:none" id="docsCard" target="_blank" rel="noopener"><h3>Inspect the evidence ↗</h3><p class="muted" style="margin:0">PRD, requirements, 13 acceptance tests, the two-page decision brief and the code.</p></a>
     </div>
   </div>
@@ -105,7 +105,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="assets/characters.js"></script>
 <script>
-  const { D, money, pct, doc, app, stairs, delivered } = Site;
+  const { D, money, pct, doc, stairs, delivered } = Site;
   const opt = Object.fromEntries(D.options.map(o => [o.key, o]));
   const HERO = {
     sentry: `Warns before a machine breaks. ${money(opt.sentry.net3)} over 3 years, ${opt.sentry.strength.toLowerCase()} evidence. Funded first, as a pilot.`,
@@ -126,7 +126,6 @@
     [`${money(opt.lens.net3)} → ${money(opt.lens.net3_cautious)}`, "The vendor's number for visual inspection, on cautious figures.", "evaluate"],
     [`${Math.round(D.rules.false_alarms)} vs ${Math.round(D.value.false_alarms)}`, "False alarms a year: the manual's rules against the AI. Why the rules lost.", "decide"],
   ].map(([n, t, p]) => `<a class="card" style="text-decoration:none" href="phases/${p}.html"><div class="stat sm">${n}</div><p class="muted" style="margin:6px 0 0">${t}</p></a>`).join("");
-  document.getElementById("appCard").href = app("");
   document.getElementById("docsCard").href = doc("docs/prd.md");
 </script>
 </body>
