@@ -15,7 +15,7 @@
 <section class="first">
   <div class="wrap phase-head">
     <div data-phase-head></div>
-    <div class="head-cta"><a class="btn" id="briefLink" target="_blank" rel="noopener">The decision brief (PDF) ↗</a></div>
+    <div class="head-cta"><button class="btn" type="button" data-details-btn aria-controls="details">Show the details</button> <a class="btn ghost" id="briefLink" target="_blank" rel="noopener">The decision brief (PDF) ↗</a></div>
   </div>
 </section>
 
@@ -36,6 +36,15 @@
     <p class="muted" style="max-width:640px;margin:0 0 18px">Writing the rule down first stops the decision bending to fit the
       result. The recommendation is whichever line the numbers land on.</p>
     <div class="tscroll"><table class="t" id="rule"></table></div>
+  </div>
+</section>
+
+<section id="details" hidden>
+  <div class="wrap">
+    <p class="eyebrow">The details</p>
+    <h2>The rule, checked in order.</h2>
+    <div class="card"><div class="tscroll"><table class="t" id="dRule"></table></div>
+      <p class="small" style="margin:12px 0 0">The first row that is true decides. Highlighted: where this case landed.</p></div>
   </div>
 </section>
 
@@ -89,6 +98,22 @@
     ["Proceed", "Savings stay positive in the worst case and the team is ready"]];
   document.getElementById("rule").innerHTML = `<tr><th>Recommendation</th><th>When</th></tr>` + RULES.map(([l, w]) =>
     `<tr class="${l === D.decision.label ? "chosen" : ""}"><td><b>${l}</b>${l === D.decision.label ? ' <span class="tag good">this case</span>' : ""}</td><td>${w}</td></tr>`).join("");
+</script>
+<script>
+(() => {
+  const { D, usd } = Site;
+  const net = D.value.annual_net, worst = D.decision.worst_case, rv = D.readiness.verdict;
+  const rows = [
+    ["It saves nothing, even as planned", `expected ${usd(net)} a year`, net <= 0, "Stop"],
+    ["It loses money if the costs are worse than expected", `worst case ${usd(worst)} a year`, worst <= 0, "Revise the case"],
+    ["The team is not ready", `readiness: ${rv}`, rv === "Not ready", "Revise"],
+    ["The team has gaps to close", `readiness: ${rv}`, rv === "Fix first", "Proceed after fixes"],
+    ["Otherwise", "", true, "Proceed"],
+  ];
+  const hit = rows.findIndex(r => r[2]);
+  document.getElementById("dRule").innerHTML = `<tr><th>If</th><th>This case</th><th>Then</th></tr>`
+    + rows.map(([a, b, , d], i) => `<tr${i === hit ? ' style="background:var(--good-bg)"' : ""}><td>${a}</td><td class="muted">${b}</td><td>${i === hit ? `<b>${d}</b>` : d}</td></tr>`).join("");
+})();
 </script>
 </body>
 </html>

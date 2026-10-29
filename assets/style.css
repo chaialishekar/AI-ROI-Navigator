@@ -159,3 +159,22 @@ footer .wrap { display: flex; justify-content: space-between; gap: 24px; flex-wr
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* Show the details: the full working on each phase page, plus the inputs people can change */
+#details { background: #efeeea; }
+#details[hidden] { display: none; }
+.head-cta .btn { font-family: inherit; }
+.inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; }
+.inputs label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.inputs input, .inputs select { font: inherit; font-size: 15px; color: var(--ink); background: var(--page); border: 1px solid var(--line);
+                                border-radius: 10px; padding: 8px 10px; width: 100%; }
+.inputs input:focus, .inputs select:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.inputs input[type=range] { padding: 0; accent-color: var(--teal); background: none; border: 0; }
+.out { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+@media (max-width: 760px) { .out { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.linkbtn { font: inherit; font-size: 13px; color: var(--teal); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+.qs { display: grid; gap: 10px; }
+.q { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 14px; align-items: center; font-size: 14px; }
+@media (max-width: 560px) { .q { grid-template-columns: 1fr; } }
+.q .dim { font-size: 12px; color: var(--faint); }
+@media (max-width: 560px) { .out .stat.sm { font-size: 22px; } }

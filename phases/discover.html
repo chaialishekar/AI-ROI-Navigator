@@ -15,7 +15,7 @@
 <section class="first">
   <div class="wrap phase-head">
     <div data-phase-head></div>
-    <div class="head-cta"><a class="btn" id="docLink" target="_blank" rel="noopener">Process maps and requirements ↗</a></div>
+    <div class="head-cta"><button class="btn" type="button" data-details-btn aria-controls="details">Show the details</button> <a class="btn ghost" id="docLink" target="_blank" rel="noopener">Process maps and requirements ↗</a></div>
   </div>
 </section>
 
@@ -42,7 +42,7 @@
     <h2>Three leaks, <span data-v="plant.total" data-f="money"></span> a year.</h2>
     <div class="grid g2" style="align-items:center">
       <div class="card"><div class="bars" id="losses"></div>
-        <p class="small" style="margin:14px 0 0">Estimated yearly cost of each problem. My figures, editable in the live analysis.</p></div>
+        <p class="small" style="margin:14px 0 0">Estimated yearly cost of each problem. My figures, for an example plant.</p></div>
       <div>
         <div class="cast sm" id="snooze" style="height:220px"></div>
         <div class="callout"><b>The cost of doing nothing.</b> <span class="muted">Snooze is the option every
@@ -62,6 +62,18 @@
       real factory data, so it shows the method rather than proving results for a real plant.</p>
     <div class="card" style="margin-top:22px"><div class="bars" id="causes"></div>
       <p class="small" style="margin:14px 0 0">Breakdowns by cause. A breakdown can have more than one cause.</p></div>
+  </div>
+</section>
+
+<section id="details" hidden>
+  <div class="wrap">
+    <p class="eyebrow">The details</p>
+    <h2>The numbers behind this phase.</h2>
+    <div class="grid g2">
+      <div class="card"><div class="label">The plant's losses a year (my estimates)</div><div class="tscroll"><table class="t" id="dLoss"></table></div></div>
+      <div class="card"><div class="label">The machine data</div><div class="tscroll"><table class="t" id="dData"></table></div>
+        <p class="small" style="margin:12px 0 0">AI4I 2020 Predictive Maintenance Dataset (UCI). Synthetic, modelled on a real milling process. One breakdown can have more than one cause.</p></div>
+    </div>
   </div>
 </section>
 
@@ -89,6 +101,20 @@
   document.getElementById("causes").innerHTML = causes.map(([n, v]) =>
     `<div class="bar"><span>${n}</span><div class="track"><div class="fill" style="width:${v / maxC * 100}%"></div></div><b>${v}</b></div>`).join("");
   Characters.mountCast(document.getElementById("snooze"), ["snooze"], { scale: 1.2, sink: 0.1 });
+</script>
+<script>
+(() => {
+  const { D, usd, pct } = Site;
+  document.getElementById("dLoss").innerHTML = `<tr><th>Problem</th><th style="text-align:right">A year</th><th style="text-align:right">Share</th></tr>`
+    + D.plant.losses.map(l => `<tr><td>${l.name}</td><td style="text-align:right">${usd(l.cost)}</td><td style="text-align:right">${pct(l.cost / D.plant.total)}</td></tr>`).join("")
+    + `<tr><td><b>Total</b></td><td style="text-align:right"><b>${usd(D.plant.total)}</b></td><td></td></tr>`;
+  const m = D.model;
+  document.getElementById("dData").innerHTML = [
+    ["Machine records", m.records.toLocaleString()], ["Breakdowns", `${m.failures} (${pct(m.failures / m.records, 1)})`],
+    ...Object.entries(m.causes).map(([k, n]) => [`· ${k}`, n]),
+    ["Used to train the model", m.train.toLocaleString()], ["Held back to test it", m.test.toLocaleString()],
+  ].map(([a, b]) => `<tr><td>${a}</td><td style="text-align:right">${b}</td></tr>`).join("");
+})();
 </script>
 </body>
 </html>

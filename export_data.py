@@ -19,12 +19,13 @@ os.chdir(ROOT)
 
 from src.library import EXAMPLE_CLIENTS, evidence_strength, load_library, rank  # noqa: E402
 from src.model import load_data, train_and_score  # noqa: E402
-from src.readiness import ACTIONS, verdict  # noqa: E402
+from src.readiness import ACTIONS, DIMENSIONS, verdict  # noqa: E402
 from src.tracking import COLUMNS, explain_gap, track  # noqa: E402
 from src.value import ACCURACY_THRESHOLD, Costs, alert_threshold, default_ranges, evaluate, payback, scenarios  # noqa: E402
-from src.workorder import rule_alerts  # noqa: E402
+from src.workorder import grade, rule_alerts, summary as pilot_summary  # noqa: E402
+from agents.grade import scorecard  # noqa: E402
 
-# Same example readiness ratings as the app's Readiness page (two raters per dimension)
+# Example readiness ratings, one per question (two questions per area)
 EXAMPLE_PILOT = {"Data": [4, 4], "Fits how people work": [2, 2], "Clear payoff": [4, 3],
                  "People trust it": [3, 2], "Clear ownership": [3, 3]}
 LEAK_SHORT = {"Unplanned machine downtime": "Downtime", "Scrap, rework and warranty defects": "Scrap and rework",
@@ -62,6 +63,32 @@ def model_value(res: dict, costs: Costs) -> dict:
     r = evaluate(y, proba, thr, costs)
     cases = scenarios(y, proba, thr, costs, default_ranges(costs))
     return {**r, "cases": cases, "accurate_net": evaluate(y, proba, ACCURACY_THRESHOLD, costs)["annual_net"]}
+
+
+def alert_curve(res: dict) -> dict:
+    """Test-set counts (caught, missed, false alarms) at each alert level 0.01-0.99, so the site can price any
+    costs and alert level in the browser with the same formula as src/value.py."""
+    y, proba = res["y_test"], res["models"]["Gradient boosting"]["proba"]
+    levels = np.round(np.arange(1, 100) / 100, 2)
+    return {"failures": int(y.sum()),
+            "levels": [[int(((proba >= t) & (y == 1)).sum()), int(((proba >= t) & (y == 0)).sum())] for t in levels]}
+
+
+def genai_results() -> dict:
+    """Headline scores of the two GenAI experiments (graded runs saved in pilot/ and agents/)."""
+    pilot = {v: pilot_summary(grade(pd.read_csv(f"pilot/pilot_results_v{v}.csv"))) for v in (1, 2)}
+    with open("agents/eval_cases.json") as f:
+        cases = json.load(f)
+    with open("agents/results.json") as f:
+        runs = json.load(f)
+    sc = {v: scorecard(r, cases) for v, r in runs.items()}
+    keep = ("correct_mode_rate", "correct_on_real_failures", "false_alarm_handled_rate", "median_latency_s")
+    return {"pilot": {f"v{v}": {k: num(x[k]) for k in keep} | {"cost_per_1000": num(x["cost_per_task"] * 1000)}
+                      for v, x in pilot.items()},
+            "agents": {v: {"intake": num(x["intake_field_accuracy"]), "memo_faithful": x["memo_faithful"],
+                           "memos": len(cases["memo"]), "caught": x["redteam_caught"], "flaws": x["redteam_flaws"],
+                           "clean_high": x["redteam_clean_high"], "cost": num(x["total_cost"])}
+                       for v, x in sc.items()}}
 
 
 def decision_rule(val: dict, rd: dict) -> tuple[str, str]:
@@ -115,7 +142,9 @@ def main():
         "published": {"net": num(published), "low_pct": num(lib["improvement_low"]),
                       "high_pct": num(lib["improvement_high"])},
         "rules": {k: num(rules[k]) for k in ("annual_net", "recall", "precision", "false_alarms")},
-        "readiness": {"verdict": v, "avg": num(rd["avg"]), "dims": {d: num(s) for d, s in dims.items()},
+        "curve": alert_curve(res),
+        "genai": genai_results(),
+        "readiness": {"questions": DIMENSIONS, "actions": ACTIONS, "example": EXAMPLE_PILOT, "verdict": v, "avg": num(rd["avg"]), "dims": {d: num(s) for d, s in dims.items()},
                       "weakest": [{"name": d, "score": num(s), "action": ACTIONS[d]} for d, s in weakest[:2]]},
         "decision": {"label": label, "reason": reason, "worst_case": num(val["cases"]["Low"]["annual_net"])},
         "model": {"records": len(df), "failures": int(df["Machine failure"].sum()), "train": res["n_train"],
@@ -127,7 +156,12 @@ def main():
                      "plan": num(published * len(t) / 12),
                      "drift_months": t.loc[t["drift_alert"], "label"].tolist(),
                      "low_adoption_months": t.loc[t["adoption_alert"], "label"].tolist(),
-                     "gap": [{"cause": g["cause"], "effect": num(g["effect"])} for _, g in gap.iterrows()]},
+                     "rows": [{"month": r["label"], "alerts": int(r["alerts_raised"]),
+                               "prevented": int(r["failures_prevented"]), "missed": int(r["failures_missed"]),
+                               "false_alarms": int(r["false_alarms"]), "recall": num(r["recall"]),
+                               "adoption": num(r["adoption"]), "actual": num(r["actual"])} for _, r in t.iterrows()],
+                     "gap": [{"cause": g["cause"], "assumed": num(g["assumed"]), "actual": num(g["actual"]),
+                              "effect": num(g["effect"])} for _, g in gap.iterrows()]},
     }
     out = os.path.join(ROOT, "site", "assets", "data.js")
     os.makedirs(os.path.dirname(out), exist_ok=True)
