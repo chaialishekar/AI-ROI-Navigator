@@ -83,12 +83,6 @@
   </div>
 </section>
 
-<section>
-  <div class="wrap reveal">
-    <p class="eyebrow">Where this sits</p>
-    <div class="stairs" data-stairs></div>
-  </div>
-</section>
 <section data-pager></section>
 <footer data-footer></footer>
 
@@ -120,7 +114,7 @@
   document.getElementById("cases").innerHTML = cases.map(([n, x, k]) =>
     `<div class="bar"><span>${n}</span><div class="track"><div class="fill ${k}" style="width:${x / maxCase * 100}%"></div></div><b>${money(x)}</b></div>`).join("");
   document.getElementById("accText").textContent =
-    `The usual 50% cut-off would save ${money(v.accurate_net)} a year. Instead, the AI alerts whenever the chance of a breakdown is above ${pct(v.threshold)}: the ${money(c.cost_false_alarm)} inspection divided by the ${money(c.cost_missed - c.cost_caught)} an early catch saves. Below that, checking costs more than it's expected to save. The level comes from the costs, not from tuning on the test data, so the results above are an honest test.`;
+    `The usual 50% cut-off would save ${money(v.accurate_net)} a year. Instead, the AI alerts whenever the chance of a breakdown is above ${pct(v.threshold)}: the point where the ${money(c.cost_missed - c.cost_caught)} an early catch saves, times the chance of a breakdown, outweighs the ${money(c.cost_false_alarm)} inspection wasted when there isn't one. Below that, checking costs more than it's expected to save. The level comes from the costs, not from tuning on the test data, so the results above are an honest test.`;
 
   const trio = {
     rulebook: ["Rulebook · the manual's rules", `${money(D.rules.annual_net)} a year`, `Catches ${pct(D.rules.recall)} of breakdowns, but raises ~${Math.round(D.rules.false_alarms)} false alarms a year. Only ${pct(D.rules.precision)} of its alerts are real: the kind of noise a crew learns to ignore.`],
@@ -147,7 +141,7 @@
     if (auto) lvl.value = Math.round(breakEven(c) * 100);
     const level = lvl.value / 100, r = value(c, level);
     document.getElementById("dLevelTxt").textContent = `${lvl.value}%`;
-    document.getElementById("dLevelNote").textContent = auto ? "Break-even: the inspection cost ÷ what an early catch saves." : `Break-even would be ${pct(breakEven(c))}.`;
+    document.getElementById("dLevelNote").textContent = auto ? "Break-even: where the expected saving from an early catch outweighs the inspection." : `Break-even would be ${pct(breakEven(c))}.`;
     document.getElementById("dOut").innerHTML = [
       ["Net savings a year", usd(r.net)], ["Pays for itself in", months(r.payback)], ["Net over 3 years", usd(r.three_year)],
       ["Breakdowns caught", pct(r.recall), `${r.false_alarms.toFixed(1)} false alarms a year`]]
