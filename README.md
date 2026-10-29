@@ -1,42 +1,46 @@
 # AI ROI Navigator
 
-> From $1M in downtime losses to a measurable AI investment.
+> Which AI should a business buy first, and will it pay off?
 
-An interactive case study in **AI business systems analysis**. It takes a manufacturing problem (a mid-size factory losing $1.0M a year to surprise machine breakdowns) through to an AI investment decision: defining the problem, evaluating solutions, modelling ROI, preparing for launch and measuring the value delivered.
+An interactive case study in **AI business systems analysis**. AI vendors pitch their best numbers, and most buyers never check them once the tool is live. I wanted to see what doing this properly looks like. So I took one provider's catalogue of AI tools, priced each one for a single client, picked the one worth buying first, and followed it through a full project lifecycle, from the business case to the savings a year after launch.
+
+**Why this matters:** in [IBM's 2025 CEO Study](https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles), only 25% of AI initiatives delivered the expected ROI, yet 65% of CEOs now pick AI use cases by ROI. [Gartner](https://www.gartner.com/en/newsroom/press-releases/gartner-survey-finds-only-22-percent-of-organizations-have-successfully-scaled-ai-across-multiple-business-units) (September 2026) found that firms which track AI ROI and drop weak projects saw positive returns on 81% of their AI initiatives. [BCG](https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value) found AI leaders put 70% of their effort into people and processes and only 10% into algorithms. More: [PwC 2026](https://www.pwc.com/gx/en/issues/c-suite-insights/ceo-survey.html) (56% of CEOs saw no revenue or cost benefit), [McKinsey 2025](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-2025) (39% report any profit impact). So the question is not whether to buy AI, but which tool first, how sure the numbers are, and how to prove it paid off.
 
 **My role:** independent project, built end to end by me: the business analysis, the financial model, the data pipeline, the AI tests and the app.
 
-**Why predictive maintenance:** surprise breakdowns are the factory's biggest avoidable cost, and they rarely come from nowhere: tool wear builds up, torque climbs, heat stops escaping. The machines already record these readings, so a model can learn the warning signs and flag a machine in time for a planned repair. Stage 1 compares it with 11 other AI options.
+**The library:** 9 AI tools offered across 4 industries (`data/ai_library.csv`); the case covers its manufacturing clients, an auto-parts plant and a chip fab. For each tool: how much of a problem it removed elsewhere (low to high, with the source and how strong that evidence is), the provider's price, and the data it needs. Tools are compared only for one client, on the same rules, with a cautious view that shows when a tool wins only on optimistic numbers.
+
+**Why predictive maintenance gets the deep dive:** it ranks first for the auto-parts plant (fastest payback, and better evidence than the close runner-up), and it is the one tool that can be tested on public machine data, so its numbers can be checked, not just quoted.
 
 **The data:** 10,000 machine records from the AI4I 2020 predictive maintenance dataset (UCI): five sensor readings (air and process temperature, rotation speed, torque, tool wear) plus product quality. 339 records (3.4%) end in a breakdown, from five causes (tool wear, heat, power, overstrain, random). The model trains on 7,000 and is tested on 3,000 it never saw. The dataset is synthetic, designed to reflect real industrial machine data.
 
-**Real vs illustrative:** the machine data (AI4I 2020) and the model trained on it, the Amazon Bedrock tests and the S3 → Databricks pipeline are real. Plant costs, AI option scores and readiness ratings are assumptions you can edit; the 12 months after launch are simulated.
+**Real vs illustrative:** the machine data (AI4I 2020) and the model trained on it, the S3 → Databricks pipeline and the Amazon Bedrock tests are real. The improvement ranges are published results of mixed strength, labelled on every number. Client costs, provider prices and readiness ratings are example figures you can edit; the 12 months after launch are simulated.
 
-## The investment lifecycle
+## The project lifecycle
 
 ```mermaid
 flowchart LR
-    N([0 Define the business problem<br/>$1.0M lost a year]) --> S1[1 Evaluate AI solutions]
-    S1 --> S2[2 Build the business case]
-    S2 --> S3[3 Assess readiness]
-    S3 --> S4[4 Prepare the decision]
-    S4 --> L{{Launch}}
-    L --> S5[5 Measure realized value<br/>every month]
-    S5 -- gap found --> A[Act on the reason]
-    A --> S5
-    S5 -. lessons .-> S2
+    D[01 Discover<br/>$3.7M a year at stake] --> E[02 Evaluate options<br/>predictive maintenance first]
+    E --> B[03 Business case<br/>$290k–$660k a year]
+    B --> R[04 Readiness<br/>2 gaps to close]
+    R --> C[05 Decide<br/>proceed after fixes]
+    C --> V[06 Deliver<br/>13 acceptance tests]
+    V --> L{{Go-live}}
+    L --> M[07 Measure<br/>70% of year-1 target]
+    M -. lessons .-> B
 ```
 
-| Stage | Business question | Analysis and deliverables |
-|---|---|---|
-| **0 · Define the business problem** | How big is the problem? | Baseline cost, breakdown causes in the machine data, stakeholders, as-is process map, user stories ([requirements](docs/requirements.md), [solution design](docs/solution_design.md)). |
-| **1 · Evaluate AI solutions** | Which AI fits this need, and why? | Weighted decision matrix: checks 12 AI options against the business's main problem, data quality, tolerance for AI mistakes and how fast it needs results, and gives the reasons. A factory, a hospital network and an online retailer get three different answers, or describe your own. |
-| **2 · Build the business case** | Does it save more than it costs? | Financial model: every line of the savings calculation, setup and running costs, payback, 3-year ROI, break-even, ranges, best / worst case and sensitivity. The warning level is set to **save the most money, not to be the most accurate**. Priced against doing nothing and against simple alerts from the maintenance manual (see below). |
-| **3 · Assess readiness** | Will people use it? | 10 questions in 5 areas with a Go / Fix first / Not ready verdict, stakeholder impact, human review and escalation rules, to-be process map. |
-| **4 · Prepare the decision** | What is finance asked to approve? | Recommendation from a stated decision rule (proceed / proceed after fixes / revise / stop), and a two-page **executive decision brief (PDF)**: recommendation, options considered, savings calculation, range of outcomes, risks with owners, decision gates and the evidence behind each number. |
-| **5 · Measure realized value** | Did it deliver what was forecast? | Forecast vs actual each month, the causes of the shortfall, a scale / improve / reconsider call, and warnings when the crew ignores alerts or the AI gets weaker. Data arrives through an **S3 → Databricks** pipeline. |
+| Phase | Key question | Deliverable | Gate passed |
+|---|---|---|---|
+| **01 · Discover** | What's going wrong, and what does it cost? | Problem statement, stakeholders, as-is process map, breakdown causes in the machine data ([requirements](docs/requirements.md), [PRD](docs/prd.md)) | $3.7M a year at stake across three problems |
+| **02 · Evaluate options** | Which AI tool should they buy first? | Every tool for the client's industry priced in their dollars over 3 years: published improvement ranges with sources, evidence labels, expected and cautious views, extra cost for data gaps, break-even | Predictive maintenance first for the auto-parts plant. For the chip fab, the expected favourite (yield optimization) rests on a vendor claim and drops to third on cautious numbers, so I'd pilot it first |
+| **03 · Business case** | Will it pay for itself, and how sure are we? | Savings calculation line by line, payback, 3-year ROI, break-even, ranges, sensitivity; priced against doing nothing and against the maintenance manual's rules. The warning level is set to **save the most money, not to be the most accurate** | $290k a year on published figures, $660k on the model test; the budget is approved on the lower one |
+| **04 · Readiness** | Can the team actually use it? | 10 questions in 5 areas, stakeholder impact, human review and escalation rules, to-be process map | Two gaps to close before launch |
+| **05 · Decide** | What exactly is finance signing? | A decision rule agreed up front and a two-page **decision brief (PDF)** with options, ranges, risks with owners and decision gates | Proceed after fixes |
+| **06 · Deliver** | What gets built, and how do we know it works? | Integration spec, data dictionary, 13 acceptance tests and a traceability matrix ([requirements](docs/requirements.md)) | All 13 acceptance tests pass |
+| **07 · Measure** | Did the savings show up? | Forecast vs actual each month, the causes of any shortfall, alerts when the crew ignores warnings or the AI gets weaker; data arrives through an **S3 → Databricks** pipeline | 70% of the year-1 target (simulated), with the reasons |
 
-**Supporting GenAI experiments** (separate from the main case: the breakdown warnings come from a *predictive* model; these test *generative* AI that writes text):
+**Side experiments** (separate from the main case: the breakdown warnings come from a *predictive* model; these test *generative* AI that writes text):
 
 | Experiment | Question | What was measured |
 |---|---|---|
@@ -49,20 +53,22 @@ Every page shows **the answer first** (the question, the answer, three numbers, 
 
 | Document | What is in it |
 |---|---|
-| [Executive decision brief (sample PDF)](docs/decision_brief_sample.pdf) | Two-page investment brief generated by stage 4: recommendation, options, savings calculation, risks, decision gates |
+| [Product requirements document (PRD)](docs/prd.md) | Start here: problem and evidence, goals and non-goals, users, as-is / to-be for the purchase decision, prioritised user stories, success metrics, risks, alternatives considered, launch plan |
+| [Executive decision brief (sample PDF)](docs/decision_brief_sample.pdf) | Two-page investment brief generated in the Decide phase: recommendation, options, savings calculation, risks, decision gates |
 | [Requirements pack](docs/requirements.md) | Process maps today and with AI, integration spec (warning → work order), data dictionary, 12 user acceptance tests, requirements traceability matrix |
 | [Solution design](docs/solution_design.md) | Stakeholders, use cases, 36+ user stories with acceptance criteria and MoSCoW priorities, fishbone of why value falls short, RACI |
-| [Roadmap](docs/roadmap.md) | Now / Next / Later, prioritised with the same value × ease scoring the app uses |
+| [Roadmap](docs/roadmap.md) | Now / Next / Later, prioritised by value × ease |
 | [Delivery log](docs/delivery.md) | How the work was split into increments and checked |
 
-*Independent concept project. Solution scores, example clients and plant costs are illustrative assumptions and can be edited in the app.*
+*Independent concept project. Client costs and provider prices are illustrative and can be edited in the app; improvement ranges are published results with sources.*
 
 ## Key result (default assumptions)
 On 3,000 machine records the model never saw during training, a gradient-boosting model:
 - catches **~86% of failures** with **~80% of alerts being real**
 - yields **~$660K annual net savings** for a plant with 40 failures a year, with a **~4.7-month payback**
+- **Plan with the published figure.** Published studies (20–50% less downtime) give **~$290K a year** for the same plant. The model test is higher because the synthetic data makes breakdowns easier to predict, so the case approves on the published figure and treats the rest as upside to prove in the pilot.
 - **The result holds up under pessimistic assumptions.** Model uncertainty puts annual savings at **$611K–$704K** (90% range). In the low case, with every cost assumption at its unfavorable end, the project still saves **~$164K a year** and pays back in **~20 months**. The biggest driver is the cost of an unplanned failure, so that's the number to agree with finance first.
-- **Forecasts need checking after launch.** In a simulated 12-month rollout the plant banks **$464K of the $660K forecast (70%)**. Stage 5 splits the $197K gap into fewer failures than assumed (−$91K), the crew ignoring correct alerts in the first months (−$63K) and model drift (−$46K), and raises a retrain alert in month 11.
+- **Forecasts need checking after launch.** In a simulated 12-month rollout the plant banks **$464K of the $660K forecast (70%)**. The Measure phase splits the $197K gap into fewer failures than assumed (−$91K), the crew ignoring correct alerts in the first months (−$63K) and model drift (−$46K), and raises a retrain alert in month 11.
 - **For GenAI, the model fee is not the cost; review time is.** A 30-alert pilot on Amazon Bedrock (Nova Micro) cost **$0.04 per 1,000 drafts**. When the model diagnosed the fault itself it was right only **33%** of the time; moving the diagnosis into a rule check and letting the model only write raised that to **100% on real failures**. With 4-minute reviews the assistant returns **72% in year one**, but only **−14% in cash** if half the saved hours turn into money, and it stops paying once review takes more than **~10 minutes** a draft.
 - **Agents need evals, and evals show where code beats prompts.** Three Nova Lite agents were graded on 19 cases with known answers. Version 1 got **42%** of intake fields right, invented a number in a memo and caught **3 of 6** planted flaws. Letting the model only quote numbers (code converts units and fills them into the memo) made intake and memos exact. The red team still failed until a code checklist decided what was implausible and the model only explained it: **6 of 6** flaws caught, **0** false alarms, for about **$0.001** a run.
 - **Simple rules look as good as the AI here, and the reason matters.** Alerts built from the maintenance manual's limits catch 98% of breakdowns and save ~$721K, more than the AI's $660K, because AI4I 2020 is synthetic and its failures were generated from those same limits. They also raise **~85 false alarms a year against the AI's ~9** (31% of their alerts are real vs 80%), and crew trust is already the weakest readiness area. The case recommends the AI, keeps the manual's limits to explain each warning, and makes "pilot on one line and measure false alarms" a gate before scaling.
@@ -72,13 +78,13 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 
 ![](docs/overview.png)
 
-| 1 · Evaluate AI solutions | 2 · Build the business case |
+| Evaluate options | Business case |
 |---|---|
-| ![](docs/tab1_prioritize.png) | ![](docs/tab2_prove_value.png) |
-| **3 · Assess readiness** | **4 · Prepare the decision** |
+| ![](docs/tab1_compare.png) | ![](docs/tab2_prove_value.png) |
+| **Readiness** | **Decide** |
 | ![](docs/tab3_readiness.png) | ![](docs/tab4_business_case.png) |
 
-**5 · Measure realized value** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
+**Measure** (simulated 12-month rollout, delivered through the S3 → Databricks pipeline)
 
 ![](docs/tab5_track_value.png)
 
@@ -91,7 +97,7 @@ On 3,000 machine records the model never saw during training, a gradient-boostin
 ![](docs/tab7_agents.png)
 
 ## How it works
-- **Matching and ranking:** weighted 1–5 scores. Value = financial impact, strategic fit, scale. Feasibility = data readiness, ease of build, low risk, speed to value. Weights are adjustable.
+- **Library ranking:** value a year = client's problem cost × published improvement (low / middle / high); net = value − running cost; 3-year net value = net × live months ÷ 12 − setup; each point of missing data quality adds 20% to setup and 2 months. Ranked on the middle (expected) or low end (cautious); a runner-up within 25% is flagged as a close call. Code: `src/library.py`.
 - **Model:** AI4I 2020 dataset (10,000 records, 339 failures). Features: temperatures, speed, torque, tool wear, plus engineered power, temperature difference and wear × torque. Failure-mode columns are excluded to avoid leakage. Logistic regression (explainable baseline) vs gradient boosting; stratified 70/30 split.
 - **Dollars:** test-set catch, miss and false-alarm rates are scaled to the plant's failures per year. Savings = cost of failures without AI − (planned repairs + missed failures + false alarms + running cost).
 - **Uncertainty:** *model uncertainty* comes from a bootstrap of the test set (1,000 resamples, 90% range). *Assumption uncertainty* comes from a tornado chart that moves each cost input between an editable low and high value one at a time, plus low / base / high cases that set every input to its unfavorable or favorable end.

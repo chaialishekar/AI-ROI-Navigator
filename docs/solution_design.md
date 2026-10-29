@@ -15,7 +15,7 @@ The AI ROI Navigator is a browser-based tool for the work of an **AI business sy
 
 Process maps, the integration spec, data dictionary, acceptance tests and traceability matrix are in [requirements.md](requirements.md).
 
-**Hero use case:** predictive maintenance in manufacturing, demonstrated on the public AI4I 2020 dataset.
+**Problem:** an AI provider sells a library of AI tools; its clients ask which one to buy first and whether it will pay off. Step 1 compares the library for one client in dollars. **Deep dive:** predictive maintenance for an auto-parts plant, tested on the public AI4I 2020 dataset.
 
 ---
 
@@ -33,7 +33,7 @@ Operations leaders at mid-size manufacturers face three gaps when adopting AI:
 ### 2.2 Business value
 | Value driver | How the Navigator delivers it | Measure |
 |---|---|---|
-| Faster decisions | Ranks 12 use cases on value vs feasibility in one view | Time from idea list to shortlist |
+| Faster decisions | Prices every AI tool that fits the client in dollars, with ranges and evidence, in one view | Time from a vendor's pitch to a priced shortlist |
 | Credible business case | Converts model results into annual savings, ROI and payback | Annual net savings ($), payback (months) |
 | Higher pilot-to-production rate | Readiness scorecard flags blockers before launch | Readiness verdict with top 3 actions |
 | Faster time to value | Compares a custom build with a ready-made solution | First-year value ($) by months to deploy |
@@ -55,7 +55,7 @@ Operations leaders at mid-size manufacturers face three gaps when adopting AI:
 ### 3.1 Use cases
 | ID | Use case | Primary actor | Trigger | Outcome |
 |---|---|---|---|---|
-| UC-1 | Evaluate AI solutions | Dana, with the AI BSA | Leadership asks "which AI would help with our breakdowns?" | Recommended option, with reasons and a ranked shortlist |
+| UC-1 | Compare the AI library | Dana, with the AI BSA | A provider pitches several AI tools: "which should we buy first?" | Every fitting tool priced in dollars with ranges and evidence; a first pick, with reasons |
 | UC-2 | Prove value of predictive maintenance | Dana, with the AI BSA | An option rated "Start now" is picked | Annual $ saved, ROI and payback from a tested model |
 | UC-3 | Check production readiness | Dana | Business case is positive | Go / Fix first / Not ready, with top actions |
 | UC-4 | Share the business case | Dana | Ready to request funding | One-page summary for the CFO |
@@ -83,15 +83,16 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 
 ### 3.2 Functional requirements (user stories and acceptance criteria)
 
-#### Epic 1 · Match AI to the client (UC-1)
+#### Epic 1 · Compare the AI library for the client (UC-1)
 | ID | User story | Acceptance criteria |
 |---|---|---|
-| US-1.1 | As an ops director, I want AI use cases ranked by value and feasibility, so that I know which to start with. | 12 use cases across 3 industries; each scored 1–5 on 7 criteria; each placed in a quadrant; chart numbers match the ranked list. |
-| US-1.2 | As an ops director, I want to filter by industry, so that I see only relevant ideas. | Chart and list update immediately. |
-| US-1.3 | As an AI BSA, I want to adjust weights and scores, so that the ranking fits this customer. | Weight sliders for every criterion; scores accept whole numbers 1–5; ranking updates in under 1 second. |
-| US-1.4 | As an ops director, I want a recommended next step per use case, so that I know what to do with it. | Each row shows a next step based on its quadrant. |
-| US-1.5 | As an AI business systems analyst, I want the 12 AI options matched to the business's main problem, data quality, tolerance for AI mistakes and urgency, so that the business gets the AI that fits its need, not the most fashionable one. | Only solutions that serve the client's industry; solving the main problem raises value; data maturity shifts feasibility; risk and urgency set the weights; three example clients get three different recommendations (unit test). | Must (done) |
-| US-1.6 | As a business sponsor, I want to see why an option was recommended, so that I can challenge it. | The recommendation lists its reasons (problem fit, data, risk, speed) and, for a "Fix a blocker first" option, names the blocker and how to fix it. | Must (done) |
+| US-1.1 | As an ops director, I want every AI tool that fits my industry priced for my business in dollars, so that I know which to buy first. | Only the client's industry; value = problem cost × published improvement; 3-year net value, payback, ROI and break-even per tool; ranking matches a hand calculation (unit test). | Must (done) |
+| US-1.2 | As an ops director, I want to enter my own problem costs, data quality and number of sites, so that the numbers are mine, not an example. | Editable under Show the details; ranking updates at once. | Must (done) |
+| US-1.3 | As a finance partner, I want every number shown as a range with its source, so that I can judge how far to trust it. | Low / expected / high per tool; evidence label and source link on every row. | Must (done) |
+| US-1.4 | As an ops director, I want a next step for the top pick, so that I know what to do with it. | Links to the full business case when it is predictive maintenance; recommends a pilot first when the top pick rests on weak evidence. | Should (done) |
+| US-1.5 | As an AI business systems analyst, I want missing data to cost extra, so that tools needing perfect data do not look unfairly good. | Each point the client's data falls short adds 20% to setup and 2 months to go live (unit test). | Must (done) |
+| US-1.6 | As a business sponsor, I want to see why a tool comes first and when the runner-up is close, so that I can challenge it. | The answer names the 3-year value, payback and evidence; when the runner-up is within 25%, it says payback and evidence decide. | Must (done) |
+| US-1.7 | As a finance partner, I want to see whether the order holds on cautious numbers, so that a tool cannot win on optimistic figures alone. | Expected / cautious switch; rank changes listed (unit test: chip fab). | Must (done) |
 
 #### Epic 2 · Prove value (UC-2)
 | ID | User story | Acceptance criteria |
@@ -177,13 +178,13 @@ Enterprise AI services are commonly organised around four lifecycle stages: **ad
 User (browser)
    │
    ▼
-Streamlit web app ──► Overview: lifecycle chart, my role, a closer look at each stage, GenAI experiments, conclusion
-   │  Before launch    ├► 1 Evaluate AI solutions        ──► use_cases.csv + matching.py + scoring
+Streamlit web app ──► Overview: problem, why it matters, lifecycle chart, a closer look at each stage, side experiments
+   │  Before launch    ├► 1 Compare the AI library       ──► ai_library.csv + library.py (ranges, evidence, data gaps)
    │                   ├► 2 Build the business case      ──► trained model + test predictions + cost engine
    │                   ├► 3 Assess readiness             ──► checklist + verdict rules + stakeholder impact
    │                   └► 4 Prepare the decision         ──► decision rule + one-page business case (download)
    │  After launch     └► 5 Measure realized value       ──► tracking engine + S3 → Databricks gold export
-   │  GenAI experiments├► A GenAI work orders            ──► saved Bedrock pilot runs + GenAI cost engine
+   │  Side experiments ├► A GenAI work orders            ──► saved Bedrock pilot runs + GenAI cost engine
    │  (separate)       └► B GenAI business-case review   ──► saved Bedrock agent runs + graders (live only with AWS credentials)
    ▼
 Hosted on Streamlit Community Cloud (public link)
@@ -208,8 +209,8 @@ bronze_actuals ──► silver_actuals ──► gold_tracked_value ──► e
 ## 5. Component Model
 | Component | Responsibility | File |
 |---|---|---|
-| Use-case catalog | 12 use cases with 7 scores each | `data/use_cases.csv` |
-| Scoring engine | Weighted value and feasibility scores, quadrant, next step | `src/scoring.py` |
+| AI library | Each AI tool per industry: published improvement range, evidence and source, provider price, data needed | `data/ai_library.csv` |
+| Library ranking | Prices every tool for one client, ranks on expected or cautious numbers, flags close calls and rank changes | `src/library.py` |
 | Model training | Train and test a failure-prediction model on AI4I 2020 | `src/model.py` |
 | Cost engine | Converts caught / missed / false alarms into dollars, ROI and payback; bootstrap ranges and sensitivity cases | `src/value.py` |
 | Readiness engine | Scores dimensions and applies verdict rules | `src/readiness.py` |
@@ -299,8 +300,8 @@ Each acceptance criterion is tested before release. Results below; run `pytest` 
 
 | Test | Linked stories | Method | Result |
 |---|---|---|---|
-| Ranking matches manual calculation for 3 use cases | US-1.1 | Compare app output to hand calculation | Passed (e.g. predictive maintenance: value 4.75, feasibility 3.80, priority 18.05) |
-| Filters and weight changes update instantly | US-1.2, US-1.3 | Manual UI test | Passed |
+| Ranking matches manual calculation | US-1.1 | Compare app output to hand calculation | Passed (auto-parts plant, predictive maintenance: $1M × 35% − $60k = $290k a year; 3-year net $672k; payback 8.2 months) |
+| Edited client figures update the ranking at once | US-1.2 | Manual UI test | Passed |
 | Model metrics come from test data only | US-2.5 | Stratified 70/30 split; all metrics on 3,000 unseen records | Passed |
 | Dollar-optimal threshold differs from accuracy-optimal | US-2.3 | Compare both on the test set (default costs) | Passed: 0.05 vs 0.90; dollar-optimal saves $29k/year more |
 | Verdict rules give the expected result for 3 sample checklists | US-3.2 | Unit tests (`tests/test_core.py`) | Passed |

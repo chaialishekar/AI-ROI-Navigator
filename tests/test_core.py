@@ -2,15 +2,20 @@ import numpy as np
 import pandas as pd
 
 from src.readiness import verdict
-from src.scoring import score
 from src.tracking import explain_gap, simulate, track, validate
 from src.value import Costs, bootstrap, default_ranges, evaluate, scenarios, sensitivity
 
 
-def test_scoring_matches_hand_calculation():
-    df = pd.read_csv("data/use_cases.csv")
-    pm = score(df).set_index("use_case").loc["Predictive maintenance"]
-    assert (pm["value"], pm["feasibility"], pm["priority"]) == (4.75, 3.8, 18.05)
+def test_library_ranking_matches_hand_calculation():
+    from src.library import EXAMPLE_CLIENTS, load_library, rank
+    r = rank(load_library(), EXAMPLE_CLIENTS["Auto-parts plant"])
+    pm = r.set_index("solution").loc["Predictive maintenance"]
+    # $1M downtime x 35% (middle of 20-50%) - $60k running = $290k a year; live 34 of 36 months, minus $150k setup
+    assert round(pm["net_year"]) == 290_000
+    assert round(pm["net_3y"]) == round(290_000 * 34 / 12 - 150_000)
+    assert round(pm["payback"], 2) == round(2 + 150_000 / (290_000 / 12), 2)
+    # only the client's industry is compared, and the deep-dive tool comes first
+    assert set(r["industry"]) == {"Automotive"} and r.iloc[0]["solution"] == "Predictive maintenance"
 
 
 def test_verdict_rules():
@@ -249,28 +254,22 @@ def test_pipeline_gold_matches_app_formula():
     assert [q["month"] for q in log["quarantined"]] == ["2027-01"]          # the planted bad file
 
 
-def test_matching_recommends_by_client():
-    from src.matching import EXAMPLE_CLIENTS, Client, match
-    lib = pd.read_csv("data/use_cases.csv")
-    tops = {name: match(lib, c).iloc[0]["use_case"] for name, c in EXAMPLE_CLIENTS.items()}
-    assert tops == {"Mid-size factory": "Predictive maintenance",
-                    "Regional hospital network": "Clinical note summarization",
-                    "Online retailer": "Customer service agent"}
-    # only solutions that serve the client's industry, and every one gets reasons
-    m = match(lib, EXAMPLE_CLIENTS["Online retailer"])
-    assert m["serves"].str.contains("Retail").all() and m["why"].map(len).min() >= 2
-    # same industry, different problem -> different recommendation
-    quality = Client("Factory B", "Manufacturing", "Quality defects", 4, "Medium", "Within a year")
-    assert match(lib, quality).iloc[0]["use_case"] == "Visual quality inspection"
+def test_library_data_gap_adds_setup_and_months():
+    from dataclasses import replace
+    from src.library import EXAMPLE_CLIENTS, load_library, rank
+    plant = EXAMPLE_CLIENTS["Auto-parts plant"]
+    poor = replace(plant, data_quality=2)          # predictive maintenance needs 3: one point short
+    pm = rank(load_library(), poor).set_index("solution").loc["Predictive maintenance"]
+    assert (pm["setup"], pm["months"]) == (150_000 * 1.2, 2 + 2)
 
 
-def test_matching_data_maturity_lowers_feasibility():
-    from src.matching import Client, match
-    lib = pd.read_csv("data/use_cases.csv")
-    rich = Client("A", "Manufacturing", "Unplanned downtime", 5, "Medium", "Within a year")
-    poor = Client("B", "Manufacturing", "Unplanned downtime", 1, "Medium", "Within a year")
-    f = lambda c: match(lib, c).set_index("use_case").loc["Predictive maintenance", "feasibility"]
-    assert f(poor) < f(rich)
+def test_library_cautious_view_reorders_chip_fab():
+    from src.library import EXAMPLE_CLIENTS, load_library, rank, rank_changes
+    lib, fab = load_library(), EXAMPLE_CLIENTS["Chip fab"]
+    # yield optimization leads only on a vendor's claim; at the low end of every range predictive maintenance leads
+    assert rank(lib, fab).iloc[0]["solution"] == "Yield optimization"
+    assert rank(lib, fab, cautious=True).iloc[0]["solution"] == "Predictive maintenance"
+    assert any(c.startswith("Yield optimization") for c in rank_changes(lib, fab))
 
 
 def test_rule_alerts_align_with_test_set():

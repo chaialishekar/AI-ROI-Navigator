@@ -25,7 +25,7 @@ funds it; the plant or business team who live with it after launch.
 
 ## How items were prioritised
 
-The same value × ease scoring the app uses on step 1, each scored 1–5:
+Value × ease, each scored 1–5 (priority = value × ease; Start now = both 3.5 or more):
 
 | Item | Value | Ease | Priority | Category |
 |---|---|---|---|---|
@@ -44,7 +44,7 @@ The same value × ease scoring the app uses on step 1, each scored 1–5:
 
 | Item | What it does | Status |
 |---|---|---|
-| Evaluate AI solutions | 12 AI options matched to the business's problem, data quality, tolerance for mistakes and urgency, with reasons | **Done** |
+| Compare the AI library | Every AI tool for the client's industry priced for them in dollars, with published ranges, evidence labels, a cautious view and data-gap costs | **Done** |
 | Prove the value | Real model on the AI4I 2020 dataset, tuned for dollars; low / base / high case and the biggest risk | **Done** |
 | Check readiness | 10 questions, 5 areas, Go / Fix first / Not ready with actions | **Done** |
 | Business case | One-page summary for finance, downloadable | **Done** |
@@ -60,7 +60,7 @@ The same value × ease scoring the app uses on step 1, each scored 1–5:
 |---|---|---|---|---|
 | N1 | **Blind test set for the agents** | The red-team checklist was written knowing the planted flaws, so 6 of 6 overstates it | 10 new cases written by someone else, scored once, result published even if worse | A second person to write cases |
 | N2 | **Scheduled pipeline with alerts** | Tracking only matters if it runs without anyone remembering | Monthly Databricks job unpaused; drift or low adoption sends an email (SNS); a run log page in the app | Databricks job (exists, paused) |
-| N3 | **Value models for every solution** | Step 1 recommends an AI for any business, but only predictive maintenance has a full dollar model behind it | The hospital's and retailer's recommendations get a business case from the generic time-saved / error-avoided calculator; the intake agent fills it from the business's own description | N1, so intake is trusted |
+| N3 | **Deep dives for more tools** | Step 1 prices every tool in the library, but only predictive maintenance is tested on real data and taken through stages 2–5 | A second deep dive (visual inspection, or yield optimization as a pilot to test the vendor's claim), following the same stages | Public data for that tool |
 | N5 | **Track AI running costs, not just savings** | Running cost is a fixed $60k assumption today. Model fees, managed-platform premiums and idle compute drift after launch, and nobody revisits them | Monthly actual running cost from the AWS cost data next to the business-case assumption, with an alert when it drifts 20%+ | AWS Cost Explorer access |
 | N4 | **Usage analytics on the live app** | Learn which steps people open and where they stop | Page views and "Show the details" opens counted, no personal data | Public URL confirmed |
 

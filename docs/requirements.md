@@ -17,7 +17,7 @@ this pack adds what a delivery team needs to build and test it.
 
 ```mermaid
 flowchart LR
-    N([Business need:<br/>40 breakdowns a year,<br/>$1.0M lost]) --> A[1 Evaluate AI solutions<br/>12 options compared]
+    N([Business need:<br/>40 breakdowns a year,<br/>$1.0M lost]) --> A[1 Compare the AI library<br/>tools priced for the client]
     A --> B[2 Build the business case<br/>$660k a year projected]
     B --> C[3 Assess readiness<br/>10-question check]
     C --> D[4 Prepare the decision<br/>proceed after fixes]
@@ -136,17 +136,22 @@ month to the secure S3 landing zone.
 
 ## 4. Data dictionary
 
-### 4.1 AI options (`data/use_cases.csv`)
+### 4.1 The provider's AI library (`data/ai_library.csv`)
+
+One row per AI tool per industry it is offered in.
 
 | Field | Meaning | Values |
 |---|---|---|
-| use_case | Name of the AI option | text |
-| industry | Industry it was first built for | Manufacturing, Retail, Healthcare |
-| description | What it does, in one sentence | text |
-| serves | Industries it can be used in | `;`-separated list |
-| solves | The business problem it addresses | e.g. Unplanned downtime |
-| financial_impact, strategic_fit, scale | Value scores | 1–5, 5 is better |
-| data_readiness, ease_of_build, low_risk, speed_to_value | Ease scores (low_risk 5 = little harm if the AI is wrong) | 1–5, 5 is better |
+| solution | Name of the AI tool | text |
+| industry | Industry this row prices it for | Semiconductors, Automotive, Telecom, Banking |
+| what_it_does | What it does, in one sentence | text |
+| problem_cost | The client problem it reduces; the client's yearly cost for it is entered in step 1 | e.g. Unplanned machine downtime |
+| improvement_low, improvement_high | Share of that cost it removed elsewhere, low and high end | 0–1 |
+| evidence | How strong the source is | Field study > Academic study > Bank case study > Analyst research > Vendor case study > Mixed > Company-reported > Vendor-reported |
+| source, source_url | What was found, and where | text, link |
+| setup_cost, running_cost | Provider's price per site: one-time and yearly (illustrative) | dollars |
+| months_to_live | Months from signing to live, with ready data | whole number |
+| data_needed | Data quality the tool needs; each point the client falls short adds 20% to setup and 2 months | 1–5 |
 
 ### 4.2 Monthly results file (sent by the plant)
 
@@ -183,8 +188,8 @@ Written for business users. Each is run in the app by the named role before sign
 
 | ID | Role | Given | When | Then | Story | Result |
 |---|---|---|---|---|---|---|
-| UAT-01 | Ops director | The factory profile is selected | I open step 1 | Predictive maintenance is recommended, with the reason "solves their main problem" | US-1.5, US-1.6 | Pass |
-| UAT-02 | Ops director | I describe my own business as Manufacturing with quality defects | I look at the recommendation | Visual quality inspection is recommended | US-1.5 | Pass |
+| UAT-01 | Ops director | The auto-parts plant is selected | I open step 1 | Predictive maintenance is first, with its 3-year value, payback, evidence and the close runner-up named | US-1.5, US-1.6 | Pass |
+| UAT-02 | Ops director | The chip fab is selected | I switch to the cautious view | Yield optimization drops from first to third, predictive maintenance moves to first, and the change is listed | US-1.5, US-1.7 | Pass |
 | UAT-03 | Finance partner | Default costs | I open step 2 | Yearly savings, payback and a worst-case figure are shown, and the worst case is still positive | US-2.2, US-2.8 | Pass |
 | UAT-04 | Finance partner | I raise the cost of a breakdown to $40,000 | I return to step 4 | The one-page case shows the new savings without re-entering anything | US-4.1 | Pass |
 | UAT-05 | Maintenance manager | The example ratings | I open step 3 | The verdict is "Fix first", and the top action is about getting warnings into the maintenance system | US-3.2 | Pass |
@@ -204,9 +209,10 @@ Every Must story, where it is built, how it is tested and the result. Should and
 
 | Requirement | Built in | Automated test | Acceptance test | Result |
 |---|---|---|---|---|
-| US-1.1 Rank options by value and ease | `src/scoring.py` | `test_scoring_matches_hand_calculation` | n/a | Pass |
-| US-1.5 Match options to the business need | `src/matching.py`, step 1 | `test_matching_recommends_by_client`, `test_matching_data_maturity_lowers_feasibility` | UAT-01, UAT-02 | Pass |
-| US-1.6 Explain why an option was picked | `src/matching.py` `reasons()` | `test_matching_recommends_by_client` | UAT-01 | Pass |
+| US-1.1 Price every AI tool for the client in dollars | `src/library.py` `rank()` | `test_library_ranking_matches_hand_calculation` | UAT-01 | Pass |
+| US-1.5 Charge for data the client does not have yet | `src/library.py` `rank()` | `test_library_data_gap_adds_setup_and_months` | n/a | Pass |
+| US-1.6 Explain why a tool comes first | step 1, `too_close()`, `evidence_strength()` | `test_library_ranking_matches_hand_calculation` | UAT-01 | Pass |
+| US-1.7 Show when the order depends on optimistic numbers | `src/library.py` `rank_changes()` | `test_library_cautious_view_reorders_chip_fab` | UAT-02 | Pass |
 | US-2.2 Savings in dollars | `src/value.py` `evaluate()` | `test_value_math` | UAT-03 | Pass |
 | US-2.3 Warning level set for money, not accuracy | `src/value.py` `sweep()`, step 2 | Validation table, solution_design.md §8 | UAT-03 | Pass |
 | US-2.9 Compare with options that need no AI | `src/workorder.py` `rule_alerts()`, step 2 | `test_rule_alerts_align_with_test_set` | n/a | Pass |
