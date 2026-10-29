@@ -54,6 +54,7 @@
     <div class="card"><div class="bars" id="gap"></div>
       <p class="small" style="margin:14px 0 0">Each cause changed one at a time, so they add up exactly to the total gap.</p></div>
     <div class="grid g3" id="next" style="margin-top:14px"></div>
+    <div class="callout" id="essay" style="margin-top:14px" hidden></div>
   </div>
 </section>
 
@@ -71,7 +72,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="../assets/characters.js"></script>
 <script>
-  const { D, money, pct, app, phaseHead, delivered } = Site;
+  const { D, money, pct, app, phaseHead, delivered, ESSAY } = Site;
+  if (ESSAY.url) {
+    const e = document.getElementById("essay");
+    e.innerHTML = `<b>Why this phase exists.</b> <span class="muted">Most AI decisions are made once and never checked again. I wrote about that in <a href="${ESSAY.url}" target="_blank" rel="noopener">${ESSAY.title} ↗</a>. This page is the fix: the original decision, revisited every month.</span>`;
+    e.hidden = false;
+  }
   phaseHead(6);
   const T = D.tracking;
   const short = m => m.replace("Month ", "M");   // months are counted from go-live

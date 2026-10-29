@@ -724,7 +724,7 @@ def business_case_brief(val: dict, rd: dict) -> dict:
                   "At least 90% of the forecast delivered to scale"]],
         "evidence": [["Catch, miss and false-alarm rates", "Measured", "3,000 held-out machine records (AI4I 2020, synthetic)"],
                      ["Plant costs", "Assumption", "Illustrative defaults, editable in the app"],
-                     ["Published downtime reduction", "Analyst research", "20-50% less downtime (McKinsey, via Reliability Magazine)"],
+                     ["Published downtime reduction", "Analyst research", "30-50% less downtime (McKinsey, 2017); 20% used as the cautious low end"],
                      ["Provider prices", "Assumption", "Illustrative price list, the same for every AI tool compared"],
                      ["Readiness scores", "Assessment", "Example ratings for the factory"],
                      ["Results after launch", "Simulated", "12 made-up months run through the S3 to Databricks pipeline"]],

@@ -1,5 +1,5 @@
 // The five contenders, as puffy fabric characters (Three.js). Each one always stands for the same option:
-// sentry = predictive maintenance, lens = visual inspection, oracle = demand forecasting,
+// sentry = predictive maintenance, lens = visual inspection, foresight = demand forecasting,
 // rulebook = the maintenance manual's rules (no AI), snooze = do nothing.
 (function () {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -51,7 +51,7 @@
               fabric: () => PATTERNS.gingham("#1f8f86", "rgba(255,255,255,.28)") },
     lens: { name: "Lens", role: "Visual inspection", eyeY: 0.42, tilt: -0.08, shape: ring,
             fabric: () => PATTERNS.dots("#e2603f", "#ffe7d6") },
-    oracle: { name: "Oracle", role: "Demand forecasting", eyeY: 0.12, tilt: 0.06,
+    foresight: { name: "Foresight", role: "Demand forecasting", eyeY: 0.12, tilt: 0.06,
               shape: () => polar(a => 0.82 + 0.3 * Math.pow((1 + Math.cos(5 * (a - Math.PI / 2))) / 2, 1.6)),
               fabric: () => PATTERNS.squiggle("#6b5fd8", "#ffd36b") },
     rulebook: { name: "Rulebook", role: "The manual's rules (no AI)", eyeY: 0.3, tilt: -0.1,
@@ -74,7 +74,7 @@
   }
 
   // Flat stand-ins for browsers without WebGL (or when three.js fails to load), so the page never shows a gap
-  const FLAT = { sentry: "#1f8f86", lens: "#e2603f", oracle: "#6b5fd8", rulebook: "#f2b33d", snooze: "#9fb3c8" };
+  const FLAT = { sentry: "#1f8f86", lens: "#e2603f", foresight: "#6b5fd8", rulebook: "#f2b33d", snooze: "#9fb3c8" };
   function flatCast(el, keys, opts) {
     el.classList.add("flat");
     el.innerHTML = keys.map(k => `<button type="button" data-k="${k}" style="--c:${FLAT[k]}" aria-label="${DEFS[k].name}: ${DEFS[k].role}">

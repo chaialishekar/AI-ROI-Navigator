@@ -112,9 +112,9 @@
       card.querySelector("[data-payback]").textContent = months(cautious ? o.payback_cautious : o.payback);
       card.querySelector("[data-improve]").textContent = pct(cautious ? o.improve_low : (o.improve_low + o.improve_high) / 2, 1).replace(".0%", "%");
     });
-    const lens = D.options.find(o => o.key === "lens"), oracle = D.options.find(o => o.key === "oracle");
+    const lens = D.options.find(o => o.key === "lens"), foresight = D.options.find(o => o.key === "foresight");
     document.getElementById("insight").innerHTML = cautious
-      ? `<b>On cautious figures the order holds, but the gap opens.</b> <span class="muted">Visual inspection drops from ${money(lens.net3)} to ${money(lens.net3_cautious)}, and forecasting loses money over three years (${money(oracle.net3_cautious)}). Predictive maintenance stays first.</span>`
+      ? `<b>On cautious figures the order holds, but the gap opens.</b> <span class="muted">Visual inspection drops from ${money(lens.net3)} to ${money(lens.net3_cautious)}, and forecasting loses money over three years (${money(foresight.net3_cautious)}). Predictive maintenance stays first.</span>`
       : `<b>Visual inspection looks close to the leader.</b> <span class="muted">But its ${money(lens.net3)} rests on a vendor write-up, the weakest kind of evidence. Flip to the cautious view to see what happens to it.</span>`;
   }
   document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => {
