@@ -52,7 +52,7 @@ Value × ease, each scored 1–5 (priority = value × ease; Start now = both 3.5
 | GenAI pilot | Bedrock work-order writer measured on 30 alerts; ROI across five cost categories | **Done** |
 | AI analyst agents | Intake, memo and red-team agents graded v1 → v3 | **Done** |
 | Case-study overview | Lifecycle chart with each stage's evidence type, my role, what I analysed / produced / decided per stage, GenAI experiments set apart | **Done** |
-| Requirements pack | As-is / to-be process maps, integration spec, data dictionary, 12 acceptance tests, traceability matrix | **Done** |
+| Requirements pack | As-is / to-be process maps, integration spec, data dictionary, 13 acceptance tests, traceability matrix | **Done** |
 
 ## Next: 1–3 months
 

@@ -2,7 +2,9 @@
 
 > Which AI should a business buy first, and will it pay off?
 
-An interactive case study in **AI business systems analysis**. AI vendors pitch their best numbers, and most buyers never check them once the tool is live. I wanted to see what doing this properly looks like. So I took one provider's catalogue of AI tools, priced each one for a single client, picked the one worth buying first, and followed it through a full project lifecycle, from the business case to the savings a year after launch.
+An end-to-end case study in **AI business systems analysis**: *should we invest in AI, or is there a better way?*
+
+In recent conversations with people in the industry, one topic kept coming up: AI libraries, the catalogues of AI tools that companies build, sell and buy to automate work. We all know AI makes automation easier. What I kept wondering was whether it pays. Is the return higher or lower than we assume, and is *not* automating, or a simple rule, sometimes the cheaper choice? So I built a way to answer that for one specific job. I took one provider's catalogue of AI tools, priced each one for a single client, weighed it against doing nothing and against simple rules, and followed the best option through a full project lifecycle, from the business case to the savings a year after launch.
 
 **Why this matters:** in [IBM's 2025 CEO Study](https://newsroom.ibm.com/2025-05-06-ibm-study-ceos-double-down-on-ai-while-navigating-enterprise-hurdles), only 25% of AI initiatives delivered the expected ROI, yet 65% of CEOs now pick AI use cases by ROI. [Gartner](https://www.gartner.com/en/newsroom/press-releases/gartner-survey-finds-only-22-percent-of-organizations-have-successfully-scaled-ai-across-multiple-business-units) (September 2026) found that firms which track AI ROI and drop weak projects saw positive returns on 81% of their AI initiatives. [BCG](https://www.bcg.com/press/24october2024-ai-adoption-in-2024-74-of-companies-struggle-to-achieve-and-scale-value) found AI leaders put 70% of their effort into people and processes and only 10% into algorithms. More: [PwC 2026](https://www.pwc.com/gx/en/issues/c-suite-insights/ceo-survey.html) (56% of CEOs saw no revenue or cost benefit), [McKinsey 2025](https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-2025) (39% report any profit impact). So the question is not whether to buy AI, but which tool first, how sure the numbers are, and how to prove it paid off.
 
@@ -55,7 +57,7 @@ Every page shows **the answer first** (the question, the answer, three numbers, 
 |---|---|
 | [Product requirements document (PRD)](docs/prd.md) | Start here: problem and evidence, goals and non-goals, users, as-is / to-be for the purchase decision, prioritised user stories, success metrics, risks, alternatives considered, launch plan |
 | [Executive decision brief (sample PDF)](docs/decision_brief_sample.pdf) | Two-page investment brief generated in the Decide phase: recommendation, options, savings calculation, risks, decision gates |
-| [Requirements pack](docs/requirements.md) | Process maps today and with AI, integration spec (warning → work order), data dictionary, 12 user acceptance tests, requirements traceability matrix |
+| [Requirements pack](docs/requirements.md) | Process maps today and with AI, integration spec (warning → work order), data dictionary, 13 user acceptance tests, requirements traceability matrix |
 | [Solution design](docs/solution_design.md) | Stakeholders, use cases, 36+ user stories with acceptance criteria and MoSCoW priorities, fishbone of why value falls short, RACI |
 | [Roadmap](docs/roadmap.md) | Now / Next / Later, prioritised by value × ease |
 | [Delivery log](docs/delivery.md) | How the work was split into increments and checked |

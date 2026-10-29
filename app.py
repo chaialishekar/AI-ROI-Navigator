@@ -593,6 +593,41 @@ DECISION_RULES = [("Stop", "Expected savings are not positive"),
                   ("Proceed", "Savings stay positive in the worst case and the team is ready")]
 
 
+# Which option each decision-rule outcome stands for, in the options table on the Decide page
+OPTION_FOR_LABEL = {"Proceed": "Buy the AI and roll it out", "Proceed after fixes": "Pilot on one line after fixes",
+                    "Revise": "Wait until the team is ready", "Stop": "Don't buy it"}
+
+
+def options_considered(val: dict, rd: dict, label: str) -> str:
+    """Every option the decision weighed, AI or not, with one line on why it was or wasn't picked."""
+    rules = alternatives(val, val["costs"])["rules"]
+    worst = val["cases"]["Low"]["annual_net"]
+    c = val["costs"]
+    weakest = rd["weakest"][0][0].lower() if rd.get("weakest") else "n/a"
+    why = {
+        "Buy the AI and roll it out": (f"Saves {money(val['annual_net'])} a year as planned, but the team check says "
+                                       f"\"{rd['verdict'].lower()}\" (weakest area: {weakest})."
+                                       if rd["verdict"] != "Go" else
+                                       f"Saves {money(val['annual_net'])} a year and the team is ready."),
+        "Pilot on one line after fixes": ("Close the readiness gaps, then prove the savings and the false-alarm rate "
+                                          "on one line before scaling."),
+        "Use the manual's rules instead": (f"No AI needed and saves {money(rules['annual_net'])} a year, but raises "
+                                           f"~{rules['false_alarms']:.0f} false alarms a year against the AI's "
+                                           f"~{val['false_alarms']:.0f}, the kind of noise a crew learns to ignore. The rules stay, to explain "
+                                           "each AI warning."),
+        "Wait until the team is ready": (f"Still saves {money(worst)} a year in the worst case, so waiting forgoes "
+                                         f"about {money(val['annual_net'] / 12)} a month."
+                                         if worst > 0 else "Savings turn negative if costs are worse than expected."),
+        "Don't buy it": (f"Breakdowns keep costing the plant {money(c.failures_per_year * c.cost_missed)} a year, "
+                         "and the evidence for the AI is medium, not weak."
+                         if val["annual_net"] > 0 else "Expected savings are not positive."),
+    }
+    chosen = OPTION_FOR_LABEL.get(label)
+    return ("| Option | Verdict | Why |\n|---|---|---|\n" + "".join(
+        f"| {'**' + o + '**' if o == chosen else o} | {'**Chosen**' if o == chosen else 'Not chosen'} | {md(w)} |\n"
+        for o, w in why.items()))
+
+
 def decision_rule(val: dict, rd: dict) -> tuple[str, str]:
     """The recommendation finance is asked to approve: (short label, one sentence)."""
     worst = val["cases"]["Low"]["annual_net"]
@@ -747,7 +782,7 @@ def page_case():
 {reason}
 
 {rules_md}
-Acceptance criteria: 12 user acceptance tests and a requirements traceability matrix (docs/requirements.md).
+Acceptance criteria: 13 user acceptance tests and a requirements traceability matrix (docs/requirements.md).
 """ + tracking_md + """
 ## Key assumptions
 - Plant costs as entered in Business case (illustrative defaults otherwise)
@@ -759,6 +794,8 @@ Acceptance criteria: 12 user acceptance tests and a requirements traceability ma
               ("Team ready?", rd["verdict"], f"average {rd['avg']:.1f} / 5")])
         st.markdown("**How the recommendation is decided**")
         st.markdown(rules_md.replace(f"| {label} |", f"| **{label}** (this case) |"))
+        st.markdown("**Options considered, AI or not**")
+        st.markdown(options_considered(val, rd, label))
         b1, b2, _ = st.columns([1.3, 1, 1.2])
         b1.download_button("Download the decision brief (PDF)", build_brief(business_case_brief(val, rd)),
                            file_name="ai_decision_brief.pdf", mime="application/pdf", key="dl_brief", type="primary",
@@ -1533,7 +1570,7 @@ def tour_content(stage: str) -> dict:
         return dict(page="case", q="What exactly is finance being asked to approve?",
                     how="Put the value, the range of outcomes, the risks and the readiness gaps on one page, with a "
                         "rule for when to proceed, fix first, revise or stop.",
-                    made="One-page business case (download), decision rule, 12 acceptance tests, and a traceability "
+                    made="One-page business case (download), decision rule, 13 acceptance tests, and a traceability "
                          "matrix linking each requirement to its test.",
                     docs=["Acceptance tests and traceability"],
                     decision=": ".join(decision_rule(val, rd)),
@@ -1818,9 +1855,12 @@ def setup_strip() -> str:
         for r, w, t in SETUP) + '</div></div>')
 
 
-def number_key() -> str:
+def number_key(model_net: float, published_net: float) -> str:
     return ('<div class="numkey"><div class="setup-label">How to read the numbers</div><div class="numkey-row">'
-            + "".join(f'<div><b>{k}</b><span>{esc_html(t)}</span></div>' for k, t in NUMBER_KINDS) + '</div></div>')
+            + "".join(f'<div><b>{k}</b><span>{esc_html(t)}</span></div>' for k, t in NUMBER_KINDS) + '</div>'
+            f'<div class="twofig"><b>Two savings figures, one plan.</b> The model test on synthetic data says '
+            f'{money(model_net)} a year. Published studies say {money(published_net)}. Finance plans on '
+            f'{money(published_net)} and treats the rest as upside to prove in a one-line pilot.</div></div>')
 
 
 def leak_map() -> str:
@@ -1833,7 +1873,7 @@ def leak_map() -> str:
         leaks.append({
             "name": LEAK_SHORT.get(problem, problem), "cost": f"${cost / 1e6:.1f}M", "raw": cost,
             "ai": row["solution"], "rank": int(row["rank"]), "does": row["what_it_does"],
-            "plug": float(row["improvement_mid"]), "plug_year": money(row["value_mid"]),
+            "plug": float(row["improvement_mid"]), "plug_year": money(row["value_mid"]), "net_year": money(row["net_mid"]),
             "range": f"{row['improvement_low']:.0%} to {row['improvement_high']:.0%}",
             "net3": money(row["net3_mid"]), "payback": months(row["payback"]),
             "strength": evidence_strength(row["evidence"]), "evidence": row["evidence"],
@@ -1909,7 +1949,7 @@ function show(i) {
    <span class="badge" style="background:${l.color}">${l.rank === 1 ? "Buy first · " : "Option #" + l.rank + " · "}${l.strength} evidence</span>
    <div class="muted">${l.does}.</div>
    <div class="bar"><div style="width:${Math.round(l.plug * 100)}%"></div></div>
-   <div class="muted">Plugs about ${Math.round(l.plug * 100)}%, or ${l.plug_year} a year. Published range ${l.range} (${l.evidence.toLowerCase()}).</div>
+   <div class="muted">Plugs about ${Math.round(l.plug * 100)}%, or ${l.plug_year} a year (${l.net_year} after running costs). Published range ${l.range} (${l.evidence.toLowerCase()}).</div>
    <div class="stats"><div><span>3-year net value</span><b>${l.net3}</b></div><div><span>Payback</span><b>${l.payback}</b></div></div>`;
 }
 document.querySelectorAll(".leak").forEach(n => {
@@ -1930,19 +1970,23 @@ def page_home():
     c = val["costs"]
     with st.container(key="hero"):
         st.markdown(
-            '<div class="eyebrow">AI business systems analysis · interactive case study</div>'
-            '<div class="hero-title">Companies are investing in AI. Are they investing in the right AI?</div>'
-            '<div class="hero-text">In IBM\'s 2025 study of 2,000 CEOs, only <b>25% of AI initiatives</b> had delivered '
-            'the return expected of them (<a href="' + WHY_IT_MATTERS_IBM + '" target="_blank">source</a>). The model '
-            'is rarely the problem. The hard part is picking the right use case, proving it will pay, getting the team '
-            'ready to use it, and checking afterwards that the money showed up. I built that whole path end to end and '
-            'ran one example through it.</div>' + setup_strip(),
+            '<div class="eyebrow">AI business systems analysis · end-to-end case study</div>'
+            '<div class="hero-title">Should we invest in AI, or is there a better way?</div>'
+            '<div class="hero-text">In recent conversations with people in the industry, one topic kept coming up: '
+            'AI libraries, the catalogues of AI tools that companies build, sell and buy to automate work. We all know '
+            'AI makes automation easier. What I kept wondering was whether it pays. Is the return higher or lower than '
+            'we assume, and is <i>not</i> automating, or a simple rule, sometimes the cheaper choice? So I built a way '
+            'to answer that for one specific job: compare the options, challenge the numbers, test the AI, and check '
+            'the savings after launch.</div>'
+            '<div class="hero-stat">It\'s a live question. In IBM\'s 2025 study of 2,000 CEOs, only <b>25% of AI '
+            'initiatives</b> had delivered the return expected of them (<a href="' + WHY_IT_MATTERS_IBM + '" '
+            'target="_blank">source</a>).</div>' + setup_strip(),
             unsafe_allow_html=True)
         st.markdown('<div class="case-label">The case</div><div class="case-title">An example plant loses $3.7M a '
                     'year. Which leak should AI fix first?</div>', unsafe_allow_html=True)
         with st.container(key="leakmap"):
             components.html(leak_map(), height=420)
-        st.markdown(number_key(), unsafe_allow_html=True)
+        st.markdown(number_key(val["annual_net"], published_estimate(c)["mid"]), unsafe_allow_html=True)
         st.page_link(PAGES["pick"], label="Compare every AI in the library", icon=":material/arrow_forward:")
 
     with st.container(key="phases"):
@@ -2099,6 +2143,9 @@ a.node:focus-visible { outline: 3px solid #0f6d74; outline-offset: 2px; }
 .case-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700; color: #0f6d74; }
 .case-title { font-size: 1.45rem; font-weight: 700; line-height: 1.25; color: #1d2521; margin: 0.1rem 0 0.2rem; }
 .numkey { margin-bottom: 0.9rem; }
+.twofig { margin-top: 0.8rem; font-size: 0.88rem; line-height: 1.45; color: #3d4741; background: rgba(255,255,255,.7);
+          border-radius: 12px; padding: 0.6rem 0.9rem; }
+.hero-stat { font-size: 0.95rem; color: #3d4741; margin: -0.3rem 0 1.1rem; }
 .numkey-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6rem; }
 .numkey-row div { border-left: 3px solid #b9c4b4; padding-left: 0.6rem; font-size: 0.83rem; line-height: 1.4; color: #3d4741; }
 .numkey-row b { display: block; color: #1d2521; font-size: 0.86rem; }
