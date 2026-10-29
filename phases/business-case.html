@@ -67,27 +67,28 @@
   <div class="wrap">
     <p class="eyebrow">The details</p>
     <h2>What if my guesses are wrong? Try it.</h2>
-    <p class="muted" style="margin:0 0 18px;max-width:680px">Everything on this page rests on my guesses about the plant's costs. Pick a what-if and watch what happens to the savings, and to who would sign off.</p>
+    <p class="muted" style="margin:0 0 18px;max-width:680px">Everything on this page rests on my guesses about the plant's costs. Change one, and see whether the AI still pays and whether the board would still sign.</p>
     <div class="card">
-      <div class="step-h"><span class="num">1</span><div><b>Pick a what-if</b><div class="small">Each one starts from my assumptions and changes one thing.</div></div></div>
+      <div class="step-h"><span class="num">1</span><div><b>Change an assumption</b><div class="small">Click any of these, one or several. Each changes one number and keeps your other changes.</div></div></div>
       <div class="try" id="dTry"></div>
-      <details class="adv" id="dAdv"><summary>Or change the numbers yourself</summary>
+      <details class="adv" id="dAdv"><summary>See and edit every number</summary>
       <div class="inputs" id="dIn" style="margin-top:14px"></div>
       <div style="margin-top:18px"><label class="small" for="dLevel">How sure should the AI be before it warns? <b id="dLevelTxt"></b></label>
         <input id="dLevel" type="range" min="1" max="99" step="1" style="width:100%;accent-color:var(--teal)">
         <div class="slider-hint small"><span>← warns early: catches more, more false alarms</span><span>warns late: fewer false alarms, misses more →</span></div>
         <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button></div>
       </details>
-      <div class="step-h"><span class="num">2</span><div><b>The result</b><div class="small" id="dNow"></div></div></div>
+      <div class="step-h"><span class="num">2</span><div><b>The result</b><div class="small" id="dNow"></div></div>
+        <button class="linkbtn" type="button" id="dReset" style="margin-left:auto" hidden>Back to my assumptions</button></div>
       <div class="out" id="dOut" style="margin-top:10px"></div>
       <p class="muted" style="margin:16px 0 0" id="dSay"></p>
-      <div class="step-h"><span class="num">3</span><div><b>Against the options without AI</b><div class="small">The same costs applied to every option. Pin a what-if to keep it as a column while you try another.</div></div>
-        <button class="chip" type="button" id="dPin">Pin this what-if</button></div>
+      <div class="step-h"><span class="num">3</span><div><b>Against the options without AI</b><div class="small">The same costs applied to every option. Pin your setup to keep it as a column while you try another.</div></div>
+        <button class="chip" type="button" id="dPin">Pin this setup</button></div>
       <div class="tscroll"><table class="t cmp" id="dCmp"></table></div>
-      <div class="step-h"><span class="num">4</span><div><b>Would the board sign off?</b><div class="small">How three executives would respond. A concern often comes with a fix you can apply in one click.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
+      <div class="step-h"><span class="num">4</span><div><b>Would the board sign off?</b><div class="small">Each executive has two tests. They sign when both pass.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
       <div class="board" id="dBoard" aria-live="polite"></div>
       <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
-      <p class="small" style="margin:6px 0 0">The board never changes the model by itself: it only comments. Reactions follow fixed rules on the numbers above (payback, savings given up versus break-even, false alarms a week, share of alerts that are real, catch rate, running cost) and the Readiness results, not a live AI.</p>
+      <p class="small" style="margin:6px 0 0">Not a number you can change here: the COO also wants the <span data-v="readiness.weakest.length"></span> readiness gaps closed before go-live. That is about people and process, so it is on the <a href="readiness.html">Readiness page</a>. The tests are fixed rules, not a live AI, and they are the same exit checks the pilot has to pass on <a href="deliver.html">Deliver</a>.</p>
     </div>
     <details class="tech"><summary>For the technical reader</summary>
     <div class="grid g2" style="margin-top:14px">
@@ -159,19 +160,47 @@
   const FIELDS = [["failures_per_year", "Breakdowns a year, no AI", 1], ["cost_missed", "Cost of a breakdown ($)", 500],
     ["cost_caught", "Planned repair when caught early ($)", 250], ["cost_false_alarm", "Inspection on a false alarm ($)", 50],
     ["running_cost", "Running the AI, a year ($)", 1000], ["deployment_cost", "One-time setup ($)", 5000], ["months_to_deploy", "Months to go live", 1]];
+  const NAME = { failures_per_year: "breakdowns a year", cost_missed: "cost of a breakdown", cost_caught: "planned repair", cost_false_alarm: "inspection",
+    running_cost: "running cost", deployment_cost: "one-time setup", months_to_deploy: "months to go live" };
   const box = document.getElementById("dIn"), lvl = document.getElementById("dLevel");
   box.innerHTML = FIELDS.map(([k, t, step]) => `<label>${t}<input type="number" min="0" step="${step}" data-k="${k}"></label>`).join("");
-  let auto = true;
-  const costs = () => Object.fromEntries(FIELDS.map(([k]) => [k, +box.querySelector(`[data-k=${k}]`).value || 0]));
-  const setTo = obj => Object.entries(obj).forEach(([k, v]) => { const i = box.querySelector(`[data-k=${k}]`); i.value = v; i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); });
-  const applied = t => (document.getElementById("dApplied").textContent = t);
-  function reset(redraw = true) { FIELDS.forEach(([k]) => (box.querySelector(`[data-k=${k}]`).value = D.costs[k])); auto = true; applied(""); if (redraw) draw(); }
-  let fixes = [], pins = [], lastTry = "";
-  // Side by side: do nothing, the manual's rules and the AI at today's settings, plus up to two pinned setups
-  function compare(c, level) {
+  const input = k => box.querySelector(`[data-k=${k}]`);
+  let auto = true, pins = [];
+  const costs = () => Object.fromEntries(FIELDS.map(([k]) => [k, +input(k).value || 0]));
+  const setTo = obj => Object.entries(obj).forEach(([k, v]) => { const i = input(k); i.value = v; i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); });
+
+  // Your numbers survive leaving the page and coming back (this visit only)
+  const KEY = "roi-calc";
+  const save = () => { try { sessionStorage.setItem(KEY, JSON.stringify({ c: costs(), level: +lvl.value, auto })); } catch (e) {} };
+  const load = () => { try { return JSON.parse(sessionStorage.getItem(KEY)); } catch (e) { return null; } };
+
+  // What-ifs: each changes one number on top of whatever is already set
+  const TRY = [["Breakdowns cost $10k, not $25k", { cost_missed: 10000 }],
+    ["Setup costs 4× more", { deployment_cost: D.costs.deployment_cost * 4 }],
+    ["Twice as many breakdowns", { failures_per_year: D.costs.failures_per_year * 2 }],
+    ["AI warns only when 90% sure", { level: 90 }]];
+  document.getElementById("dTry").innerHTML = TRY.map(([t], i) => `<button class="chip" type="button" data-try="${i}">${t}</button>`).join("");
+  const isOn = set => Object.entries(set).every(([k, v]) => (k === "level" ? !auto && +lvl.value === v : +input(k).value === v));
+  document.getElementById("dTry").addEventListener("click", e => {
+    const i = e.target.dataset.try; if (i === undefined) return;
+    const [t, set] = TRY[i];
+    if (isOn(set)) {   // clicking an active what-if undoes it
+      if (set.level) auto = true; else setTo(Object.fromEntries(Object.keys(set).map(k => [k, D.costs[k]])));
+    } else if (set.level) { auto = false; lvl.value = set.level; } else setTo(set);
+    draw();
+  });
+
+  // What differs from my assumptions, in words
+  function changes(c) {
+    const out = FIELDS.filter(([k]) => c[k] !== D.costs[k]).map(([k]) => `${NAME[k]} ${k.startsWith("cost") || k.endsWith("cost") ? usd(c[k]) : c[k]} (mine: ${k.startsWith("cost") || k.endsWith("cost") ? usd(D.costs[k]) : D.costs[k]})`);
+    if (!auto) out.push(`alert level ${lvl.value}% (break-even: ${Math.round(breakEven(c) * 100)}%)`);
+    return out;
+  }
+
+  function compare(c, level, label) {
     const none = { net: 0, payback: null, three_year: 0, recall: 0, false_alarms: 0, precision: null, none: true };
-    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`Sentry · ${lastTry || (document.querySelector("#dTry .chip.on") ? "my assumptions" : "your numbers")}`, value(c, level), `alert at ${Math.round(level * 100)}%`],
-      ...pins.map((p, k) => [p.label, value(p.c, p.level), `alert at ${Math.round(p.level * 100)}% <button class="linkbtn" type="button" data-unpin="${k}">remove</button>`])];
+    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`Sentry · ${label}`, value(c, level), `alert at ${Math.round(level * 100)}%`],
+      ...pins.map((p, k) => [`Pinned · ${p.label}`, value(p.c, p.level), `alert at ${Math.round(p.level * 100)}% <button class="linkbtn" type="button" data-unpin="${k}">remove</button>`])];
     const best = Math.max(...cols.map(x => x[1].net));
     const rows = [["Net savings a year", r => usd(r.net)], ["Pays for itself in", r => (r.none ? "–" : months(r.payback))],
       ["Net over 3 years", r => usd(r.three_year)], ["Breakdowns caught", r => pct(r.recall)],
@@ -179,24 +208,14 @@
     document.getElementById("dCmp").innerHTML = `<tr><th></th>${cols.map(([t, , n], k) => `<th class="${k === 2 ? "now" : ""}">${t}<div class="small" style="font-weight:400;text-transform:none;letter-spacing:0">${n || "&nbsp;"}</div></th>`).join("")}</tr>`
       + rows.map(([n, f], j) => `<tr><td>${n}</td>${cols.map(([, r], k) => `<td class="${k === 2 ? "now" : ""}">${j === 0 && r.net === best ? `<b>${f(r)}</b>` : f(r)}</td>`).join("")}</tr>`).join("");
   }
-  // What-ifs: each starts from my assumptions and changes one thing
-  const TRY = [["My assumptions", () => {}], ["Breakdowns cost less ($10k)", () => setTo({ cost_missed: 10000 })],
-    ["Setup costs 4× more", () => setTo({ deployment_cost: D.costs.deployment_cost * 4 })],
-    ["Twice as many breakdowns", () => setTo({ failures_per_year: D.costs.failures_per_year * 2 })],
-    ["AI only warns when 90% sure", () => { auto = false; lvl.value = 90; }]];
-  document.getElementById("dTry").innerHTML = TRY.map(([t], i) => `<button class="chip" type="button" data-try="${i}">${t}</button>`).join("");
-  const mark = i => document.querySelectorAll("#dTry .chip").forEach((b, j) => b.classList.toggle("on", j === i));
-  document.getElementById("dTry").addEventListener("click", e => {
-    const i = e.target.dataset.try; if (i === undefined) return;
-    reset(false); TRY[i][1](); lastTry = +i ? TRY[i][0] : ""; mark(+i); draw();
-    applied(+i ? `What-if: ${TRY[i][0]}. Everything else is my assumptions.` : "");
-  });
+
   function draw() {
     const c = costs();
     if (auto) lvl.value = Math.round(breakEven(c) * 100);
-    const level = lvl.value / 100, r = value(c, level);
-    const on = [...document.querySelectorAll("#dTry .chip")].findIndex(b => b.classList.contains("on"));
-    document.getElementById("dNow").textContent = on >= 0 ? `Showing: ${TRY[on][0]}` : "Showing: your own numbers";
+    const level = lvl.value / 100, r = value(c, level), diff = changes(c);
+    document.querySelectorAll("#dTry .chip").forEach((b, i) => b.classList.toggle("on", isOn(TRY[i][1])));
+    document.getElementById("dNow").textContent = diff.length ? `Changed: ${diff.join("; ")}.` : "Using my assumptions. Click a what-if above to change one.";
+    document.getElementById("dReset").hidden = !diff.length;
     document.getElementById("dLevelTxt").textContent = `${lvl.value}%`;
     document.getElementById("dLevelNote").textContent = auto ? "Break-even: where the expected saving from an early catch outweighs the inspection." : `Break-even would be ${pct(breakEven(c))}.`;
     document.getElementById("dOut").innerHTML = [
@@ -206,38 +225,35 @@
     document.getElementById("dSay").textContent = r.net > 0
       ? `Catches ${r.caught.toFixed(1)} of ${c.failures_per_year} breakdowns a year and misses ${r.missed.toFixed(1)}; ${pct(r.precision)} of its alerts are real.`
       : "At these costs the AI costs more than it saves.";
-    const b = board(c, r, level), MOOD = { backs: ["good", "Backs it"], concerns: ["warn", "Has concerns"], blocks: ["bad", "Blocks it"] };
+    const b = board(c, r), MOOD = { backs: ["good", "Would sign"], concerns: ["warn", "Not yet"] };
     document.getElementById("dBoard").innerHTML = b.map(p => `<div class="seat ${p.mood}"><div class="who"><span class="av">${p.role}</span>
       <b>${p.who}</b><span class="tag ${MOOD[p.mood][0]}">${MOOD[p.mood][1]}</span></div>
-      <p>“${p.say}”</p>${p.fix ? (p.fix.href ? `<a class="fix" href="${p.fix.href}">${p.fix.label}</a>` : `<button class="fix" type="button" data-fix="${b.indexOf(p)}">${p.fix.label}</button>`) : ""}</div>`).join("");
-    fixes = b;
-    compare(c, level);
-    const yes = b.filter(p => p.mood === "backs").length, no = b.filter(p => p.mood === "blocks").length;
-    document.getElementById("dBoardSum").textContent = no ? `${no} of 3 would block it` : yes === 3 ? "All 3 back it" : yes ? `${yes} of 3 back it; the rest want changes` : "None back it yet: all want changes";
+      <ul class="tests">${p.tests.map(t => `<li class="${t.ok ? "ok" : "no"}"><span class="mk" aria-hidden="true">${t.ok ? "✓" : "✗"}</span><span>${t.text}<br><span class="small">Now: ${t.now}</span></span></li>`).join("")}</ul>
+      <p>${p.say}</p></div>`).join("");
+    compare(c, level, diff.length ? "your setup" : "my assumptions");
+    const yes = b.filter(p => p.mood === "backs").length;
+    document.getElementById("dBoardSum").textContent = yes === 3 ? "All 3 would sign" : `${yes} of 3 would sign`;
+    save();
   }
   box.addEventListener("input", draw);
   lvl.addEventListener("input", () => { auto = false; draw(); });
   document.getElementById("dAuto").addEventListener("click", () => { auto = true; draw(); });
-  box.addEventListener("input", () => { lastTry = ""; mark(-1); draw(); });
-  lvl.addEventListener("input", () => mark(-1));
+  document.getElementById("dReset").addEventListener("click", () => { setTo(D.costs); FIELDS.forEach(([k]) => input(k).classList.remove("flash")); auto = true; draw(); });
   document.getElementById("dPin").addEventListener("click", () => {
-    const c = costs(), level = lvl.value / 100;
-    pins = [...pins, { c, level, label: lastTry || (FIELDS.every(([k]) => c[k] === D.costs[k]) && auto ? "My assumptions" : `Your setup ${pins.length + 1}`) }].slice(-2);
-    draw(); applied(`Pinned. Change the inputs or pick a scenario; the pinned column stays.`);
+    const c = costs(), level = lvl.value / 100, diff = changes(c);
+    pins = [...pins, { c, level, label: diff.length ? `setup ${pins.length + 1}` : "my assumptions" }].slice(-2);
+    draw(); document.getElementById("dApplied").textContent = "Pinned. Change something else; the pinned column stays.";
   });
   document.getElementById("dCmp").addEventListener("click", e => {
     if (e.target.dataset.unpin === undefined) return;
     pins.splice(+e.target.dataset.unpin, 1); draw();
   });
-  document.getElementById("dBoard").addEventListener("click", e => {
-    const i = e.target.dataset.fix; if (i === undefined) return;
-    const p = fixes[i], f = p.fix;
-    if (f.set) { setTo(f.set); document.getElementById("dAdv").open = true; }
-    lastTry = ""; mark(-1);
-    if (f.level !== undefined) { auto = Math.abs(f.level - breakEven(costs())) < 0.005; lvl.value = Math.round(f.level * 100); }
-    draw(); applied(`Applied the ${p.role}'s fix: ${f.label.replace("Apply: ", "")}. See how the board reacts now.`);
-  });
-  mark(0); reset();
+
+  const saved = load();
+  FIELDS.forEach(([k]) => (input(k).value = saved?.c?.[k] ?? D.costs[k]));
+  if (saved && !saved.auto) { auto = false; lvl.value = saved.level; }
+  if (saved && changes(costs()).length) document.getElementById("dAdv").open = true;
+  draw();
   document.getElementById("dAuc").innerHTML = `<tr><th>Model</th><th style="text-align:right">AUC</th></tr>`
     + Object.entries(D.model.auc).map(([k, v]) => `<tr><td>${k}</td><td style="text-align:right">${v.toFixed(2)}</td></tr>`).join("");
 })();
