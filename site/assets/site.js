@@ -42,27 +42,41 @@
   // rate under 80% leaves 8+ surprise breakdowns a year; extra misses only count when a lower alert level would avoid them. Returns [{role, who, mood: "backs" | "concerns" | "blocks",
   // say, fix}], where fix (optional) is {label, set: {cost: value}}, {label, level} or {label, href}: the change that
   // would answer the concern. The board never changes anything itself; the page applies a fix only when clicked.
-  // The board's sign-off tests: two per executive, the same lines the pilot's exit checks use on Deliver.
-  // An executive signs only when both tests pass; the board never changes the inputs.
-  function board(c, r) {
-    const seat = (role, who, tests, yes) => {
-      const fail = tests.find(t => !t.ok);
-      return { role, who, mood: fail ? "concerns" : "backs", tests, say: fail ? fail.hint : yes };
+  // How three executives react to the calculator's numbers: fixed rules, in their own words. A fix is applied only when clicked.
+  function board(c, r, level) {
+    const wk = r.false_alarms / 52, gross = r.net + c.running_cost, be = breakEven(c), atBe = value(c, be);
+    const lost = atBe.net - r.net;
+    const toBe = { label: `Apply: go back to the ${Math.round(be * 100)}% break-even level`, level: be };
+    // Lowest alert level that keeps false alarms to one a week and at least half the alerts real
+    const calm = [...Array(99).keys()].map(k => (k + 1) / 100).find(t => { const v = value(c, t); return v.false_alarms <= 52 && v.precision >= 0.5; });
+    const toCalm = calm && calm > level ? { label: `Apply: raise the alert level to ${Math.round(calm * 100)}%`, level: calm } : null;
+    const maxSetup = Math.floor((18 - c.months_to_deploy) * r.net / 12 / 5000) * 5000;
+    const cfo = r.net <= 0 ? ["blocks", `It loses ${usd(-r.net)} a year at these costs. I can't take that to the board.`, null]
+      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${usd(c.deployment_cost)} setup or show more savings.`,
+          maxSetup > 0 ? { label: `Apply: cap setup at ${usd(maxSetup)}`, set: { deployment_cost: maxSetup } } : null]
+      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${usd(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
+      : c.running_cost > 0.35 * gross ? ["concerns", `Running costs eat ${Math.round(c.running_cost / gross * 100)}% of the gross saving. I want a fixed-price contract before I sign.`,
+          { label: `Apply: negotiate running cost to ${usd(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
+      : r.payback > 12 ? ["concerns", `${r.payback.toFixed(1)} months to pay back. Fine, but release the money in stages: one production line first.`,
+          { label: "See the staged rollout in Decide →", href: "decide.html" }]
+      : ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. I'll still budget on the published studies, not the model test, and treat the rest as upside.`];
+    const coo = r.precision < 0.3 ? ["blocks", `Only ${Math.round(r.precision * 100)}% of alerts are real. My crew will stop answering them inside a month.`, toCalm]
+      : wk > 1 ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is more than one a week. Expect technicians to start ignoring it.`, toCalm]
+      : r.precision < 0.5 ? ["concerns", `Half the alerts are wrong (${Math.round(r.precision * 100)}% real). Show the reason with each one, or trust goes.`, toCalm]
+      : level > be && r.missed - atBe.missed >= 1 ? ["concerns", `This alert level lets through ${(r.missed - atBe.missed).toFixed(1)} more surprise breakdowns a year than break-even would. Those are the night-shift call-outs I wanted gone.`, toBe]
+      : ["backs", `About ${Math.round(r.false_alarms)} false alarms a year, one every ${Math.round(52 / Math.max(r.false_alarms, 0.1))} weeks. My crew can work with that if alerts land in the maintenance system.`];
+    const cto = r.recall < 0.6 ? ["blocks", `At a ${Math.round(level * 100)}% alert level it catches only ${Math.round(r.recall * 100)}% of breakdowns. We'd be paying for a model and still missing most failures.`, level > be ? toBe : null]
+      : r.recall < 0.8 ? ["concerns", `Tuned this cautiously, it misses ${Math.round((1 - r.recall) * 100)}% of breakdowns. Lower the alert level before go-live.`, level > be ? toBe : null]
+      : c.running_cost < 30000 ? ["concerns", `${usd(c.running_cost)} a year won't cover monitoring and retraining. The model will drift and nobody will notice.`,
+          { label: "Apply: budget $30,000 a year for monitoring", set: { running_cost: 30000 } }]
+      : ["backs", `Catches ${Math.round(r.recall * 100)}% on the test. The data is synthetic, so I want the 3-month catch rate monitored from day one.`];
+    const tests = {
+      CFO: [[r.net > 0, "Saves money"], [r.net > 0 && r.payback <= 12, "Pays back in 12 months"]],
+      COO: [[r.false_alarms <= 52, "≤ 1 false alarm a week"], [r.precision >= 0.5, "Half its alerts real"]],
+      CTO: [[r.recall >= 0.8, "Catches 80%"], [c.running_cost >= 30000, "$30k a year to run it"]],
     };
-    return [
-      seat("CFO", "Finance chief", [
-        { ok: r.net > 0, text: "Saves money every year", now: usd(r.net), hint: "It costs more than it saves. Lower the setup or running cost, or check the cost of a breakdown." },
-        { ok: r.net > 0 && r.payback <= 12, text: "Pays for itself within 12 months", now: r.net > 0 ? months(r.payback) : "never", hint: "Too slow to pay back. Lower the one-time setup or go live sooner." }],
-        `I'll still budget on the published ${money(D.published.net)} a year, not this test, and treat the rest as upside.`),
-      seat("COO", "Operations chief", [
-        { ok: r.false_alarms <= 52, text: "No more than one false alarm a week", now: `${r.false_alarms.toFixed(1)} a year`, hint: "Too many false alarms; the crew will start ignoring it. Move the slider right so it warns only when surer." },
-        { ok: r.precision >= 0.5, text: "At least half its alerts are real", now: pct(r.precision || 0), hint: "Most alerts are false. Move the slider right so it warns only when surer." }],
-        "My crew can work with that, as long as alerts land in the maintenance system."),
-      seat("CTO", "Technology chief", [
-        { ok: r.recall >= 0.8, text: "Catches at least 80% of breakdowns", now: pct(r.recall), hint: "It misses too many breakdowns. Move the slider left so it warns earlier." },
-        { ok: c.running_cost >= 30000, text: "At least $30,000 a year to monitor and retrain it", now: usd(c.running_cost), hint: "Too little budget to run it; the model will drift and nobody will notice." }],
-        "The data is synthetic, so I want the catch rate checked from month one."),
-    ];
+    return [["CFO", "Finance chief", ...cfo], ["COO", "Operations chief", ...coo], ["CTO", "Technology chief", ...cto]]
+      .map(([role, who, mood, say, fix]) => ({ role, who, mood, say, fix, tests: tests[role] }));
   }
 
   // Break-even alert level, as src/value.py alert_threshold()
@@ -77,7 +91,7 @@
       from: `Discover put ${money(D.plant.total)} a year of losses on the table.`, now: "Which AI tool, if any, attacks them best?",
       answer: "Predictive maintenance first. The runner-up rests on a vendor's own claim.", made: "Priced options with sources, cautious view", gate: ["Predictive", "maint. first"] },
     { slug: "business-case", name: "Business case", q: "Will it pay for itself, and how sure are we?",
-      from: "Evaluate picked Sentry, predictive maintenance, on published results.", now: "Test it on machine data and price it for this plant.",
+      from: "Evaluate picked Doc, predictive maintenance, on published results.", now: "Test it on machine data and price it for this plant.",
       answer: `Plan on ${money(D.published.net)} a year. Still ${money(D.decision.worst_case)} in the worst case.`, made: "ROI model with ranges, break-even", gate: [`${money(D.published.net)} a year`, "planned"] },
     { slug: "readiness", name: "Readiness", q: "Can the team actually use it?",
       from: `The business case says it pays: ${money(D.published.net)} a year planned, ${money(D.decision.worst_case)} in the worst case.`, now: "Money isn't enough. Is the team ready to act on warnings?",
@@ -90,7 +104,7 @@
       from: "Decide approved a pilot on one line, after the readiness gaps are closed.", now: "Specify it, build it, and set the checks the pilot must pass.",
       answer: "Specified, built and tested. The pilot had to pass three exit checks.", made: "Requirements, integration spec, 13 UATs, traceability", gate: ["13 tests", "pass"] },
     { slug: "measure", name: "Measure", q: "Did the savings show up?",
-      from: "Deliver built Sentry and ran the one-line pilot against its exit checks.", now: "A year after go-live, did the savings show up?",
+      from: "Deliver built Doc and ran the one-line pilot against its exit checks.", now: "A year after go-live, did the savings show up?",
       answer: `${money(D.tracking.delivered)} in year one against ${money(D.tracking.plan)} planned, and why it missed the model.`, made: "Monthly tracking, gap analysis by cause", gate: [`${money(D.tracking.delivered)} vs`, `${money(D.tracking.plan)} plan`] },
   ];
   const href = p => `${ROOT}/phases/${p.slug}.html`;
@@ -159,7 +173,7 @@
       </g>`;
     const vertical = PHASES.map((p, i) =>
       `<a href="${href(p)}" class="${i === sel ? "on" : seen.includes(i) ? "done" : ""}"><span>0${i + 1}</span>${p.name}<em>${p.gate.join(" ")}</em></a>`).join("");
-    const LIVE = `<b>Go-live!</b> Sentry is now watching every machine on the floor. Next question: did the savings show up?`;
+    const LIVE = `<b>Go-live!</b> Doc is now watching every machine on the floor. Next question: did the savings show up?`;
     el.innerHTML = `<svg viewBox="0 0 ${20 + 7 * w + dx + 10} ${ly + 60}" role="img" aria-label="Seven phases drawn as a rising staircase, each with its gate, and a person climbing it">
       <defs><marker id="arTeal" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#0f6d74" stroke-width="1.8" stroke-linecap="round"/></marker><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#8a8a85" stroke-width="1.5"/></marker></defs>${s}</svg>
       <div class="stairs-v">${vertical}</div>
@@ -269,7 +283,7 @@
     if (head) head.innerHTML = `<p class="eyebrow">Phase ${i + 1} of 7 · ${p.name}</p><h1>${p.q}</h1>` +
       (p.from ? `<p class="bridge"><span class="muted">${p.from}</span> <b>Now:</b> ${p.now}</p>` : "");
     rail(i);
-    if (i === n - 1) toast(`<b>Go-live!</b> Sentry went live across the plant. This page checks whether the savings showed up.`);
+    if (i === n - 1) toast(`<b>Go-live!</b> Doc went live across the plant. This page checks whether the savings showed up.`);
     pager(i);
     detailsToggle();
   }

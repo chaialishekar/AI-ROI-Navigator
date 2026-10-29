@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="stylesheet" href="../assets/style.css?v=20261029">
 </head>
 <body data-root="..">
 <nav class="nav" data-nav></nav>
@@ -85,10 +85,10 @@
       <div class="step-h"><span class="num">3</span><div><b>Against the options without AI</b><div class="small">The same costs applied to every option. Pin your setup to keep it as a column while you try another.</div></div>
         <button class="chip" type="button" id="dPin">Pin this setup</button></div>
       <div class="tscroll"><table class="t cmp" id="dCmp"></table></div>
-      <div class="step-h"><span class="num">4</span><div><b>Would the board sign off?</b><div class="small">Each executive has two tests. They sign when both pass.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
+      <div class="step-h"><span class="num">4</span><div><b>Would the board sign off?</b><div class="small">How three executives react to your numbers. A concern often comes with a fix you can try in one click.</div></div><div class="small" id="dBoardSum" style="margin-left:auto"></div></div>
       <div class="board" id="dBoard" aria-live="polite"></div>
       <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
-      <p class="small" style="margin:6px 0 0">Not a number you can change here: the COO also wants the <span data-v="readiness.weakest.length"></span> readiness gaps closed before go-live. That is about people and process, so it is on the <a href="readiness.html">Readiness page</a>. The tests are fixed rules, not a live AI, and they are the same exit checks the pilot has to pass on <a href="deliver.html">Deliver</a>.</p>
+      <p class="small" style="margin:6px 0 0">One worry is not a number here: the COO also wants the <span data-v="readiness.weakest.length"></span> readiness gaps closed before go-live. That is about people and process, so it is on the <a href="readiness.html">Readiness page</a>. The reactions are fixed rules, not a live AI. The ✓/✗ checks under each one are the same exit checks the pilot has to pass on <a href="deliver.html">Deliver</a>.</p>
     </div>
     <details class="tech"><summary>For the technical reader</summary>
     <div class="grid g2" style="margin-top:14px">
@@ -103,10 +103,10 @@
 <section data-pager></section>
 <footer data-footer></footer>
 
-<script src="../assets/data.js"></script>
-<script src="../assets/site.js"></script>
+<script src="../assets/data.js?v=20261029"></script>
+<script src="../assets/site.js?v=20261029"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="../assets/characters.js"></script>
+<script src="../assets/characters.js?v=20261029"></script>
 <script>
   const { D, money, pct, months, phaseHead } = Site;
   phaseHead(2);
@@ -135,7 +135,7 @@
 
   const trio = {
     rulebook: ["Rulebook · the manual's rules", `${money(D.rules.annual_net)} a year`, `Catches ${pct(D.rules.recall)} of breakdowns, but raises ~${Math.round(D.rules.false_alarms)} false alarms a year. Only ${pct(D.rules.precision)} of its alerts are real: the kind of noise a crew learns to ignore.`],
-    sentry: ["Sentry · predictive maintenance", `${money(v.annual_net)} a year`, `Catches ${pct(v.recall)} of breakdowns with ~${Math.round(v.false_alarms)} false alarms a year. ${pct(v.precision)} of its alerts are real. The manual's limits are kept to explain each warning.`],
+    sentry: ["Doc · predictive maintenance", `${money(v.annual_net)} a year`, `Catches ${pct(v.recall)} of breakdowns with ~${Math.round(v.false_alarms)} false alarms a year. ${pct(v.precision)} of its alerts are real. The manual's limits are kept to explain each warning.`],
     snooze: ["Snooze · do nothing", "$0 saved", `Every breakdown stays unplanned: ${money(c.failures_per_year * c.cost_missed)} a year in downtime and emergency repairs.`],
   };
   document.getElementById("trioCards").innerHTML = Object.entries(trio).map(([k, [t, n, d]]) =>
@@ -151,8 +151,8 @@
   const rv = Site.rulesValue(c), lead = rv.net - v.annual_net, perCatch = c.cost_missed - c.cost_caught;
   const share = lead / (rv.caught * perCatch);
   document.getElementById("rulesWin").innerHTML = lead > 0
-    ? `On paper the manual's rules save <b>${money(lead)} a year more</b> than Sentry, because they catch slightly more breakdowns. But they raise about ${Math.round(rv.caught + rv.false_alarms)} alerts a year and ${Math.round(rv.false_alarms)} of them are false. Each real alert the crew skips turns a ${money(c.cost_caught)} repair back into a ${money(c.cost_missed)} breakdown. If the crew ignores more than <b>${pct(share)}</b> of the rules' real alerts (about 1 in ${Math.round(1 / share)}), Sentry comes out ahead. In the simulated rollout on Measure, crews acted on only 50–67% of alerts in the first three months, so I planned for alert fatigue. If your crew reliably acts on every alert, the rules are the better buy.`
-    : `At these costs Sentry saves more than the manual's rules even if the crew acts on every rule alert.`;
+    ? `On paper the manual's rules save <b>${money(lead)} a year more</b> than Doc, because they catch slightly more breakdowns. But they raise about ${Math.round(rv.caught + rv.false_alarms)} alerts a year and ${Math.round(rv.false_alarms)} of them are false. Each real alert the crew skips turns a ${money(c.cost_caught)} repair back into a ${money(c.cost_missed)} breakdown. If the crew ignores more than <b>${pct(share)}</b> of the rules' real alerts (about 1 in ${Math.round(1 / share)}), Doc comes out ahead. In the simulated rollout on Measure, crews acted on only 50–67% of alerts in the first three months, so I planned for alert fatigue. If your crew reliably acts on every alert, the rules are the better buy.`
+    : `At these costs Doc saves more than the manual's rules even if the crew acts on every rule alert.`;
 </script>
 <script>
 (() => {
@@ -165,7 +165,7 @@
   const box = document.getElementById("dIn"), lvl = document.getElementById("dLevel");
   box.innerHTML = FIELDS.map(([k, t, step]) => `<label>${t}<input type="number" min="0" step="${step}" data-k="${k}"></label>`).join("");
   const input = k => box.querySelector(`[data-k=${k}]`);
-  let auto = true, pins = [];
+  let auto = true, pins = [], fixes = [], undo = null;
   const costs = () => Object.fromEntries(FIELDS.map(([k]) => [k, +input(k).value || 0]));
   const setTo = obj => Object.entries(obj).forEach(([k, v]) => { const i = input(k); i.value = v; i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); });
 
@@ -187,7 +187,7 @@
     if (isOn(set)) {   // clicking an active what-if undoes it
       if (set.level) auto = true; else setTo(Object.fromEntries(Object.keys(set).map(k => [k, D.costs[k]])));
     } else if (set.level) { auto = false; lvl.value = set.level; } else setTo(set);
-    draw();
+    document.getElementById("dApplied").textContent = ""; draw();
   });
 
   // What differs from my assumptions, in words
@@ -199,7 +199,7 @@
 
   function compare(c, level, label) {
     const none = { net: 0, payback: null, three_year: 0, recall: 0, false_alarms: 0, precision: null, none: true };
-    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`Sentry · ${label}`, value(c, level), `alert at ${Math.round(level * 100)}%`],
+    const cols = [["Do nothing", none, ""], ["Manual's rules", rulesValue(c), "no AI"], [`Doc · ${label}`, value(c, level), `alert at ${Math.round(level * 100)}%`],
       ...pins.map((p, k) => [`Pinned · ${p.label}`, value(p.c, p.level), `alert at ${Math.round(p.level * 100)}% <button class="linkbtn" type="button" data-unpin="${k}">remove</button>`])];
     const best = Math.max(...cols.map(x => x[1].net));
     const rows = [["Net savings a year", r => usd(r.net)], ["Pays for itself in", r => (r.none ? "–" : months(r.payback))],
@@ -225,17 +225,19 @@
     document.getElementById("dSay").textContent = r.net > 0
       ? `Catches ${r.caught.toFixed(1)} of ${c.failures_per_year} breakdowns a year and misses ${r.missed.toFixed(1)}; ${pct(r.precision)} of its alerts are real.`
       : "At these costs the AI costs more than it saves.";
-    const b = board(c, r), MOOD = { backs: ["good", "Would sign"], concerns: ["warn", "Not yet"] };
-    document.getElementById("dBoard").innerHTML = b.map(p => `<div class="seat ${p.mood}"><div class="who"><span class="av">${p.role}</span>
+    const b = board(c, r, level), MOOD = { backs: ["good", "Backs it"], concerns: ["warn", "Has concerns"], blocks: ["bad", "Blocks it"] };
+    document.getElementById("dBoard").innerHTML = b.map((p, i) => `<div class="seat ${p.mood}"><div class="who"><span class="av">${p.role}</span>
       <b>${p.who}</b><span class="tag ${MOOD[p.mood][0]}">${MOOD[p.mood][1]}</span></div>
-      <ul class="tests">${p.tests.map(t => `<li class="${t.ok ? "ok" : "no"}"><span class="mk" aria-hidden="true">${t.ok ? "✓" : "✗"}</span><span>${t.text}<br><span class="small">Now: ${t.now}</span></span></li>`).join("")}</ul>
-      <p>${p.say}</p></div>`).join("");
+      <p>“${p.say}”</p>
+      <div class="checks">${p.tests.map(([ok, t]) => `<span class="${ok ? "ok" : "no"}">${ok ? "✓" : "✗"} ${t}</span>`).join("")}</div>
+      ${p.fix ? (p.fix.href ? `<a class="fix" href="${p.fix.href}">${p.fix.label}</a>` : `<button class="fix" type="button" data-fix="${i}">${p.fix.label.replace("Apply: ", "Try it: ")}</button>`) : ""}</div>`).join("");
+    fixes = b;
     compare(c, level, diff.length ? "your setup" : "my assumptions");
-    const yes = b.filter(p => p.mood === "backs").length;
-    document.getElementById("dBoardSum").textContent = yes === 3 ? "All 3 would sign" : `${yes} of 3 would sign`;
+    const yes = b.filter(p => p.mood === "backs").length, no = b.filter(p => p.mood === "blocks").length;
+    document.getElementById("dBoardSum").textContent = no ? `${no} of 3 would block it` : yes === 3 ? "All 3 back it" : `${yes} of 3 back it; the rest want changes`;
     save();
   }
-  box.addEventListener("input", draw);
+  box.addEventListener("input", () => { document.getElementById("dApplied").textContent = ""; draw(); });
   lvl.addEventListener("input", () => { auto = false; draw(); });
   document.getElementById("dAuto").addEventListener("click", () => { auto = true; draw(); });
   document.getElementById("dReset").addEventListener("click", () => { setTo(D.costs); FIELDS.forEach(([k]) => input(k).classList.remove("flash")); auto = true; draw(); });
@@ -243,6 +245,22 @@
     const c = costs(), level = lvl.value / 100, diff = changes(c);
     pins = [...pins, { c, level, label: diff.length ? `setup ${pins.length + 1}` : "my assumptions" }].slice(-2);
     draw(); document.getElementById("dApplied").textContent = "Pinned. Change something else; the pinned column stays.";
+  });
+  // An executive's fix changes the inputs only when clicked, and can be undone
+  const applied = document.getElementById("dApplied");
+  document.getElementById("dBoard").addEventListener("click", e => {
+    const i = e.target.dataset.fix; if (i === undefined) return;
+    const p = fixes[i], f = p.fix;
+    undo = { c: costs(), level: +lvl.value, auto };
+    if (f.set) { setTo(f.set); document.getElementById("dAdv").open = true; }
+    if (f.level !== undefined) { auto = Math.abs(f.level - breakEven(costs())) < 0.005; lvl.value = Math.round(f.level * 100); }
+    draw();
+    applied.innerHTML = `Applied the ${p.role}'s fix: ${f.label.replace("Apply: ", "")}. <button class="linkbtn" type="button" id="dUndo">Undo</button>`;
+  });
+  applied.addEventListener("click", e => {
+    if (e.target.id !== "dUndo" || !undo) return;
+    FIELDS.forEach(([k]) => (input(k).value = undo.c[k])); auto = undo.auto; lvl.value = undo.level; undo = null;
+    draw(); applied.textContent = "Undone.";
   });
   document.getElementById("dCmp").addEventListener("click", e => {
     if (e.target.dataset.unpin === undefined) return;
