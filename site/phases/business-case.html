@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/style.css?v=20261029">
+  <link rel="stylesheet" href="../assets/style.css?v=2026102903">
 </head>
 <body data-root="..">
 <nav class="nav" data-nav></nav>
@@ -103,10 +103,10 @@
 <section data-pager></section>
 <footer data-footer></footer>
 
-<script src="../assets/data.js?v=20261029"></script>
-<script src="../assets/site.js?v=20261029"></script>
+<script src="../assets/data.js?v=2026102903"></script>
+<script src="../assets/site.js?v=2026102903"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="../assets/characters.js?v=20261029"></script>
+<script src="../assets/characters.js?v=2026102903"></script>
 <script>
   const { D, money, pct, months, phaseHead } = Site;
   phaseHead(2);
@@ -156,7 +156,50 @@
 </script>
 <script>
 (() => {
-  const { D, usd, pct, months, value, rulesValue, breakEven, board } = Site;
+  const { D, usd, pct, months, value, rulesValue, breakEven } = Site;
+  // The board: three executives react to the numbers. Plain rules, no live AI: each reaction names the number behind it.
+  // Thresholds are set for this plant: 18 months is the budget horizon; an alert level 10+ points above break-even
+  // that costs over $10k a year is accuracy bought with money; crews tune out when fewer than half the alerts are
+  // real or false alarms pass one a week (US-6.2 adoption risk); a catch
+  // rate under 80% leaves 8+ surprise breakdowns a year; extra misses only count when a lower alert level would avoid them. Returns [{role, who, mood: "backs" | "concerns" | "blocks",
+  // say, fix, tests}], where tests are the pilot's exit checks as [passed, label] and fix (optional) is {label, set: {cost: value}}, {label, level} or {label, href}: the change that
+  // would answer the concern. The board never changes anything itself; the page applies a fix only when clicked.
+  function board(c, r, level) {
+    const wk = r.false_alarms / 52, gross = r.net + c.running_cost, be = breakEven(c), atBe = value(c, be);
+    const lost = atBe.net - r.net;
+    const toBe = { label: `Apply: go back to the ${Math.round(be * 100)}% break-even level`, level: be };
+    // Lowest alert level that keeps false alarms to one a week and at least half the alerts real
+    const calm = [...Array(99).keys()].map(k => (k + 1) / 100).find(t => { const v = value(c, t); return v.false_alarms <= 52 && v.precision >= 0.5; });
+    const toCalm = calm && calm > level ? { label: `Apply: raise the alert level to ${Math.round(calm * 100)}%`, level: calm } : null;
+    const maxSetup = Math.floor((18 - c.months_to_deploy) * r.net / 12 / 5000) * 5000;
+    const cfo = r.net <= 0 ? ["blocks", `It loses ${usd(-r.net)} a year at these costs. I can't take that to the board.`, null]
+      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${usd(c.deployment_cost)} setup or show more savings.`,
+          maxSetup > 0 ? { label: `Apply: cap setup at ${usd(maxSetup)}`, set: { deployment_cost: maxSetup } } : null]
+      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${usd(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
+      : c.running_cost > 0.35 * gross ? ["concerns", `Running costs eat ${Math.round(c.running_cost / gross * 100)}% of the gross saving. I want a fixed-price contract before I sign.`,
+          { label: `Apply: negotiate running cost to ${usd(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
+      : r.payback > 12 ? ["concerns", `${r.payback.toFixed(1)} months to pay back. Fine, but release the money in stages: one production line first.`,
+          { label: "See the staged rollout in Decide →", href: "decide.html" }]
+      : ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. I'll still budget on the published studies, not the model test, and treat the rest as upside.`];
+    const coo = r.precision < 0.3 ? ["blocks", `Only ${Math.round(r.precision * 100)}% of alerts are real. My crew will stop answering them inside a month.`, toCalm]
+      : wk > 1 ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is more than one a week. Expect technicians to start ignoring it.`, toCalm]
+      : r.precision < 0.5 ? ["concerns", `Half the alerts are wrong (${Math.round(r.precision * 100)}% real). Show the reason with each one, or trust goes.`, toCalm]
+      : level > be && r.missed - atBe.missed >= 1 ? ["concerns", `This alert level lets through ${(r.missed - atBe.missed).toFixed(1)} more surprise breakdowns a year than break-even would. Those are the night-shift call-outs I wanted gone.`, toBe]
+      : ["backs", `About ${Math.round(r.false_alarms)} false alarms a year, one every ${Math.round(52 / Math.max(r.false_alarms, 0.1))} weeks. My crew can work with that if alerts land in the maintenance system.`];
+    const cto = r.recall < 0.6 ? ["blocks", `At a ${Math.round(level * 100)}% alert level it catches only ${Math.round(r.recall * 100)}% of breakdowns. We'd be paying for a model and still missing most failures.`, level > be ? toBe : null]
+      : r.recall < 0.8 ? ["concerns", `Tuned this cautiously, it misses ${Math.round((1 - r.recall) * 100)}% of breakdowns. Lower the alert level before go-live.`, level > be ? toBe : null]
+      : c.running_cost < 30000 ? ["concerns", `${usd(c.running_cost)} a year won't cover monitoring and retraining. The model will drift and nobody will notice.`,
+          { label: "Apply: budget $30,000 a year for monitoring", set: { running_cost: 30000 } }]
+      : ["backs", `Catches ${Math.round(r.recall * 100)}% on the test. The data is synthetic, so I want the 3-month catch rate monitored from day one.`];
+    const tests = {
+      CFO: [[r.net > 0, "Saves money"], [r.net > 0 && r.payback <= 12, "Pays back in 12 months"]],
+      COO: [[r.false_alarms <= 52, "≤ 1 false alarm a week"], [r.precision >= 0.5, "Half its alerts real"]],
+      CTO: [[r.recall >= 0.8, "Catches 80%"], [c.running_cost >= 30000, "$30k a year to run it"]],
+    };
+    return [["CFO", "Finance chief", ...cfo], ["COO", "Operations chief", ...coo], ["CTO", "Technology chief", ...cto]]
+      .map(([role, who, mood, say, fix]) => ({ role, who, mood, say, fix, tests: tests[role] }));
+  }
+
   const FIELDS = [["failures_per_year", "Breakdowns a year, no AI", 1], ["cost_missed", "Cost of a breakdown ($)", 500],
     ["cost_caught", "Planned repair when caught early ($)", 250], ["cost_false_alarm", "Inspection on a false alarm ($)", 50],
     ["running_cost", "Running the AI, a year ($)", 1000], ["deployment_cost", "One-time setup ($)", 5000], ["months_to_deploy", "Months to go live", 1]];
