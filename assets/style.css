@@ -246,3 +246,28 @@ details.tech summary { cursor: pointer; font-size: 14px; color: var(--muted); }
 table.cmp th, table.cmp td { text-align: right; white-space: nowrap; }
 table.cmp th:first-child, table.cmp td:first-child { text-align: left; }
 table.cmp .now { background: rgba(15, 109, 116, 0.06); }
+.step-h { display: flex; align-items: flex-start; gap: 12px; margin: 26px 0 10px; }
+.step-h:first-child { margin-top: 0; }
+.step-h .num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--page);
+               font-size: 13px; font-weight: 600; display: grid; place-items: center; }
+.chip.on { background: var(--ink); color: var(--page); border-color: var(--ink); }
+details.adv { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+details.adv summary { cursor: pointer; font-size: 14px; color: var(--teal); font-weight: 500; }
+.opt-card { cursor: default; transition: box-shadow 0.2s ease; }
+.opt-card:focus { outline: none; }
+.bridge { margin: 14px 0 0; max-width: 680px; font-size: 16px; line-height: 1.5; }
+.plan ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.5; }
+.plan li + li { margin-top: 6px; }
+
+/* Phase-to-phase: cross-fade instead of a white flash, nav stays put */
+@view-transition { navigation: auto; }
+.nav { view-transition-name: nav; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.22s; }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+/* Reserve space for boxes the script fills after load (no layout shift) */
+#heroPop { min-height: 104px; }
+#stairsPanel { min-height: 112px; }
+@media (max-width: 640px) { #heroPop { min-height: 128px; } #stairsPanel { min-height: 260px; } }
+.nav:empty { height: 64px; }
+body[data-root=".."] .nav:empty { height: 143px; }
+.plan p { font-size: 14px; line-height: 1.5; }
