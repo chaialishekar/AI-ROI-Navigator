@@ -65,21 +65,29 @@
 <section id="details" hidden>
   <div class="wrap">
     <p class="eyebrow">The details</p>
-    <h2>Change the costs. The savings update.</h2>
+    <h2>What if my guesses are wrong? Try it.</h2>
+    <p class="muted" style="margin:0 0 18px;max-width:680px">The boxes below are my assumptions about the plant. Change any number, or pick a scenario, and the savings and the executives' reactions update.</p>
     <div class="card">
+      <div class="try"><span class="label">Try a scenario</span><span id="dTry"></span><button class="chip ghost" type="button" id="dReset">Reset all</button></div>
       <div class="inputs" id="dIn"></div>
-      <div style="margin-top:16px"><label class="small" for="dLevel">Alert when the chance of a breakdown is at least <b id="dLevelTxt"></b></label>
+      <div style="margin-top:18px"><label class="small" for="dLevel">How sure should the AI be before it warns? <b id="dLevelTxt"></b></label>
         <input id="dLevel" type="range" min="1" max="99" step="1" style="width:100%;accent-color:var(--teal)">
-        <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button> · <button class="linkbtn" type="button" id="dReset">Reset all</button></div>
+        <div class="slider-hint small"><span>← warns early: catches more, more false alarms</span><span>warns late: fewer false alarms, misses more →</span></div>
+        <span class="small" id="dLevelNote"></span> <button class="linkbtn" type="button" id="dAuto">Use break-even</button></div>
       <div class="out" id="dOut"></div>
       <p class="muted" style="margin:16px 0 0" id="dSay"></p>
+      <div class="board-head"><div><div class="label">The board reacts</div><div class="small">How three executives would respond to these numbers. A concern often comes with a fix you can apply in one click.</div></div><div class="small" id="dBoardSum"></div></div>
+      <div class="board" id="dBoard" aria-live="polite"></div>
+      <p class="small" id="dApplied" style="margin:10px 0 0;color:var(--teal)"></p>
+      <p class="small" style="margin:6px 0 0">The board never changes the model by itself: it only comments. Reactions follow fixed rules on the numbers above (payback, savings given up versus break-even, false alarms a week, share of alerts that are real, catch rate, running cost) and the Readiness results, not a live AI.</p>
     </div>
-    <div class="grid g2">
+    <details class="tech"><summary>For the technical reader</summary>
+    <div class="grid g2" style="margin-top:14px">
       <div class="card"><div class="label">Models compared on the same 3,000 test records</div><div class="tscroll"><table class="t" id="dAuc"></table></div>
         <p class="small" style="margin:12px 0 0">AUC: how well a model ranks risky machines above safe ones (1.0 is perfect, 0.5 is a coin flip).</p></div>
       <div class="card"><div class="label">What changing the inputs does not do</div>
         <p class="muted" style="margin:6px 0 0">The model is not retrained. Its tested results at each alert level (what share of breakdowns it catches, how many false alarms it raises) are fixed; your costs turn them into dollars, with the same formula as the Python code.</p></div>
-    </div>
+    </div></details>
   </div>
 </section>
 
@@ -127,7 +135,7 @@
 </script>
 <script>
 (() => {
-  const { D, usd, pct, months, value, breakEven } = Site;
+  const { D, usd, pct, months, value, breakEven, board } = Site;
   const FIELDS = [["failures_per_year", "Breakdowns a year, no AI", 1], ["cost_missed", "Cost of a breakdown ($)", 500],
     ["cost_caught", "Planned repair when caught early ($)", 250], ["cost_false_alarm", "Inspection on a false alarm ($)", 50],
     ["running_cost", "Running the AI, a year ($)", 1000], ["deployment_cost", "One-time setup ($)", 5000], ["months_to_deploy", "Months to go live", 1]];
@@ -135,7 +143,20 @@
   box.innerHTML = FIELDS.map(([k, t, step]) => `<label>${t}<input type="number" min="0" step="${step}" data-k="${k}"></label>`).join("");
   let auto = true;
   const costs = () => Object.fromEntries(FIELDS.map(([k]) => [k, +box.querySelector(`[data-k=${k}]`).value || 0]));
-  function reset() { FIELDS.forEach(([k]) => (box.querySelector(`[data-k=${k}]`).value = D.costs[k])); auto = true; draw(); }
+  const setTo = obj => Object.entries(obj).forEach(([k, v]) => { const i = box.querySelector(`[data-k=${k}]`); i.value = v; i.classList.remove("flash"); void i.offsetWidth; i.classList.add("flash"); });
+  const applied = t => (document.getElementById("dApplied").textContent = t);
+  function reset(redraw = true) { FIELDS.forEach(([k]) => (box.querySelector(`[data-k=${k}]`).value = D.costs[k])); auto = true; applied(""); if (redraw) draw(); }
+  let fixes = [];
+  // Scenarios: each starts from my assumptions and changes one thing
+  const TRY = [["Breakdowns cost less ($10k)", () => setTo({ cost_missed: 10000 })],
+    ["Setup costs 4× more", () => setTo({ deployment_cost: D.costs.deployment_cost * 4 })],
+    ["Twice as many breakdowns", () => setTo({ failures_per_year: D.costs.failures_per_year * 2 })],
+    ["AI only warns when 90% sure", () => { auto = false; lvl.value = 90; }]];
+  document.getElementById("dTry").innerHTML = TRY.map(([t], i) => `<button class="chip" type="button" data-try="${i}">${t}</button>`).join("");
+  document.getElementById("dTry").addEventListener("click", e => {
+    const i = e.target.dataset.try; if (i === undefined) return;
+    reset(false); TRY[i][1](); draw(); applied(`Scenario: ${TRY[i][0]}. Everything else is back to my assumptions.`);
+  });
   function draw() {
     const c = costs();
     if (auto) lvl.value = Math.round(breakEven(c) * 100);
@@ -149,11 +170,25 @@
     document.getElementById("dSay").textContent = r.net > 0
       ? `Catches ${r.caught.toFixed(1)} of ${c.failures_per_year} breakdowns a year and misses ${r.missed.toFixed(1)}; ${pct(r.precision)} of its alerts are real.`
       : "At these costs the AI costs more than it saves.";
+    const b = board(c, r, level), MOOD = { backs: ["good", "Backs it"], concerns: ["warn", "Has concerns"], blocks: ["bad", "Blocks it"] };
+    document.getElementById("dBoard").innerHTML = b.map(p => `<div class="seat ${p.mood}"><div class="who"><span class="av">${p.role}</span>
+      <b>${p.who}</b><span class="tag ${MOOD[p.mood][0]}">${MOOD[p.mood][1]}</span></div>
+      <p>“${p.say}”</p>${p.fix ? (p.fix.href ? `<a class="fix" href="${p.fix.href}">${p.fix.label}</a>` : `<button class="fix" type="button" data-fix="${b.indexOf(p)}">${p.fix.label}</button>`) : ""}</div>`).join("");
+    fixes = b;
+    const yes = b.filter(p => p.mood === "backs").length, no = b.filter(p => p.mood === "blocks").length;
+    document.getElementById("dBoardSum").textContent = no ? `${no} of 3 would block it` : yes === 3 ? "All 3 back it" : yes ? `${yes} of 3 back it; the rest want changes` : "None back it yet: all want changes";
   }
   box.addEventListener("input", draw);
   lvl.addEventListener("input", () => { auto = false; draw(); });
   document.getElementById("dAuto").addEventListener("click", () => { auto = true; draw(); });
-  document.getElementById("dReset").addEventListener("click", reset);
+  document.getElementById("dReset").addEventListener("click", () => reset());
+  document.getElementById("dBoard").addEventListener("click", e => {
+    const i = e.target.dataset.fix; if (i === undefined) return;
+    const p = fixes[i], f = p.fix;
+    if (f.set) setTo(f.set);
+    if (f.level !== undefined) { auto = Math.abs(f.level - breakEven(costs())) < 0.005; lvl.value = Math.round(f.level * 100); }
+    draw(); applied(`Applied the ${p.role}'s fix: ${f.label.replace("Apply: ", "")}. See how the board reacts now.`);
+  });
   reset();
   document.getElementById("dAuc").innerHTML = `<tr><th>Model</th><th style="text-align:right">AUC</th></tr>`
     + Object.entries(D.model.auc).map(([k, v]) => `<tr><td>${k}</td><td style="text-align:right">${v.toFixed(2)}</td></tr>`).join("");
