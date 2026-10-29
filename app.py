@@ -279,7 +279,8 @@ def page_value():
             cost_caught=c2.number_input("Cost of a planned repair when caught early ($)", 1, 10_000_000, 4_000, 500, key="c_caught"),
             cost_false_alarm=c2.number_input("Cost of a false alarm inspection ($)", 1, 1_000_000, 500, 50, key="c_fa"),
             running_cost=c3.number_input("Yearly running cost of the AI ($)", 1, 10_000_000, 60_000, 5_000, key="c_run"),
-            deployment_cost=c3.number_input("One-time deployment cost ($)", 1, 10_000_000, 150_000, 10_000, key="c_dep"),
+            deployment_cost=c3.number_input("One-time setup and integration ($)", 1, 10_000_000, 110_000, 10_000, key="c_dep"),
+            change_cost=c3.number_input("One-time training and change management ($)", 0, 10_000_000, 40_000, 5_000, key="c_change"),
             months_to_deploy=c3.number_input("Months until live", 0, 24, 2, 1, key="c_months"),
         )
         st.caption("Defaults are illustrative assumptions for the auto-parts plant. Edit them to match your operation.")
@@ -424,7 +425,7 @@ def page_value():
         cc1, cc2 = st.columns(2)
         custom_m = cc1.number_input("Months to deploy: custom build", 0, 24, 6, 1, key="custom_m")
         ready_m = cc2.number_input("Months to deploy: ready-made solution", 0, 24, 1, 1, key="ready_m")
-        fy = lambda months: r["annual_net"] * max(0, 12 - months) / 12 - costs.deployment_cost
+        fy = lambda months: r["annual_net"] * max(0, 12 - months) / 12 - costs.setup
         st.markdown(md(f"First-year value: custom build **{money(fy(custom_m))}**, ready-made **{money(fy(ready_m))}**. "
                        f"Going live {custom_m - ready_m} months sooner is worth {money(fy(ready_m) - fy(custom_m))}."))
         st.caption(f"Trained on {res['n_train']:,} records, tested on {res['n_test']:,} it never saw "
@@ -450,7 +451,7 @@ def page_value():
 
     with client:
         kpis([("Projected savings a year", money(r["annual_net"]), f"likely {money_range(band['annual_net'])}"),
-              ("Pays for itself in", months(r["payback_months"]), f"{money(costs.deployment_cost)} to set up"),
+              ("Pays for itself in", months(r["payback_months"]), f"{money(costs.setup)} to set up"),
               ("Saved over 3 years", money(r["three_year"]), "after all AI costs")])
         be = break_even_cost(r, costs)
         with st.expander("How the savings are worked out", icon=":material/calculate:", expanded=True):
@@ -468,8 +469,8 @@ def page_value():
                 f"| Cost with the AI | {money(r['cost_with'])} | sum of the four lines above |\n"
                 f"| **Net savings** | **{money(r['annual_net'])}** | today minus with the AI, after running costs |\n\n"
                 "| One-off and over time | Amount | How it is worked out |\n|---|---|---|\n"
-                f"| Setup and integration | {money(costs.deployment_cost)} | one-time, single estimate (not split "
-                "into software, integration and training) |\n"
+                f"| Setup and integration | {money(costs.deployment_cost)} | one-time: software and connecting it to the maintenance system |\n"
+                f"| Training and change management | {money(costs.change_cost)} | one-time: training crews and redesigning how warnings are handled |\n"
                 f"| Payback | {months(r['payback_months'])} | {costs.months_to_deploy:.0f} months to go live, then "
                 "savings cover the setup cost |\n"
                 f"| 3-year net value | {money(r['three_year'])} | savings for {36 - costs.months_to_deploy:.0f} live "
@@ -681,7 +682,7 @@ def business_case_brief(val: dict, rd: dict) -> dict:
         "title": "Predictive maintenance for an auto-parts plant", "client": "Auto-parts plant, tier-1 automotive supplier",
         "author": "Chaitali Shekar", "decision": label, "decision_reason": reason,
         "kpis": [("Projected savings a year", money(val["annual_net"]), "after AI running costs"),
-                 ("Pays for itself in", months(val["payback_months"]), f"{money(c.deployment_cost)} to set up"),
+                 ("Pays for itself in", months(val["payback_months"]), f"{money(c.setup)} to set up"),
                  ("3-year ROI", f"{val['roi_3y']*100:,.0f}%", f"{money(val['three_year'])} net over 3 years"),
                  ("If costs are worse", money(cases["Low"]["annual_net"]), "savings a year, worst case")],
         "situation": (f"An auto-parts plant has about {c.failures_per_year:.0f} unplanned machine breakdowns a year at "
@@ -709,7 +710,7 @@ def business_case_brief(val: dict, rd: dict) -> dict:
                    "Worse case = every cost assumption at the end of its range that hurts value."),
         "risks": risks,
         "rules": [list(r) for r in DECISION_RULES], "rule_index": [r[0] for r in DECISION_RULES].index(label),
-        "plan": [["Month 0", f"Approve the {money(c.deployment_cost)} setup budget; agree the cost of a breakdown with finance",
+        "plan": [["Month 0", f"Approve the {money(c.setup)} setup budget; agree the cost of a breakdown with finance",
                   "Savings stay positive in the worst case"],
                  [f"Months 1-{m:.0f}" if m > 1 else "Month 1",
                   "Connect warnings to the maintenance system, close the readiness gaps, train the crew",

@@ -97,7 +97,7 @@ def main():
         "Annual net savings, 90% range": "$611,295 to $704,047",
         "Annual net savings, low case": "$163,971",
         "Payback": f"{r['payback_months']:.1f} months",
-        "Deployment cost": money(c.deployment_cost),
+        "Deployment cost": money(c.setup),
         "Biggest driver": "Cost of an unplanned failure ($25,000)",
         "Readiness verdict": "Fix first: workflow fit and user trust score below 2.5 of 5",
     }

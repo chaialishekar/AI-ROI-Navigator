@@ -31,8 +31,14 @@ class Costs:
     cost_caught: float = 4_000             # planned repair when caught early
     cost_false_alarm: float = 500          # technician inspection that finds nothing
     running_cost: float = 60_000           # yearly licence, compute, support
-    deployment_cost: float = 150_000       # one-time setup and integration
+    deployment_cost: float = 110_000       # one-time setup and integration with the maintenance system
     months_to_deploy: float = 2            # until the model is live
+    change_cost: float = 40_000            # one-time training and change management for the crews
+
+    @property
+    def setup(self) -> float:
+        """Everything paid once before go-live: integration plus the people side."""
+        return self.deployment_cost + self.change_cost
 
 
 def confusion(y_true: np.ndarray, proba: np.ndarray, threshold: float) -> dict:
@@ -62,9 +68,9 @@ def evaluate(y_true: np.ndarray, proba: np.ndarray, threshold: float, c: Costs) 
     annual_net = cost_without - cost_with
 
     live_months_y1 = max(0.0, 12 - c.months_to_deploy)
-    first_year = annual_net * live_months_y1 / 12 - c.deployment_cost
-    three_year = annual_net * max(0.0, 36 - c.months_to_deploy) / 12 - c.deployment_cost
-    roi_3y = three_year / c.deployment_cost if c.deployment_cost else float("nan")
+    first_year = annual_net * live_months_y1 / 12 - c.setup
+    three_year = annual_net * max(0.0, 36 - c.months_to_deploy) / 12 - c.setup
+    roi_3y = three_year / c.setup if c.setup else float("nan")
     payback_months = payback(annual_net, c)
 
     return {
@@ -78,7 +84,7 @@ def evaluate(y_true: np.ndarray, proba: np.ndarray, threshold: float, c: Costs) 
 
 def payback(annual_net: float, c: Costs) -> float:
     """Months from project start until savings cover the deployment cost."""
-    return (c.months_to_deploy + c.deployment_cost / (annual_net / 12)) if annual_net > 0 else float("inf")
+    return (c.months_to_deploy + c.setup / (annual_net / 12)) if annual_net > 0 else float("inf")
 
 
 ACCURACY_THRESHOLD = 0.5    # the usual cut-off; with honest probabilities it gives the most accurate alerts
@@ -131,7 +137,7 @@ def bootstrap(y_true: np.ndarray, proba: np.ndarray, threshold: float, c: Costs,
     out = {k: (samples[k].quantile(tail), samples[k].quantile(1 - tail)) for k in keys}
     net_lo, net_hi = out["annual_net"]
     out["payback_months"] = (payback(net_hi, c), payback(net_lo, c))   # more savings = faster payback
-    out["roi_3y"] = tuple(v / c.deployment_cost for v in out["three_year"])
+    out["roi_3y"] = tuple(v / c.setup for v in out["three_year"])
     return out
 
 
@@ -143,12 +149,14 @@ ASSUMPTIONS = {
     "cost_caught": "Cost of a planned repair ($)",
     "cost_false_alarm": "Cost of a false alarm ($)",
     "running_cost": "Yearly running cost of the AI ($)",
-    "deployment_cost": "One-time deployment cost ($)",
+    "deployment_cost": "One-time setup and integration ($)",
+    "change_cost": "One-time training and change management ($)",
     "months_to_deploy": "Months until live",
 }
 
 # Default spread around each base value: (share below, share above).
-# Costs that are often underestimated (failures, deployment, timeline) get a wider upside.
+# Costs that are often underestimated (failures, deployment, timeline) get a wider upside;
+# the people side (training, change management) most of all.
 DEFAULT_SPREAD = {
     "failures_per_year": (0.25, 0.25),
     "cost_missed": (0.40, 0.40),
@@ -157,6 +165,7 @@ DEFAULT_SPREAD = {
     "running_cost": (0.25, 0.50),
     "deployment_cost": (0.25, 0.50),
     "months_to_deploy": (0.50, 1.00),
+    "change_cost": (0.25, 1.00),
 }
 
 

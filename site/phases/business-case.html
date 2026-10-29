@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect x=%222%22 y=%2215%22 width=%225%22 height=%227%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%229.5%22 y=%2210%22 width=%225%22 height=%2212%22 rx=%221%22 fill=%22%23111%22/%3E%3Crect x=%2217%22 y=%224%22 width=%225%22 height=%2218%22 rx=%221%22 fill=%22%230f6d74%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/style.css?v=2026102903">
+  <link rel="stylesheet" href="../assets/style.css?v=2026102904">
 </head>
 <body data-root="..">
 <nav class="nav" data-nav></nav>
@@ -50,6 +50,10 @@
     <div class="card"><div class="bars" id="cases"></div>
       <p class="small" style="margin:14px 0 0">Net savings a year when every cost assumption is set to its worst, expected and best value.</p></div>
     <div class="callout" style="margin-top:16px"><b>Tuned for dollars, not accuracy.</b> <span class="muted" id="accText"></span></div>
+    <div class="callout" style="margin-top:16px"><b>What these numbers leave out.</b> <span class="muted">A false alarm is priced as one
+      technician's inspection while the line keeps running; if your plant stops the line to check, try the "False alarms stop the line" what-if
+      in the details below. A missed breakdown is priced as downtime and repair only: injury, safety incidents and a catastrophic failure are
+      not priced, so the real cost of a miss is likely higher, which favours catching more, not fewer.</span></div>
   </div>
 </section>
 
@@ -103,10 +107,10 @@
 <section data-pager></section>
 <footer data-footer></footer>
 
-<script src="../assets/data.js?v=2026102903"></script>
-<script src="../assets/site.js?v=2026102903"></script>
+<script src="../assets/data.js?v=2026102904"></script>
+<script src="../assets/site.js?v=2026102904"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="../assets/characters.js?v=2026102903"></script>
+<script src="../assets/characters.js?v=2026102904"></script>
 <script>
   const { D, money, pct, months, phaseHead } = Site;
   phaseHead(2);
@@ -124,7 +128,7 @@
   ];
   document.getElementById("calc").innerHTML = `<tr><th>Line</th><th>How</th><th style="text-align:right">A year</th></tr>`
     + rows.map(([a, b, x]) => `<tr><td>${a}</td><td class="muted">${b}</td><td style="text-align:right">${x ? usd(x) : "–"}</td></tr>`).join("")
-    + `<tr><td><b>Net savings</b></td><td class="muted">pays back the ${money(c.deployment_cost)} setup in ${months(v.payback)}</td><td style="text-align:right"><b>${usd(v.annual_net)}</b></td></tr>`;
+    + `<tr><td><b>Net savings</b></td><td class="muted">pays back the ${money(c.deployment_cost + c.change_cost)} one-time cost (${money(c.deployment_cost)} setup and integration, ${money(c.change_cost)} training and change management) in ${months(v.payback)}</td><td style="text-align:right"><b>${usd(v.annual_net)}</b></td></tr>`;
 
   const cases = [["Worst case", v.cases.Low, "warn"], ["Expected", v.cases.Base, ""], ["Best case", v.cases.High, "grey"]];
   const maxCase = Math.max(...cases.map(x => x[1]));
@@ -171,10 +175,10 @@
     // Lowest alert level that keeps false alarms to one a week and at least half the alerts real
     const calm = [...Array(99).keys()].map(k => (k + 1) / 100).find(t => { const v = value(c, t); return v.false_alarms <= 52 && v.precision >= 0.5; });
     const toCalm = calm && calm > level ? { label: `Apply: raise the alert level to ${Math.round(calm * 100)}%`, level: calm } : null;
-    const maxSetup = Math.floor((18 - c.months_to_deploy) * r.net / 12 / 5000) * 5000;
+    const setup = c.deployment_cost + (c.change_cost || 0), maxSetup = Math.floor((18 - c.months_to_deploy) * r.net / 12 / 5000) * 5000;
     const cfo = r.net <= 0 ? ["blocks", `It loses ${usd(-r.net)} a year at these costs. I can't take that to the board.`, null]
-      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${usd(c.deployment_cost)} setup or show more savings.`,
-          maxSetup > 0 ? { label: `Apply: cap setup at ${usd(maxSetup)}`, set: { deployment_cost: maxSetup } } : null]
+      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${usd(setup)} one-time cost or show more savings.`,
+          maxSetup > (c.change_cost || 0) ? { label: `Apply: cap setup and integration at ${usd(maxSetup - (c.change_cost || 0))}`, set: { deployment_cost: maxSetup - (c.change_cost || 0) } } : null]
       : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${usd(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
       : c.running_cost > 0.35 * gross ? ["concerns", `Running costs eat ${Math.round(c.running_cost / gross * 100)}% of the gross saving. I want a fixed-price contract before I sign.`,
           { label: `Apply: negotiate running cost to ${usd(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
@@ -202,9 +206,9 @@
 
   const FIELDS = [["failures_per_year", "Breakdowns a year, no AI", 1], ["cost_missed", "Cost of a breakdown ($)", 500],
     ["cost_caught", "Planned repair when caught early ($)", 250], ["cost_false_alarm", "Inspection on a false alarm ($)", 50],
-    ["running_cost", "Running the AI, a year ($)", 1000], ["deployment_cost", "One-time setup ($)", 5000], ["months_to_deploy", "Months to go live", 1]];
+    ["running_cost", "Running the AI, a year ($)", 1000], ["deployment_cost", "One-time setup and integration ($)", 5000], ["change_cost", "Training and change management ($)", 5000], ["months_to_deploy", "Months to go live", 1]];
   const NAME = { failures_per_year: "breakdowns a year", cost_missed: "cost of a breakdown", cost_caught: "planned repair", cost_false_alarm: "inspection",
-    running_cost: "running cost", deployment_cost: "one-time setup", months_to_deploy: "months to go live" };
+    running_cost: "running cost", deployment_cost: "setup and integration", change_cost: "training and change management", months_to_deploy: "months to go live" };
   const box = document.getElementById("dIn"), lvl = document.getElementById("dLevel");
   box.innerHTML = FIELDS.map(([k, t, step]) => `<label>${t}<input type="number" min="0" step="${step}" data-k="${k}"></label>`).join("");
   const input = k => box.querySelector(`[data-k=${k}]`);
@@ -219,7 +223,9 @@
 
   // What-ifs: each changes one number on top of whatever is already set
   const TRY = [["Breakdowns cost $10k, not $25k", { cost_missed: 10000 }],
-    ["Setup costs 4× more", { deployment_cost: D.costs.deployment_cost * 4 }],
+    ["Setup costs 4× more", { deployment_cost: D.costs.deployment_cost * 4, change_cost: D.costs.change_cost * 4 }],
+    ["People costs double", { change_cost: D.costs.change_cost * 2 }],
+    ["False alarms stop the line ($5k each)", { cost_false_alarm: 5000 }],
     ["Twice as many breakdowns", { failures_per_year: D.costs.failures_per_year * 2 }],
     ["AI warns only when 90% sure", { level: 90 }]];
   document.getElementById("dTry").innerHTML = TRY.map(([t], i) => `<button class="chip" type="button" data-try="${i}">${t}</button>`).join("");

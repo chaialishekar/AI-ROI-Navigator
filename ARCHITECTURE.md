@@ -48,6 +48,7 @@ At any alert level the test set gives caught (TP), missed (FN) and false-alarm (
 cost without AI = breakdowns × cost of a breakdown
 cost with AI    = caught × planned repair + missed × cost of a breakdown + false alarms × inspection + running cost
 net a year      = cost without AI − cost with AI
+setup           = setup and integration + training and change management (both one-time)
 payback         = months to go live + setup ÷ (net ÷ 12)
 ```
 

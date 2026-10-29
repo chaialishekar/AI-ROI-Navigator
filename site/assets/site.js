@@ -30,10 +30,10 @@
     const caught = tp * scale, missed = (D.curve.failures - tp) * scale, false_alarms = fp * scale;
     const net = c.failures_per_year * c.cost_missed
       - (caught * c.cost_caught + missed * c.cost_missed + false_alarms * c.cost_false_alarm + c.running_cost);
-    const live3 = Math.max(0, 36 - c.months_to_deploy);
+    const live3 = Math.max(0, 36 - c.months_to_deploy), setup = c.deployment_cost + (c.change_cost || 0);
     return { caught, missed, false_alarms, net, recall: tp / D.curve.failures, precision: tp + fp ? tp / (tp + fp) : 0,
-             payback: net > 0 ? c.months_to_deploy + c.deployment_cost / (net / 12) : null,
-             three_year: net * live3 / 12 - c.deployment_cost };
+             payback: net > 0 ? c.months_to_deploy + setup / (net / 12) : null,
+             three_year: net * live3 / 12 - setup };
   }
   // Break-even alert level, as src/value.py alert_threshold()
   const breakEven = c => (c.cost_missed > c.cost_caught

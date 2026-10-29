@@ -3,7 +3,7 @@ import pandas as pd
 
 from src.readiness import verdict
 from src.tracking import explain_gap, month_label, simulate, track, validate
-from src.value import Costs, alert_threshold, bootstrap, default_ranges, evaluate, scenarios, sensitivity
+from src.value import Costs, alert_threshold, bootstrap, default_ranges, evaluate, payback, scenarios, sensitivity
 
 
 def test_library_ranking_matches_hand_calculation():
@@ -35,6 +35,15 @@ def test_value_math():
     assert round(r["annual_net"], 6) == 85
 
 
+def test_setup_includes_people_costs():
+    # Integration and training / change management are both paid before go-live
+    c = Costs(failures_per_year=12, cost_missed=1000, cost_caught=0, cost_false_alarm=0,
+              running_cost=0, deployment_cost=3000, change_cost=3000, months_to_deploy=0)
+    assert c.setup == 6000
+    assert Costs().setup == 150_000                      # default total unchanged by the split
+    assert payback(12_000, c) == 6                       # 6,000 setup at 1,000 a month
+
+
 def _toy_model(seed=0, n=2000):
     rng = np.random.default_rng(seed)
     y = (rng.random(n) < 0.05).astype(int)
@@ -64,6 +73,8 @@ def test_sensitivity_and_scenarios_are_ordered():
     row = t.set_index("key")
     assert row.loc["cost_missed", "at_high"] > row.loc["cost_missed", "at_low"]
     assert row.loc["deployment_cost", "at_high"] < row.loc["deployment_cost", "at_low"]
+    # Training and change management is a one-time cost too, so more of it lowers the value
+    assert row.loc["change_cost", "at_high"] < row.loc["change_cost", "at_low"]
     cases = scenarios(y, p, 0.4, c, ranges)
     assert cases["Low"]["three_year"] <= cases["Base"]["three_year"] <= cases["High"]["three_year"]
     # Low case is at least as bad as the worst single assumption
