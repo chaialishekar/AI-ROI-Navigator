@@ -123,7 +123,9 @@ window.CASE = {
   "annual_net": 720784.3137,
   "recall": 0.9804,
   "precision": 0.3145,
-  "false_alarms": 85.4902
+  "false_alarms": 85.4902,
+  "tp": 100,
+  "fp": 218
  },
  "curve": {
   "failures": 102,

@@ -212,3 +212,34 @@ footer .wrap { display: flex; justify-content: space-between; gap: 24px; flex-wr
          transform: translate(-50%, 20px); opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
 .toast b { color: var(--done-top); }
+
+/* The board: CFO, COO and CTO react to the calculator */
+.board-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-top: 22px; }
+.board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+@media (max-width: 860px) { .board { grid-template-columns: 1fr; } }
+.seat { background: var(--page); border-radius: var(--radius); padding: 14px 16px; border-top: 3px solid var(--good);
+        transition: border-color 0.3s; }
+.seat.concerns { border-top-color: #e0a03a; } .seat.blocks { border-top-color: var(--bad); }
+.seat .who { display: flex; align-items: center; gap: 10px; }
+.seat .who .tag { margin-left: auto; }
+.seat .av { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--page); font-size: 10px; font-weight: 600;
+            display: grid; place-items: center; flex: 0 0 auto; }
+.seat p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; }
+.seat p { animation: seatIn 0.35s ease; }
+@keyframes seatIn { from { opacity: 0.3; } to { opacity: 1; } }
+.try { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 18px; }
+.try .label { margin-right: 4px; }
+#dTry { display: contents; }
+.chip { font: inherit; font-size: 13px; background: var(--page); color: var(--ink); border: 1px solid var(--line); border-radius: 999px;
+        padding: 6px 12px; cursor: pointer; }
+.chip:hover { border-color: var(--teal); color: var(--teal); }
+.chip.ghost { background: none; color: var(--muted); }
+.slider-hint { display: flex; justify-content: space-between; gap: 12px; margin: 2px 0 6px; }
+@media (max-width: 560px) { .slider-hint { font-size: 11px; } }
+.inputs input.flash { animation: flash 1.2s ease; }
+@keyframes flash { 0%, 40% { background: var(--good-bg); border-color: var(--done); } 100% { background: var(--page); } }
+.fix { display: inline-block; margin-top: 10px; font: inherit; font-size: 13px; font-weight: 500; color: var(--teal); background: var(--card);
+       border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; cursor: pointer; text-decoration: none; }
+.fix:hover { border-color: var(--teal); }
+details.tech { margin-top: 18px; }
+details.tech summary { cursor: pointer; font-size: 14px; color: var(--muted); }

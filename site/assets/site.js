@@ -30,6 +30,46 @@
              payback: net > 0 ? c.months_to_deploy + c.deployment_cost / (net / 12) : null,
              three_year: net * live3 / 12 - c.deployment_cost };
   }
+  // The board: three executives react to the numbers. Plain rules, no live AI: each reaction names the number behind it.
+  // Thresholds are set for this plant: 18 months is the budget horizon; an alert level 10+ points above break-even
+  // that costs over $10k a year is accuracy bought with money; crews tune out when fewer than half the alerts are
+  // real or false alarms pass one a week (US-6.2 adoption risk); the COO also reads the Readiness gaps; a catch
+  // rate under 80% leaves 8+ surprise breakdowns a year; extra misses only count when a lower alert level would avoid them. Returns [{role, who, mood: "backs" | "concerns" | "blocks",
+  // say, fix}], where fix (optional) is {label, set: {cost: value}}, {label, level} or {label, href}: the change that
+  // would answer the concern. The board never changes anything itself; the page applies a fix only when clicked.
+  function board(c, r, level) {
+    const wk = r.false_alarms / 52, gross = r.net + c.running_cost, be = breakEven(c), atBe = value(c, be);
+    const lost = atBe.net - r.net, gaps = D.readiness.weakest.filter(w => w.score < 3.5);
+    const toBe = { label: `Apply: go back to the ${Math.round(be * 100)}% break-even level`, level: be };
+    // Lowest alert level that keeps false alarms to one a week and at least half the alerts real
+    const calm = [...Array(99).keys()].map(k => (k + 1) / 100).find(t => { const v = value(c, t); return v.false_alarms <= 52 && v.precision >= 0.5; });
+    const toCalm = calm && calm > level ? { label: `Apply: raise the alert level to ${Math.round(calm * 100)}%`, level: calm } : null;
+    const maxSetup = Math.floor((18 - c.months_to_deploy) * r.net / 12 / 5000) * 5000;
+    const cfo = r.net <= 0 ? ["blocks", `It loses ${usd(-r.net)} a year at these costs. I can't take that to the board.`, null]
+      : r.payback > 18 ? ["blocks", `${r.payback.toFixed(1)} months to pay back is past our 18-month budget horizon. Cut the ${usd(c.deployment_cost)} setup or show more savings.`,
+          maxSetup > 0 ? { label: `Apply: cap setup at ${usd(maxSetup)}`, set: { deployment_cost: maxSetup } } : null]
+      : level > be + 0.1 && lost > 10000 ? ["concerns", `An alert level of ${Math.round(level * 100)}% gives up ${usd(lost)} a year against the ${Math.round(be * 100)}% break-even level, to avoid ${Math.round(atBe.false_alarms - r.false_alarms)} inspections. Accuracy isn't the goal; savings are.`, toBe]
+      : c.running_cost > 0.35 * gross ? ["concerns", `Running costs eat ${Math.round(c.running_cost / gross * 100)}% of the gross saving. I want a fixed-price contract before I sign.`,
+          { label: `Apply: negotiate running cost to ${usd(Math.floor(0.35 * gross / 1000) * 1000)}`, set: { running_cost: Math.floor(0.35 * gross / 1000) * 1000 } }]
+      : r.payback > 12 ? ["concerns", `${r.payback.toFixed(1)} months to pay back. Fine, but release the money in stages: one production line first.`,
+          { label: "See the staged rollout in Decide →", href: "decide.html" }]
+      : ["backs", `Pays back in ${r.payback.toFixed(1)} months and nets ${usd(r.net)} a year. I'll still budget on the published studies, not the model test, and treat the rest as upside.`];
+    const coo = r.precision < 0.3 ? ["blocks", `Only ${Math.round(r.precision * 100)}% of alerts are real. My crew will stop answering them inside a month.`, toCalm]
+      : wk > 1 ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is more than one a week. Expect technicians to start ignoring it.`, toCalm]
+      : r.precision < 0.5 ? ["concerns", `Half the alerts are wrong (${Math.round(r.precision * 100)}% real). Show the reason with each one, or trust goes.`, toCalm]
+      : level > be && r.missed - atBe.missed >= 1 ? ["concerns", `This alert level lets through ${(r.missed - atBe.missed).toFixed(1)} more surprise breakdowns a year than break-even would. Those are the night-shift call-outs I wanted gone.`, toBe]
+      : D.readiness.verdict !== "Go" && gaps.length ? ["concerns", `${Math.round(r.false_alarms)} false alarms a year is fine. My worry is the crew: readiness scored "${gaps.map(g => g.name.toLowerCase()).join("\" and \"")}" at ${gaps.map(g => g.score.toFixed(1)).join(" and ")} of 5. Fix that before go-live.`,
+          { label: "See the readiness fixes →", href: "readiness.html#details" }]
+      : ["backs", `About ${Math.round(r.false_alarms)} false alarms a year, one every ${Math.round(52 / Math.max(r.false_alarms, 0.1))} weeks. My crew can work with that if alerts land in the maintenance system.`];
+    const cto = r.recall < 0.6 ? ["blocks", `At a ${Math.round(level * 100)}% alert level it catches only ${Math.round(r.recall * 100)}% of breakdowns. We'd be paying for a model and still missing most failures.`, level > be ? toBe : null]
+      : r.recall < 0.8 ? ["concerns", `Tuned this cautiously, it misses ${Math.round((1 - r.recall) * 100)}% of breakdowns. Lower the alert level before go-live.`, level > be ? toBe : null]
+      : c.running_cost < 30000 ? ["concerns", `${usd(c.running_cost)} a year won't cover monitoring and retraining. The model will drift and nobody will notice.`,
+          { label: "Apply: budget $30,000 a year for monitoring", set: { running_cost: 30000 } }]
+      : ["backs", `Catches ${Math.round(r.recall * 100)}% on the test. The data is synthetic, so I want the 3-month catch rate monitored from day one.`];
+    return [["CFO", "Finance chief", ...cfo], ["COO", "Operations chief", ...coo], ["CTO", "Technology chief", ...cto]]
+      .map(([role, who, mood, say, fix]) => ({ role, who, mood, say, fix }));
+  }
+
   // Break-even alert level, as src/value.py alert_threshold()
   const breakEven = c => (c.cost_missed > c.cost_caught
     ? Math.min(0.99, Math.max(0.01, Math.round(c.cost_false_alarm / (c.cost_missed - c.cost_caught + c.cost_false_alarm) * 100) / 100)) : 0.99);
@@ -256,5 +296,5 @@
 
   nav(); footer(); fillValues();
   document.addEventListener("DOMContentLoaded", reveal);
-  window.Site = { D, PHASES, REPO, ESSAY, money, usd, pct, months, doc, value, breakEven, stairs, phaseHead, delivered };
+  window.Site = { D, PHASES, REPO, ESSAY, money, usd, pct, months, doc, value, breakEven, board, stairs, phaseHead, delivered };
 })();

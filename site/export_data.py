@@ -141,7 +141,8 @@ def main():
                     "cases": {k: num(c["annual_net"]) for k, c in val["cases"].items()}},
         "published": {"net": num(published), "low_pct": num(lib["improvement_low"]),
                       "high_pct": num(lib["improvement_high"])},
-        "rules": {k: num(rules[k]) for k in ("annual_net", "recall", "precision", "false_alarms")},
+        "rules": {k: num(rules[k]) for k in ("annual_net", "recall", "precision", "false_alarms")}
+                 | {"tp": rules["tp"], "fp": rules["fp"]},   # test-set counts, so the site can price the rules at any costs
         "curve": alert_curve(res),
         "genai": genai_results(),
         "readiness": {"questions": DIMENSIONS, "actions": ACTIONS, "example": EXAMPLE_PILOT, "verdict": v, "avg": num(rd["avg"]), "dims": {d: num(s) for d, s in dims.items()},
